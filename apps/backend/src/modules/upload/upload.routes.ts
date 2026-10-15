@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { uploadFileToMinIO } from '../../services/storage.service.js';
 import { authenticate } from '../../utils/authGuards.js';
+import { detectFile } from '../../utils/fileSignature.js';
 import { messageOf } from '../../utils/respond.js';
 
 const IMAGES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -32,12 +33,22 @@ export async function uploadRoutes(app: FastifyInstance) {
         if (!(upload.accepts as readonly string[]).includes(data.mimetype)) {
           return reply.code(400).send({ success: false, error: 'Format de fichier non accepté.' });
         }
+        let buffer: Buffer;
         try {
-          const buffer = await data.toBuffer();
-          const url = await uploadFileToMinIO(buffer, data.filename, upload.folder, data.mimetype);
-          return reply.code(201).send({ success: true, url });
+          buffer = await data.toBuffer();
         } catch (err) {
           // Typically a file over the size limit.
+          return reply.code(400).send({ success: false, error: messageOf(err) });
+        }
+        // The content decides, not the declared type or the file name.
+        const detected = detectFile(buffer);
+        if (!detected || !(upload.accepts as readonly string[]).includes(detected.mime)) {
+          return reply.code(400).send({ success: false, error: 'Format de fichier non accepté.' });
+        }
+        try {
+          const url = await uploadFileToMinIO(buffer, `file${detected.ext}`, upload.folder, detected.mime);
+          return reply.code(201).send({ success: true, url });
+        } catch (err) {
           return reply.code(400).send({ success: false, error: messageOf(err) });
         }
       },

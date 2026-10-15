@@ -15,6 +15,7 @@ import { initSocketGateway } from '../websockets/socket.gateway.js';
 import { db } from '../config/db.js';
 import { redis } from '../services/redis.service.js';
 import { hashPassword } from '../utils/hash.js';
+import { deleteStoredFile } from '../services/storage.service.js';
 
 const results: { name: string; ok: boolean; detail?: string }[] = [];
 const check = (name: string, ok: boolean, detail?: string) => {
@@ -751,6 +752,52 @@ async function main() {
     check('a deleted account cannot sign in again', signInAgain.status === 401, String(signInAgain.status));
     const oldToken = await call('GET', '/auth/me', leaverLogin.body?.token);
     check('its old session stops working', oldToken.status === 401, String(oldToken.status));
+
+    // ---- Uploads are judged by their content, not by the type the client declares
+    const PNG_1PX = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'base64',
+    );
+    const upload = async (path: string, content: Buffer, filename: string, mime: string, token?: string) => {
+      const boundary = '----el7al' + Date.now();
+      const head = Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="${filename}"\r\nContent-Type: ${mime}\r\n\r\n`,
+      );
+      const tail = Buffer.from(`\r\n--${boundary}--\r\n`);
+      const res = await app.inject({
+        method: 'POST',
+        url: `/api/v1/uploads${path}`,
+        payload: Buffer.concat([head, content, tail]),
+        headers: {
+          'content-type': `multipart/form-data; boundary=${boundary}`,
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      return { status: res.statusCode, body: res.json() };
+    };
+    const fakeImage = await upload(
+      '/avatar',
+      Buffer.from('<script>alert(1)</script>'),
+      'a.png',
+      'image/png',
+      client.token,
+    );
+    check(
+      'an upload declared as an image but with other content is refused',
+      fakeImage.status === 400,
+      String(fakeImage.status),
+    );
+    const pdfAsAvatar = await upload('/avatar', Buffer.from('%PDF-1.4 test'), 'a.png', 'image/png', client.token);
+    check('a PDF is refused where only images are accepted', pdfAsAvatar.status === 400, String(pdfAsAvatar.status));
+    const noAuth = await upload('/avatar', PNG_1PX, 'a.png', 'image/png');
+    check('an upload needs a signed-in user', noAuth.status === 401, String(noAuth.status));
+    const realImage = await upload('/avatar', PNG_1PX, 'photo.html', 'image/png', client.token);
+    check(
+      'a real image is accepted and stored with a safe extension',
+      realImage.status === 201 && String(realImage.body?.url).endsWith('.png'),
+      String(realImage.status),
+    );
+    await deleteStoredFile(realImage.body?.url);
 
     // ---- Money amounts reach the dashboards as plain values, not as library objects
     const adminUsers = await call('GET', '/admin/users', adminToken);
