@@ -798,6 +798,35 @@ async function main() {
       String(realImage.status),
     );
     await deleteStoredFile(realImage.body?.url);
+    // The identity photo is uploaded while registering, before any login exists.
+    const anonymousId = await upload('/document', PNG_1PX, 'cin.png', 'image/png');
+    check(
+      'an identity photo can be uploaded before the account exists',
+      anonymousId.status === 201,
+      String(anonymousId.status),
+    );
+    await deleteStoredFile(anonymousId.body?.url);
+    const anonymousFake = await upload('/document', Buffer.from('not an image'), 'cin.png', 'image/png');
+    check(
+      'an anonymous upload is still checked by content',
+      anonymousFake.status === 400,
+      String(anonymousFake.status),
+    );
+    const anonymousReceipt = await upload('/receipt', PNG_1PX, 'r.png', 'image/png');
+    check('receipts still need a signed-in user', anonymousReceipt.status === 401, String(anonymousReceipt.status));
+
+    // A browser asks permission before sending PUT, PATCH or DELETE
+    const preflight = await app.inject({
+      method: 'OPTIONS',
+      url: '/api/v1/users/profile',
+      headers: { origin: 'https://el7al.tn', 'access-control-request-method': 'PUT' },
+    });
+    const allowedMethods = String(preflight.headers['access-control-allow-methods'] ?? '');
+    check(
+      'the browser preflight allows PUT, PATCH and DELETE',
+      ['PUT', 'PATCH', 'DELETE'].every((m) => allowedMethods.includes(m)),
+      allowedMethods,
+    );
 
     // ---- Money amounts reach the dashboards as plain values, not as library objects
     const adminUsers = await call('GET', '/admin/users', adminToken);

@@ -13,6 +13,8 @@ const UPLOADS = [
     folder: 'documents',
     accepts: [...IMAGES, 'application/pdf'],
     summary: 'Identity card or certificate of an artisan',
+    // The photo is sent with the registration form, before the account (and so a login) exists.
+    public: true,
   },
   { path: '/receipt', folder: 'receipts', accepts: [...IMAGES, 'application/pdf'], summary: 'Bank transfer receipt' },
   { path: '/avatar', folder: 'avatars', accepts: IMAGES, summary: 'Profile photo' },
@@ -20,12 +22,18 @@ const UPLOADS = [
 
 export async function uploadRoutes(app: FastifyInstance) {
   for (const upload of UPLOADS) {
+    const isPublic = 'public' in upload;
     app.post(
       upload.path,
       {
-        config: { rateLimit: { max: 20, timeWindow: '1 minute' } },
-        schema: { tags: ['File Uploads'], summary: `Upload: ${upload.summary}`, security: [{ bearerAuth: [] }] },
-        onRequest: [authenticate],
+        // Anonymous uploads get a much tighter limit than signed-in ones.
+        config: { rateLimit: isPublic ? { max: 10, timeWindow: '10 minutes' } : { max: 20, timeWindow: '1 minute' } },
+        schema: {
+          tags: ['File Uploads'],
+          summary: `Upload: ${upload.summary}`,
+          ...(isPublic ? {} : { security: [{ bearerAuth: [] }] }),
+        },
+        onRequest: isPublic ? [] : [authenticate],
       },
       async (request, reply) => {
         const data = await request.file();

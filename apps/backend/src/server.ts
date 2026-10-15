@@ -71,6 +71,8 @@ export async function buildServer() {
   // 1. Register CORS
   await app.register(cors, {
     origin: allowedOrigins(),
+    // The plugin only allows GET, HEAD and POST by default, which blocks every browser PUT, PATCH and DELETE.
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     credentials: true,
   });
 
