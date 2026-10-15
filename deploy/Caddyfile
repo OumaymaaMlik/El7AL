@@ -1,6 +1,10 @@
 # One reverse proxy, three public names. Certificates are issued and renewed automatically.
 # {$APP_DOMAIN}, {$API_DOMAIN}, {$FILES_DOMAIN} come from deploy/.env
 
+www.{$APP_DOMAIN} {
+	redir https://{$APP_DOMAIN}{uri} permanent
+}
+
 {$APP_DOMAIN} {
 	root * /srv/web
 	encode zstd gzip
