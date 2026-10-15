@@ -44,7 +44,9 @@ services:
   # 3. MinIO (S3-Compatible Object Storage for Documents & Images)
   # ---------------------------------------------------------------------------
   minio:
-    image: minio/minio:latest
+    # minio/minio left Docker Hub; this is the maintained MinIO build (pinned by digest).
+    image: cgr.dev/chainguard/minio:latest@sha256:2136d593beacf4461187035eca949fe49abd589d5079735025c711ca58fee0c8
+    user: "0:0"
     container_name: el7al-minio
     restart: always
     command: server /data --console-address ":9001"
@@ -56,11 +58,6 @@ services:
       - "9001:9001" # Web Console
     volumes:
       - miniodata:/data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   # ---------------------------------------------------------------------------
   # 4. Prometheus (Time-Series Metrics Collection Engine)

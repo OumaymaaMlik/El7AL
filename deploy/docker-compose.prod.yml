@@ -34,7 +34,10 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
 
   minio:
-    image: minio/minio:latest
+    # minio/minio left Docker Hub; this is the maintained MinIO build. To update: docker pull cgr.dev/chainguard/minio:latest, then copy the new digest here.
+    image: cgr.dev/chainguard/minio:latest@sha256:2136d593beacf4461187035eca949fe49abd589d5079735025c711ca58fee0c8
+    # Runs as root so it can write to a fresh volume (the image default is a non-root user).
+    user: "0:0"
     restart: always
     command: server /data
     environment:
