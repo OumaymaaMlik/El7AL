@@ -48,7 +48,7 @@ jobs:
       - run: npm ci --include=dev
       - run: npm run build:shared
       - name: Start PostgreSQL, Redis and MinIO
-        run: docker compose up -d postgres redis minio
+        run: docker compose up -d --wait postgres redis minio
       - name: Prepare the server
         working-directory: apps/backend
         run: |
