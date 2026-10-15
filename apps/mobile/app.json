@@ -1,0 +1,76 @@
+{
+  "expo": {
+    "name": "El 7al",
+    "slug": "el7al-connect-pro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "tn.el7al.connect",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "El 7al utilise votre position pour trouver des artisans près de vous et partager votre position pendant une intervention.",
+        "NSPhotoLibraryUsageDescription": "El 7al accède à vos photos pour que vous puissiez choisir votre photo de profil ou la photo de votre pièce d'identité."
+      }
+    },
+    "android": {
+      "package": "tn.el7al.connect",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0D5C3A"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "READ_MEDIA_IMAGES"
+      ]
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "color": "#0D5C3A"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "El 7al utilise votre position pour trouver des artisans près de vous et partager votre position pendant une intervention.",
+          "isIosBackgroundLocationEnabled": false,
+          "isAndroidBackgroundLocationEnabled": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "El 7al accède à vos photos pour que vous puissiez choisir votre photo de profil ou la photo de votre pièce d'identité.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#042416"
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ],
+    "scheme": "el7al",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "50d7f19e-dbc0-43ad-a6a5-681f811a6c20"
+      }
+    },
+    "icon": "./assets/icon.png"
+  }
+}

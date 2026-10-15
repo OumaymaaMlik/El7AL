@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/.expo
+**/.env
+**/.env.*
+!**/.env.example
+.git
+apps/mobile/*
+!apps/mobile/package.json
+*.md
+*.docx
+*.pdf

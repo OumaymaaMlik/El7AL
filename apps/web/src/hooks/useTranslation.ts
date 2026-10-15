@@ -1,0 +1,396 @@
+import { useLanguageStore } from '../store/useLanguageStore';
+
+const dictionary = {
+  fr: {
+    // Navigation & Layout
+    home: 'Accueil',
+    tracking: 'Suivi en Direct',
+    wallet: 'Mon Portefeuille',
+    profile: 'Mon Profil',
+    liveMissions: 'Missions en Direct',
+    logout: 'Déconnexion',
+    login: 'Connexion',
+    clientSpace: 'Espace Client',
+    providerSpace: 'Espace Prestataire',
+    rightsReserved: "Tous droits réservés. Plateforme d'intervention d'urgence en temps réel.",
+    verifiedAccount: 'Compte Vérifié',
+    search: 'Rechercher',
+    back: 'Retour',
+    cancel: 'Annuler',
+    confirm: 'Confirmer',
+    close: 'Fermer',
+
+    // Hero Widget
+    welcomeMsg: 'Bonjour ! Dépannage & Service 24/7',
+    heroTitle: 'De quelle intervention avez-vous besoin ?',
+    expressBadge: 'Intervention Express',
+    expressSubtext: 'Un professionnel certifié chez vous en 15-30 min',
+    metier: 'Métier / Service',
+    selectMetier: 'Sélectionnez un métier',
+    probleme: 'Description du problème',
+    problemePlaceholder: "Ex: fuite d'eau, porte bloquée...",
+    lieu: "Adresse d'intervention",
+    launchBtn: "Demander l'intervention",
+    gps: 'GPS',
+    detectGps: 'Détecter ma position GPS',
+    locating: 'Localisation en cours...',
+
+    // Quick Urgency Chips
+    quickUrgencyTitle: 'URGENCES FRÉQUENTES EN 1 CLIC',
+    chipWaterLeak: "Fuite d'eau urgente",
+    chipPowerCut: "Coupure d'électricité",
+    chipAutoBreakdown: 'Panne auto / Batterie',
+    chipLockedDoor: 'Porte claquée / Clés',
+    chipAcBreakdown: 'Panne de climatiseur',
+
+    // Category Grid
+    exploreCategories: 'Explorer tous nos Métiers & Services',
+    exploreSubtext: 'Choisissez un domaine pour demander un technicien certifié',
+    searchPlaceholder: 'Rechercher un service (plomberie, clim, électricité...)',
+    availableNow: 'Disponible maintenant',
+    unavailable: 'Indisponible',
+    technicianOnline: 'technicien(s) en ligne',
+    allCategories: 'Tous',
+    noCategoryFound: 'Aucune catégorie trouvée.',
+
+    // How It Works
+    howItWorksTitle: 'Comment ça marche ?',
+    howItWorksSub: 'Une intervention rapide en 3 étapes simples',
+    step1Title: '1. Lancez votre demande',
+    step1Desc: 'Sélectionnez le métier et décrivez brièvement le problème.',
+    step2Title: '2. Un prestataire accepte',
+    step2Desc: 'Le technicien certifié le plus proche confirme votre demande.',
+    step3Title: '3. Intervention sur place',
+    step3Desc: 'Le professionnel arrive chez vous en 15 à 30 minutes.',
+
+    // Active Missions
+    activeMissionsTitle: 'Interventions en Cours',
+    noActiveMissions: 'Aucune intervention en cours.',
+    viewTracking: 'Voir le Suivi',
+    technicianEnRoute: 'Technicien en route',
+    searchingProvider: "Recherche d'un prestataire...",
+
+    // Request Modal
+    requestTitle: "Demande d'Intervention",
+    immediateArrival: 'Arrivée estimée du technicien sous 15-30 min',
+    describeProblem: 'Décrivez votre problème',
+    defaultAddressLabel: "Adresse d'intervention",
+    sendRequest: 'Valider la demande',
+    sending: 'Envoi en cours...',
+    estimation: 'Estimation Tarifaire',
+    indicativePrice: '30-70 TND (déplacement & diagnostic)',
+
+    // Profile Page
+    myProfile: 'Mon Profil Client',
+    profileSub: 'Gérez vos informations personnelles et vos coordonnées',
+    fullNameLabel: 'Nom et Prénom',
+    phoneLabel: 'Numéro de Téléphone',
+    emailLabel: 'Adresse Email',
+    saveChanges: 'Enregistrer les modifications',
+    profileSaved: 'Profil mis à jour avec succès.',
+
+    // Welcome Landing Page
+    welcomeTitle: 'Plateforme de Dépannage Express en Tunisie',
+    welcomeSub: 'Mise en relation instantanée avec des techniciens qualifiés 24/7',
+    joinClient: 'Espace Client',
+    joinProvider: 'Devenir Prestataire',
+    needRepair: "Besoin d'un dépannage rapide ?",
+    needRepairSub: 'Trouvez un plombier, électricien ou mécanicien en quelques secondes.',
+    areYouArtisan: 'Vous êtes un technicien qualifié ?',
+    areYouArtisanSub: 'Rejoignez le réseau El 7al, recevez des demandes directes et augmentez vos revenus.',
+
+    // Tracking Page
+    trackingTitle: "Suivi de l'Intervention",
+    missionCancelled: 'Intervention Annulée',
+    missionCancelledSub: 'Cette intervention a été annulée. Vous pouvez relancer une nouvelle demande.',
+    statusPending: 'Recherche du prestataire en cours...',
+    statusAccepted: 'Prestataire en route',
+    statusInProgress: 'Intervention en cours chez vous',
+    statusCompleted: 'Intervention terminée avec succès',
+    callProvider: 'Appeler le prestataire',
+    chatProvider: 'Discussion en direct',
+    cancelMission: 'Annuler la demande',
+    msgEnRoute: 'Bonjour, je suis en route pour votre intervention.',
+    msg2Min: 'Je suis à 2 minutes de votre position.',
+    msgOnSite: "Je suis sur place pour l'intervention.",
+    chipWhereAreYou: 'Où êtes-vous exactement ?',
+    chipWaitingAtDoor: "J'attends devant la porte",
+    chipThanks: 'Merci !',
+
+    // Provider Dashboard & Profile
+    providerDashboard: 'Tableau de bord Prestataire',
+    onlineStatus: 'En ligne',
+    readyForRequests: 'Prêt à recevoir des demandes',
+    offlineStatus: 'Hors Ligne',
+    incomingRequests: 'Demandes Entrantes',
+    acceptRequest: "Accepter l'intervention",
+    declineRequest: 'Refuser',
+    totalEarnings: 'Gains Totaux',
+    completedInterventions: 'Interventions Réalisées',
+    myRates: 'Mes Tarifs',
+  },
+
+  en: {
+    // Navigation & Layout
+    home: 'Home',
+    tracking: 'Live Tracking',
+    wallet: 'My Wallet',
+    profile: 'My Profile',
+    liveMissions: 'Live Missions',
+    logout: 'Logout',
+    login: 'Login',
+    clientSpace: 'Client Area',
+    providerSpace: 'Technician Area',
+    rightsReserved: 'All rights reserved. Real-time emergency service platform.',
+    verifiedAccount: 'Verified Account',
+    search: 'Search',
+    back: 'Back',
+    cancel: 'Cancel',
+    confirm: 'Confirm',
+    close: 'Close',
+
+    // Hero Widget
+    welcomeMsg: 'Hello! Emergency Repair 24/7',
+    heroTitle: 'What service or repair do you need right now?',
+    expressBadge: 'Express Dispatch',
+    expressSubtext: 'A certified technician at your door in 15-30 min',
+    metier: 'Service Category',
+    selectMetier: 'Select a service',
+    probleme: 'Problem Description',
+    problemePlaceholder: 'e.g. water leak, locked door...',
+    lieu: 'Intervention Location',
+    launchBtn: 'Request Service Now',
+    gps: 'GPS',
+    detectGps: 'Detect my GPS location',
+    locating: 'Locating...',
+
+    // Quick Urgency Chips
+    quickUrgencyTitle: 'FREQUENT EMERGENCIES IN 1 CLICK',
+    chipWaterLeak: 'Urgent water leak',
+    chipPowerCut: 'Power outage',
+    chipAutoBreakdown: 'Car breakdown / Battery',
+    chipLockedDoor: 'Locked door / Keys inside',
+    chipAcBreakdown: 'AC breakdown',
+
+    // Category Grid
+    exploreCategories: 'Explore All Services & Trades',
+    exploreSubtext: 'Select a domain to request a certified technician',
+    searchPlaceholder: 'Search for a service (plumbing, AC, electricity...)',
+    availableNow: 'Available now',
+    unavailable: 'Unavailable',
+    technicianOnline: 'technician(s) online',
+    allCategories: 'All',
+    noCategoryFound: 'No category found.',
+
+    // How It Works
+    howItWorksTitle: 'How It Works?',
+    howItWorksSub: 'Fast intervention in 3 simple steps',
+    step1Title: '1. Submit your request',
+    step1Desc: 'Select the service and briefly describe your problem.',
+    step2Title: '2. A technician accepts',
+    step2Desc: 'The nearest certified technician confirms your request.',
+    step3Title: '3. On-site service',
+    step3Desc: 'The professional arrives at your door in 15 to 30 minutes.',
+
+    // Active Missions
+    activeMissionsTitle: 'Ongoing Interventions',
+    noActiveMissions: 'No active interventions.',
+    viewTracking: 'View Tracking',
+    technicianEnRoute: 'Technician en route',
+    searchingProvider: 'Searching for a technician...',
+
+    // Request Modal
+    requestTitle: 'Service Request',
+    immediateArrival: 'Estimated technician arrival in 15-30 min',
+    describeProblem: 'Describe your issue',
+    defaultAddressLabel: 'Intervention Address',
+    sendRequest: 'Submit Request',
+    sending: 'Sending...',
+    estimation: 'Price Estimation',
+    indicativePrice: '30-70 TND (trip & diagnosis)',
+
+    // Profile Page
+    myProfile: 'My Client Profile',
+    profileSub: 'Manage your personal information and contact details',
+    fullNameLabel: 'Full Name',
+    phoneLabel: 'Phone Number',
+    emailLabel: 'Email Address',
+    saveChanges: 'Save Changes',
+    profileSaved: 'Profile updated successfully.',
+
+    // Welcome Landing Page
+    welcomeTitle: 'Express Repair Platform in Tunisia',
+    welcomeSub: 'Instant connection with certified technicians 24/7',
+    joinClient: 'Client Area',
+    joinProvider: 'Become a Technician',
+    needRepair: 'Need a quick repair?',
+    needRepairSub: 'Find a certified plumber, electrician, or mechanic near you in seconds.',
+    areYouArtisan: 'Are you a skilled technician?',
+    areYouArtisanSub: 'Join the El 7al network, receive direct requests, and grow your revenue.',
+
+    // Tracking Page
+    trackingTitle: 'Intervention Tracking',
+    missionCancelled: 'Intervention Cancelled',
+    missionCancelledSub: 'This intervention was cancelled. You can launch a new request.',
+    statusPending: 'Searching for an available technician...',
+    statusAccepted: 'Technician on the way',
+    statusInProgress: 'Intervention in progress at your location',
+    statusCompleted: 'Intervention successfully completed',
+    callProvider: 'Call technician',
+    chatProvider: 'Live Chat',
+    cancelMission: 'Cancel Request',
+    msgEnRoute: 'Hello, I am on my way for your service.',
+    msg2Min: 'I am 2 minutes away from your location.',
+    msgOnSite: 'I have arrived on site for the intervention.',
+    chipWhereAreYou: 'Where are you located exactly?',
+    chipWaitingAtDoor: 'I am waiting at the door',
+    chipThanks: 'Thank you !',
+
+    // Provider Dashboard & Profile
+    providerDashboard: 'Technician Dashboard',
+    onlineStatus: 'Online',
+    readyForRequests: 'Ready to receive requests',
+    offlineStatus: 'Offline',
+    incomingRequests: 'Incoming Requests',
+    acceptRequest: 'Accept intervention',
+    declineRequest: 'Decline',
+    totalEarnings: 'Total Earnings',
+    completedInterventions: 'Completed Interventions',
+    myRates: 'My Rates',
+  },
+
+  ar: {
+    // Navigation & Layout
+    home: 'الرئيسية',
+    tracking: 'التتبع المباشر',
+    wallet: 'محفظتي',
+    profile: 'ملفي الشخصي',
+    liveMissions: 'المهام الحالية',
+    logout: 'تسجيل الخروج',
+    login: 'تسجيل الدخول',
+    clientSpace: 'فضاء الحرفاء',
+    providerSpace: 'فضاء الفنيين',
+    rightsReserved: 'جميع الحقوق محفوظة. منصة التدخلات العاجلة في الوقت الفعلي.',
+    verifiedAccount: 'حساب مفعل',
+    search: 'بحث',
+    back: 'رجوع',
+    cancel: 'إلغاء',
+    confirm: 'تأكيد',
+    close: 'إغلاق',
+
+    // Hero Widget
+    welcomeMsg: 'مرحباً! خدمات وإصلاح عاجل 24/7',
+    heroTitle: 'ما هي الخدمة أو الإصلاح الذي تحتاجه الآن؟',
+    expressBadge: 'تدخل سريع',
+    expressSubtext: 'فني معتمد يصل إلى بابك في 15-30 دقيقة',
+    metier: 'المهنة / الخدمة',
+    selectMetier: 'اختر الخدمة',
+    probleme: 'وصف المشكلة',
+    problemePlaceholder: 'مثال: تسرب مياه، باب مغلق...',
+    lieu: 'عنوان التدخل',
+    launchBtn: 'طلب التدخل الآن',
+    gps: 'GPS',
+    detectGps: 'تحديد موقعي عبر GPS',
+    locating: 'جاري تحديد الموقع...',
+
+    // Quick Urgency Chips
+    quickUrgencyTitle: 'حالات طوارئ شائعة بضغطة واحدة',
+    chipWaterLeak: 'تسرب مياه عاجل',
+    chipPowerCut: 'انقطاع الكهرباء',
+    chipAutoBreakdown: 'عطب سيارة / بطارية',
+    chipLockedDoor: 'باب مغلق / مفاتيح بالداخل',
+    chipAcBreakdown: 'عطب مكيف الهواء',
+
+    // Category Grid
+    exploreCategories: 'استكشف جميع المهن والخدمات',
+    exploreSubtext: 'اختر المجال لطلب فني معتمد',
+    searchPlaceholder: 'ابحث عن خدمة (سباكة، تكييف، كهرباء...)',
+    availableNow: 'متوفر الآن',
+    unavailable: 'غير متوفر',
+    technicianOnline: 'فني(ين) متصل',
+    allCategories: 'الكل',
+    noCategoryFound: 'لم يتم العثور على أي خدمة.',
+
+    // How It Works
+    howItWorksTitle: 'كيف تعمل المنصة؟',
+    howItWorksSub: 'تدخل سريع في 3 خطوات بسيطة',
+    step1Title: '1. أرسل طلبك',
+    step1Desc: 'اختر نوع الخدمة واشرح المشكلة باختصار.',
+    step2Title: '2. الفني يقبل الطلب',
+    step2Desc: 'أقرب فني معتمد يؤكد طلبك فوراً.',
+    step3Title: '3. التدخل الميداني',
+    step3Desc: 'يصل المحترف إلى عنوانك خلال 15 إلى 30 دقيقة.',
+
+    // Active Missions
+    activeMissionsTitle: 'التدخلات الجارية',
+    noActiveMissions: 'لا توجد تدخلات حالية.',
+    viewTracking: 'عرض التتبع',
+    technicianEnRoute: 'الفني في الطريق',
+    searchingProvider: 'جاري البحث عن فني...',
+
+    // Request Modal
+    requestTitle: 'طلب تدخل عاجل',
+    immediateArrival: 'الوصول المتوقع للفني خلال 15-30 دقيقة',
+    describeProblem: 'صف المشكلة التي تواجهها',
+    defaultAddressLabel: 'عنوان التدخل',
+    sendRequest: 'تأكيد الطلب',
+    sending: 'جاري الإرسال...',
+    estimation: 'التكلفة التقديرية',
+    indicativePrice: '30-70 دينار (التنقل والفحص)',
+
+    // Profile Page
+    myProfile: 'ملفي الشخصي',
+    profileSub: 'إدارة البيانات الشخصية ومعلومات الاتصال والعنوان',
+    fullNameLabel: 'الاسم واللقب',
+    phoneLabel: 'رقم الهاتف',
+    emailLabel: 'البريد الإلكتروني',
+    saveChanges: 'حفظ التغييرات',
+    profileSaved: 'تم تحديث الملف الشخصي بنجاح.',
+
+    // Welcome Landing Page
+    welcomeTitle: 'منصة الإصلاحات العاجلة في تونس',
+    welcomeSub: 'ربط فوري بأفضل الفنيين المعتمدين على مدار 24 ساعة',
+    joinClient: 'فضاء الحرفاء',
+    joinProvider: 'الانضمام كفني',
+    needRepair: 'هل تحتاج إلى إصلاح عاجل؟',
+    needRepairSub: 'اعثر على سباك، كهربائي أو ميكانيكي معتمد بالقرب منك في ثوانٍ.',
+    areYouArtisan: 'هل أنت فني أو حرفي؟',
+    areYouArtisanSub: 'انضم إلى شبكة El 7al، واستقبل الطلبات المباشرة وزد مداخيلك.',
+
+    // Tracking Page
+    trackingTitle: 'تتبع التدخل',
+    missionCancelled: 'تم إلغاء التدخل',
+    missionCancelledSub: 'تم إلغاء هذا التدخل. يمكنك إرسال طلب جديد.',
+    statusPending: 'جاري البحث عن فني متاح...',
+    statusAccepted: 'الفني في الطريق إليك',
+    statusInProgress: 'التدخل جاري في موقعك',
+    statusCompleted: 'تم إنهاء التدخل بنجاح',
+    callProvider: 'الاتصال بالفني',
+    chatProvider: 'محادثة مباشرة',
+    cancelMission: 'إلغاء الطلب',
+    msgEnRoute: 'مرحباً، أنا في الطريق إلى موقع التدخل.',
+    msg2Min: 'أنا على بعد دقيقتين من موقعك.',
+    msgOnSite: 'وصلت إلى موقع التدخل.',
+    chipWhereAreYou: 'أين تقع بالضبط؟',
+    chipWaitingAtDoor: 'أنا ينتظرك أمام الباب',
+    chipThanks: 'شكراً لك!',
+
+    // Provider Dashboard & Profile
+    providerDashboard: 'لوحة قيادة الفني',
+    onlineStatus: 'متصل (جاهز لاستقبال الطلبات)',
+    readyForRequests: 'جاهز لاستقبال الطلبات',
+    offlineStatus: 'غير متصل',
+    incomingRequests: 'الطلبات الواردة',
+    acceptRequest: 'قبول التدخل',
+    declineRequest: 'رفض',
+    totalEarnings: 'إجمالي الأرباح',
+    completedInterventions: 'المهام المنجزة',
+    myRates: 'أسعاري',
+  },
+};
+
+export function useTranslation() {
+  const { language } = useLanguageStore();
+  const t = dictionary[language] || dictionary.fr;
+  return { t, language };
+}

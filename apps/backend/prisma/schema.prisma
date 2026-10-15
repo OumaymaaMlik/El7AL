@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLIENT
+  PROVIDER
+  ADMIN
+}
+
+enum AccountStatus {
+  PENDING_VERIFICATION
+  ACTIVE
+  SUSPENDED_LOW_BALANCE
+  BLOCKED
+  REJECTED               // identity check refused by an admin (the reason is on the provider profile)
+}
+
+enum MissionStatus {
+  CREATED
+  BROADCASTED
+  ACCEPTED
+  EN_ROUTE
+  ARRIVED
+  IN_PROGRESS
+  DUAL_CONFIRM
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id           String        @id @default(uuid())
+  phoneNumber  String        @unique
+  email        String?       @unique
+  passwordHash String
+  fullName     String
+  role         UserRole      @default(CLIENT)
+  status       AccountStatus @default(PENDING_VERIFICATION)
+  avatarUrl    String?
+  pushToken    String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  clientProfile   ClientProfile?
+  providerProfile ProviderProfile?
+
+  @@index([status])
+}
+
+model ClientProfile {
+  id             String    @id @default(uuid())
+  userId         String    @unique
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultAddress String?
+  defaultLat     Float?
+  defaultLng     Float?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  missions       Mission[]
+  reviews        Review[]
+}
+
+model ProviderProfile {
+  id            String             @id @default(uuid())
+  userId        String             @unique
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio           String?
+  address       String?            // where the artisan works from, as text (same field as the client's address)
+  radiusKm      Float              @default(15.0)
+  isAvailable   Boolean            @default(false)
+  currentLat    Float?
+  currentLng    Float?
+  walletBalance Decimal            @default(0.00) // TND currency
+  ratingAverage Float              @default(0.0)
+  totalRatings  Int                @default(0)
+  documentsUrl  String[]           // Array of uploaded CIN / certificates URLs
+  cinNumber     String?
+  licenseNumber String?
+  vehicleType   String?            // CAR, VAN or MOTO
+  verificationNote String?         // why the identity check was refused (shown to the artisan)
+  verifiedAt    DateTime?          // when an admin approved the account
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  categories    ProviderCategory[]
+  acceptedMissions Mission[]
+  topupTransactions TopupTransaction[]
+  reviews        Review[]
+}
+
+model Category {
+  id          String             @id @default(uuid())
+  name        String             @unique // e.g. Plumbing, Electricity, Mechanics
+  icon        String             // Lucide icon name or URL
+  description String?
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+
+  providers   ProviderCategory[]
+  missions    Mission[]
+}
+
+model ProviderCategory {
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  categoryId String
+  category   Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, categoryId])
+}
+
+model Mission {
+  id                 String        @id @default(uuid())
+  clientId           String
+  client             ClientProfile @relation(fields: [clientId], references: [id])
+  providerId         String?
+  provider           ProviderProfile? @relation(fields: [providerId], references: [id])
+  categoryId         String
+  category           Category      @relation(fields: [categoryId], references: [id])
+  status             MissionStatus @default(CREATED)
+
+  pickupLat          Float
+  pickupLng          Float
+  addressText        String
+  description        String?
+  commissionFee      Decimal       @default(30.00) // 30 TND
+
+  cancellationReason String?
+  cancelledByRole    UserRole?
+
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  messages           ChatMessage[]
+  review             Review?
+  disputes           Dispute[]
+
+  @@index([clientId, createdAt])
+  @@index([providerId, createdAt])
+  @@index([status, createdAt])
+}
+
+model ChatMessage {
+  id        String    @id @default(uuid())
+  missionId String
+  mission   Mission   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  senderId  String    // User ID of sender
+  content   String
+  isRead    Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([missionId, createdAt])
+  @@index([missionId, isRead, senderId])
+}
+
+model Review {
+  id         String          @id @default(uuid())
+  missionId  String          @unique
+  mission    Mission         @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  clientId   String
+  client     ClientProfile   @relation(fields: [clientId], references: [id])
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+  rating     Int             // 1 to 5 stars
+  comment    String?
+  createdAt  DateTime        @default(now())
+}
+
+model TopupTransaction {
+  id              String            @id @default(uuid())
+  providerId      String
+  provider        ProviderProfile   @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  uniqueRef       String            @unique // e.g. EL7AL-REF-XXXXX
+  amount          Decimal
+  receiptPhotoUrl String
+  status          TransactionStatus @default(PENDING)
+  validatedBy     String?           // Admin User ID
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([providerId])
+}
+
+model Dispute {
+  id              String   @id @default(uuid())
+  missionId       String
+  mission         Mission  @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  reporterId      String
+  reason          String
+  status          String   @default("OPEN") // OPEN, RESOLVED, DISMISSED
+  resolutionNotes String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([missionId])
+  @@index([status])
+}

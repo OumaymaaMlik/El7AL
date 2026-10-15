@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Types, lint and builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # --include=dev: the checks need the development tools even when NODE_ENV is production.
+      - run: npm ci --include=dev
+      - run: npm run build:shared
+      - run: npx prisma generate
+        working-directory: apps/backend
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:web
+      - run: npm run build:web
+      - run: npm run build:backend
+
+  lifecycle:
+    name: Server lifecycle test
+    runs-on: ubuntu-latest
+    needs: check
+    env:
+      # The same values docker-compose.yml starts the local services with.
+      DATABASE_URL: postgresql://el7al_admin:el7al_db_password_2026@localhost:5435/el7al_db?schema=public
+      JWT_SECRET: ci-only-secret-not-used-anywhere-else
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run build:shared
+      - name: Start PostgreSQL, Redis and MinIO
+        run: docker compose up -d postgres redis minio
+      - name: Prepare the server
+        working-directory: apps/backend
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+      - run: npm run test:lifecycle

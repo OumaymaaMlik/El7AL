@@ -1,0 +1,355 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-light-bg text-slate-900 dark:bg-dark-bg dark:text-slate-100 transition-colors duration-200;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  /* Arabic reads better in Cairo for both titles and text. */
+  [dir='rtl'] body,
+  [dir='rtl'] .font-display,
+  [dir='rtl'] .font-brand {
+    font-family: 'Cairo', 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+    text-wrap: balance;
+  }
+  [dir='rtl'] h1,
+  [dir='rtl'] h2,
+  [dir='rtl'] h3 {
+    letter-spacing: 0;
+  }
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid #0d5c3a;
+    outline-offset: 3px;
+  }
+  .dark :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: #a3e635;
+  }
+}
+
+@layer components {
+  /* Flat surfaces with a hairline border: the cards of the whole app. */
+  .surface {
+    @apply bg-light-card dark:bg-dark-card border border-light-border dark:border-dark-border rounded-tile;
+  }
+  /* Small uppercase label above a title or a figure. */
+  .micro {
+    @apply text-xs font-semibold uppercase tracking-[0.09em] text-slate-500 dark:text-slate-400;
+  }
+  [dir='rtl'] .micro {
+    @apply tracking-normal text-[13px];
+  }
+  /* The deep green panel that carries the main message of a screen. */
+  .panel {
+    @apply bg-brand-500 text-white rounded-tile;
+  }
+}
+
+/* The old glass classes now draw flat surfaces, so every screen follows the same look. */
+.glass-panel {
+  background: #f2f4ee;
+  border-bottom: 1px solid #d9e0d2;
+}
+.dark .glass-panel {
+  background: #0c1612;
+  border-bottom: 1px solid #23352b;
+}
+
+.glass-card {
+  background: #ffffff;
+  border: 1px solid #d9e0d2;
+}
+.dark .glass-card {
+  background: #132019;
+  border: 1px solid #23352b;
+}
+
+/* The one live signature: a lime dot with a ring that expands. */
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #a3e635;
+  flex: none;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: #a3e635;
+  animation: ping-ring 2s ease-out infinite;
+}
+@keyframes ping-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Phone demo screens fade in one after the other. */
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.screen-in {
+  animation: screen-in 0.45s ease both;
+}
+
+/* Small one-shot movements played when a trade is picked (see TradePicker). */
+.motion-pop {
+  animation: m-pop 0.7s ease-out;
+}
+.motion-drip {
+  animation: m-drip 0.85s ease-in-out;
+}
+.motion-flash {
+  animation: m-flash 0.8s steps(1, end);
+}
+.motion-spin {
+  animation: m-spin 0.85s ease-in-out;
+}
+.motion-flicker {
+  animation: m-flicker 0.85s ease-in-out;
+}
+.motion-drive {
+  animation: m-drive 0.85s ease-in-out;
+}
+.motion-wiggle {
+  animation: m-wiggle 0.8s ease-in-out;
+  transform-origin: 30% 50%;
+}
+.motion-hammer {
+  animation: m-hammer 0.8s ease-in;
+  transform-origin: 85% 85%;
+}
+.motion-sweep {
+  animation: m-sweep 0.85s ease-in-out;
+  transform-origin: 50% 90%;
+}
+.motion-sparkle {
+  animation: m-sparkle 0.85s ease-in-out;
+}
+.motion-sway {
+  animation: m-sway 0.9s ease-in-out;
+  transform-origin: 50% 100%;
+}
+@keyframes m-pop {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes m-drip {
+  0% {
+    transform: translateY(-14px);
+    opacity: 0;
+  }
+  45% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+  65% {
+    transform: translateY(-3px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes m-flash {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 0.15;
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+  55% {
+    opacity: 0.15;
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+@keyframes m-spin {
+  0% {
+    transform: rotate(0) scale(1);
+  }
+  60% {
+    transform: rotate(360deg) scale(1.25);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+@keyframes m-flicker {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  25% {
+    transform: scale(1.15, 0.9) translateY(2px);
+  }
+  50% {
+    transform: scale(0.92, 1.25) translateY(-4px);
+  }
+  75% {
+    transform: scale(1.1, 0.95);
+  }
+}
+@keyframes m-drive {
+  0% {
+    transform: translateX(-34px);
+    opacity: 0;
+  }
+  55% {
+    transform: translateX(5px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+@keyframes m-wiggle {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  20% {
+    transform: rotate(-28deg);
+  }
+  40% {
+    transform: rotate(24deg);
+  }
+  60% {
+    transform: rotate(-16deg);
+  }
+  80% {
+    transform: rotate(8deg);
+  }
+}
+@keyframes m-hammer {
+  0% {
+    transform: rotate(-55deg);
+  }
+  55% {
+    transform: rotate(-55deg);
+  }
+  70% {
+    transform: rotate(18deg);
+  }
+  85% {
+    transform: rotate(-6deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+@keyframes m-sweep {
+  0% {
+    transform: rotate(-30deg);
+  }
+  50% {
+    transform: rotate(30deg);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+@keyframes m-sparkle {
+  0% {
+    transform: scale(0.6) rotate(-30deg);
+    opacity: 0.4;
+  }
+  60% {
+    transform: scale(1.35) rotate(15deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
+}
+@keyframes m-sway {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-14deg);
+  }
+  55% {
+    transform: rotate(12deg);
+  }
+  80% {
+    transform: rotate(-5deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot::after {
+    animation: none;
+    opacity: 0.3;
+    transform: scale(2);
+  }
+  .animate-pulse,
+  .animate-ping,
+  .animate-spin,
+  .animate-bounce,
+  .animate-pulse-ring,
+  .screen-in,
+  [class*='motion-'] {
+    animation: none !important;
+  }
+  * {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

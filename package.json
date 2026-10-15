@@ -1,0 +1,39 @@
+{
+  "name": "el7al",
+  "version": "1.0.0",
+  "private": true,
+  "description": "El 7al: real-time home-services marketplace for Tunisia (backend API, web app, mobile app).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace=@el7al/backend",
+    "dev:web": "npm run dev --workspace=@el7al/web",
+    "dev:mobile": "npm run start --workspace=@el7al/mobile",
+    "build:shared": "npm run build --workspace=@el7al/shared",
+    "build:backend": "npm run build --workspace=@el7al/backend",
+    "build:web": "npm run build --workspace=@el7al/web",
+    "test:web": "npm run test --workspace=@el7al/web",
+    "test:lifecycle": "npm run test:lifecycle --workspace=@el7al/backend",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "docker:up": "docker compose up -d postgres redis minio",
+    "docker:down": "docker compose down",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"apps/**/src/**/*.{ts,tsx}\" \"packages/**/src/**/*.ts\"",
+    "format:check": "prettier --check \"apps/**/src/**/*.{ts,tsx}\" \"packages/**/src/**/*.ts\"",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test:web && npm run build:web && npm run build:backend"
+  },
+  "devDependencies": {
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^8.71.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
