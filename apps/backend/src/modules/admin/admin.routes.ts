@@ -2,13 +2,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { AccountStatus } from '@el7al/shared';
 import { requireAdmin, currentUser } from '../../utils/authGuards.js';
 import { respond } from '../../utils/respond.js';
-import {
-  getAllUsers,
-  updateUserStatus,
-  deleteUser,
-  getPendingProviders,
-  verifyProvider,
-} from './admin.users.service.js';
+import { getAllUsers, updateUserStatus, getPendingProviders, verifyProvider } from './admin.users.service.js';
+import { deleteAccountAsAdmin } from '../user/accountDeletion.js';
 import { getAllMissions, getUserMissions, getPlatformStats } from './admin.activity.service.js';
 import { getCategories, createCategory, updateCategory, deleteCategory } from './admin.catalog.service.js';
 import { getPendingTopups, approveTopup, rejectTopup, getDisputes, resolveDispute } from './admin.finance.service.js';
@@ -56,7 +51,7 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.delete('/users/:id', admin('Delete an account', { params: ID_PARAMS }), async (request, reply) =>
     respond(reply, async () => {
-      await deleteUser(idOf(request));
+      await deleteAccountAsAdmin(idOf(request));
       return { deleted: true };
     }),
   );

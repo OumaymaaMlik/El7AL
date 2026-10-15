@@ -887,6 +887,29 @@ async function main() {
       String(badBody.status),
     );
 
+    // ---- An admin can delete an artisan who has jobs and ratings: personal data goes, history stays
+    const providerRow = await db.providerProfile.findUnique({ where: { userId: provider.id } });
+    const ratingsBefore = await db.review.count({ where: { providerId: providerRow!.id } });
+    const adminDelete = await call('DELETE', `/admin/users/${provider.id}`, adminToken);
+    check(
+      'an admin can delete an artisan who has jobs and ratings',
+      adminDelete.status === 200 && ratingsBefore > 0,
+      `${adminDelete.status} ratings=${ratingsBefore} ${JSON.stringify(adminDelete.body)}`,
+    );
+    const adminErased = await db.user.findUnique({ where: { id: provider.id } });
+    const ratingsAfter = await db.review.count({ where: { providerId: providerRow!.id } });
+    check(
+      'the deleted artisan is erased but the ratings remain',
+      adminErased?.fullName === 'Compte supprimé' && adminErased.email === null && ratingsAfter === ratingsBefore,
+    );
+    const adminRow = await db.user.findFirst({ where: { role: 'ADMIN' } });
+    const adminDeleteAdmin = await call('DELETE', `/admin/users/${adminRow!.id}`, adminToken);
+    check(
+      'an admin account cannot be deleted from the panel',
+      adminDeleteAdmin.status === 400,
+      String(adminDeleteAdmin.status),
+    );
+
     // ---- Rate limiting on login
     let limited = 0;
     for (let i = 0; i < 13; i++) {

@@ -19,23 +19,25 @@ const OPEN_STATUSES = [
 const REMOVED_NAME = 'Compte supprimé';
 const REMOVED_MESSAGE = '[message supprimé]';
 
-/**
- * A person deletes their own account (the stores require it). Personal data is erased in place: name, phone,
- * e-mail, photo, identity documents, address, position, push token and the text they wrote. What other people
- * keep (a finished job in an artisan's history, a rating) stays, but no longer points to a person.
- *
- * Refused while a request or job is open, and while an artisan still owes commission, so nobody escapes a debt
- * or abandons a customer by deleting.
- */
-export async function deleteOwnAccount(userId: string, password: string): Promise<void> {
-  const user = await db.user.findUnique({
-    where: { id: userId },
-    include: { clientProfile: true, providerProfile: true },
-  });
-  if (!user) throw new Error('Compte introuvable.');
-  if (user.role === UserRole.ADMIN) throw new Error('Un compte administrateur ne peut pas être supprimé ici.');
-  if (!(await verifyPassword(user.passwordHash, password))) throw new Error('Mot de passe incorrect.');
+type Refusals = { openMission: string; negativeBalance?: string };
 
+/** What a refusal says, depending on who asked: the owner is addressed directly, an admin is told about the user. */
+const SELF_REFUSALS: Refusals = {
+  openMission: 'Terminez ou annulez votre demande ou intervention en cours avant de supprimer le compte.',
+  negativeBalance: 'Votre solde de commissions est négatif. Contactez El 7al pour le régulariser avant la suppression.',
+};
+// An admin may delete an artisan who still owes commission: the balance stays on the erased profile, so the debt is not lost.
+const ADMIN_REFUSALS: Refusals = {
+  openMission:
+    'Cet utilisateur a une demande ou une intervention en cours: attendez sa fin ou annulez-la avant de supprimer le compte.',
+};
+
+const loadAccount = (userId: string) =>
+  db.user.findUnique({ where: { id: userId }, include: { clientProfile: true, providerProfile: true } });
+type Account = NonNullable<Awaited<ReturnType<typeof loadAccount>>>;
+
+/** Nobody escapes a debt or abandons a customer by deleting: refuse while a job is open or commission is owed. */
+async function assertErasable(user: Account, refusals: Refusals) {
   const open = await db.mission.count({
     where: {
       status: { in: OPEN_STATUSES },
@@ -45,14 +47,40 @@ export async function deleteOwnAccount(userId: string, password: string): Promis
       ],
     },
   });
-  if (open > 0)
-    throw new Error('Terminez ou annulez votre demande ou intervention en cours avant de supprimer le compte.');
-  if (user.providerProfile && Number(user.providerProfile.walletBalance) < 0) {
-    throw new Error(
-      'Votre solde de commissions est négatif. Contactez El 7al pour le régulariser avant la suppression.',
-    );
+  if (open > 0) throw new Error(refusals.openMission);
+  if (refusals.negativeBalance && user.providerProfile && Number(user.providerProfile.walletBalance) < 0) {
+    throw new Error(refusals.negativeBalance);
   }
+}
 
+/**
+ * A person deletes their own account (the stores require it). Personal data is erased in place: name, phone,
+ * e-mail, photo, identity documents, address, position, push token and the text they wrote. What other people
+ * keep (a finished job in an artisan's history, a rating) stays, but no longer points to a person.
+ */
+export async function deleteOwnAccount(userId: string, password: string): Promise<void> {
+  const user = await loadAccount(userId);
+  if (!user) throw new Error('Compte introuvable.');
+  if (user.role === UserRole.ADMIN) throw new Error('Un compte administrateur ne peut pas être supprimé ici.');
+  if (!(await verifyPassword(user.passwordHash, password))) throw new Error('Mot de passe incorrect.');
+  await assertErasable(user, SELF_REFUSALS);
+  await eraseAccount(user);
+}
+
+/**
+ * An admin deletes an account. The same erasure as above, because a row that jobs, ratings and the money ledger
+ * point to cannot simply be removed from the database.
+ */
+export async function deleteAccountAsAdmin(userId: string): Promise<void> {
+  const user = await loadAccount(userId);
+  if (!user) throw new Error('Compte introuvable.');
+  if (user.role === UserRole.ADMIN) throw new Error('Un compte administrateur ne peut pas être supprimé ici.');
+  await assertErasable(user, ADMIN_REFUSALS);
+  await eraseAccount(user);
+}
+
+async function eraseAccount(user: Account): Promise<void> {
+  const userId = user.id;
   const documents = user.providerProfile?.documentsUrl ?? [];
 
   await db.$transaction([

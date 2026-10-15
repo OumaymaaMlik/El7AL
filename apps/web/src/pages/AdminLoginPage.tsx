@@ -11,8 +11,8 @@ export const AdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  const [email, setEmail] = useState('admin@el7al.com');
-  const [password, setPassword] = useState('adminel7al@2026');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -103,8 +103,9 @@ export const AdminLoginPage: React.FC = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  aria-label="admin@el7al.com"
-                  placeholder="admin@el7al.com"
+                  aria-label="Adresse email"
+                  placeholder="Email"
+                  autoComplete="username"
                   className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 ps-11 pe-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
               </div>
@@ -121,8 +122,9 @@ export const AdminLoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  aria-label="••••••••••••"
+                  aria-label="Mot de passe"
                   placeholder="••••••••••••"
+                  autoComplete="current-password"
                   className="w-full bg-slate-950 border border-slate-800 rounded-2xl py-3 ps-11 pe-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
               </div>

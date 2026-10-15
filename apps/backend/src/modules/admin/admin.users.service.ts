@@ -91,11 +91,6 @@ export async function updateUserStatus(userId: string, status: AccountStatus) {
   return user;
 }
 
-export async function deleteUser(userId: string) {
-  await assertNotAdmin(userId);
-  return db.user.delete({ where: { id: userId } });
-}
-
 /** Artisans waiting for an admin decision, with their documents. */
 export async function getPendingProviders() {
   return db.providerProfile.findMany({
