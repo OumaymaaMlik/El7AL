@@ -1,0 +1,38 @@
+name: Uptime
+
+# A check from outside the server every 15 minutes. When something is wrong the run fails and GitHub sends an
+# e-mail, so the failure is noticed even if the server cannot report on itself.
+# Note: GitHub pauses scheduled workflows after 60 days without repository activity.
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Site, API and certificate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      APP_URL: https://el7al.tn
+      API_URL: https://api.el7al.tn
+    steps:
+      - name: The web app answers
+        run: |
+          curl -fsS --retry 3 --retry-delay 10 --retry-all-errors -m 20 "$APP_URL/" | grep -q 'id="root"'
+
+      - name: The API answers and the database is connected
+        run: |
+          curl -fsS --retry 3 --retry-delay 10 --retry-all-errors -m 20 "$API_URL/api/v1/health" | grep -q '"database":"connected"'
+
+      - name: The certificates are valid for at least 14 more days
+        run: |
+          for host in el7al.tn api.el7al.tn files.el7al.tn; do
+            echo | openssl s_client -servername "$host" -connect "$host:443" 2>/dev/null \
+              | openssl x509 -noout -checkend 1209600 \
+              || { echo "The certificate of $host expires within 14 days (or cannot be read)"; exit 1; }
+            echo "$host: certificate ok"
+          done

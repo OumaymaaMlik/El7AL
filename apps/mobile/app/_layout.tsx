@@ -14,12 +14,15 @@ import { NotificationToast } from '../src/features/notifications/components/Noti
 import { GlobalLoadingOverlay } from '../src/providers/GlobalLoadingOverlay';
 import { IncomingOfferModal } from '../src/features/missions/components/IncomingOfferModal';
 import { FONT_ASSETS } from '../src/shared/theme/typography';
+import { initMonitoring, withMonitoring } from '../src/services/monitoring';
 
 import { registerForPushNotificationsAsync } from '../src/features/notifications/services/pushNotifications';
 
+initMonitoring();
+
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function RootLayout() {
   const { mode, colors, loadSavedTheme } = useThemeStore();
   const loadSavedLanguage = useLanguageStore((state) => state.loadSavedLanguage);
   const loadSavedSession = useAuthStore((state) => state.loadSavedSession);
@@ -41,10 +44,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
-        <StatusBar
-          style={mode === 'dark' ? 'light' : 'dark'}
-          backgroundColor={colors.background}
-        />
+        <StatusBar style={mode === 'dark' ? 'light' : 'dark'} backgroundColor={colors.background} />
         <GlobalSocketListener />
         <ProviderLocationSharing />
         <IncomingOfferModal />
@@ -60,3 +60,5 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+export default withMonitoring(RootLayout);

@@ -28,6 +28,7 @@ import { closeSocketGateway, initSocketGateway } from './websockets/socket.gatew
 import { closeMissionQueue } from './queues/mission.queue.js';
 import { redis } from './services/redis.service.js';
 import { logger } from './utils/logger.js';
+import { flushMonitoring, initMonitoring, reportError } from './config/monitoring.js';
 
 dotenv.config();
 
@@ -152,7 +153,14 @@ export async function buildServer() {
   // Whatever fails inside a handler, the person gets a clean message, never a stack trace or an internal detail.
   app.setErrorHandler((error: FastifyError, request, reply) => {
     const status = error.statusCode && error.statusCode >= 400 ? error.statusCode : 500;
-    if (status >= 500) request.log.error({ err: error }, 'Unhandled error');
+    if (status >= 500) {
+      request.log.error({ err: error }, 'Unhandled error');
+      reportError(error, {
+        method: request.method,
+        url: request.url,
+        userId: (request.user as { userId?: string } | undefined)?.userId,
+      });
+    }
     return reply.code(status).send({
       success: false,
       error: status >= 500 ? 'Erreur interne du serveur. Réessayez dans un instant.' : error.message,
@@ -180,6 +188,7 @@ function handleShutdown(app: FastifyInstance) {
       await closeMissionQueue();
       await db.$disconnect();
       redis.disconnect();
+      await flushMonitoring();
       process.exit(0);
     } catch (err) {
       logger.error({ err }, 'Shutdown failed');
@@ -192,6 +201,7 @@ function handleShutdown(app: FastifyInstance) {
 
 async function start() {
   try {
+    initMonitoring();
     assertProductionConfig();
     const app = await buildServer();
     await app.listen({ port: PORT, host: HOST });
@@ -203,6 +213,8 @@ async function start() {
     handleShutdown(app);
   } catch (err) {
     logger.error({ err }, 'Error starting server');
+    reportError(err);
+    await flushMonitoring();
     process.exit(1);
   }
 }
