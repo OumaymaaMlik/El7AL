@@ -109,10 +109,11 @@ const styles = StyleSheet.create({
   barCurrent: {
     height: 10,
   },
+  // Plus Jakarta Sans is wider than the condensed face it replaced: five capitalised labels must fit the rail.
   label: {
-    fontSize: 12,
-    lineHeight: 16,
-    letterSpacing: 0.5,
+    fontSize: 10,
+    lineHeight: 14,
+    letterSpacing: 0.3,
   },
   labelArabic: {
     fontSize: 11,

@@ -9,7 +9,7 @@ page, the dialogs and the Administration dashboard.
 1. One green surface per screen. The brand-green hero says what is happening now and
    offers the one thing to do next.
 2. Lime is a fill, not a text colour. It marks the single primary action and live status.
-   For green text or icons use `accentText`. In a list where every row has the same
+   For green text or icons use `accentText` (brand green in light mode, mint in dark mode). In a list where every row has the same
    action (approve a transfer), use the `primary` button, not lime.
 3. Flat, bordered surfaces. Panels are separated by a 1px border, not by shadows.
    Comparable things go in one panel divided by hairlines, not in separate cards.
@@ -24,25 +24,33 @@ page, the dialogs and the Administration dashboard.
 
 | File | Contents |
 |---|---|
-| `src/theme/colors.ts` | Colour roles for dark and light, plus legacy names |
-| `src/theme/tokens.ts` | Spacing, radii, control sizes, type sizes, tab bar height, `inputReset` |
-| `src/theme/typography.ts` | Font files and the type scale (Latin and Arabic) |
-| `src/theme/useType.ts` | Hook that returns the type scale for the current language |
+| `src/shared/theme/colors.ts` | Colour roles for dark and light, plus legacy names |
+| `src/shared/theme/tokens.ts` | Spacing, radii, control sizes, type sizes, tab bar height, `inputReset` |
+| `src/shared/theme/typography.ts` | Font files and the type scale (Latin and Arabic) |
+| `src/shared/theme/useType.ts` | Hook that returns the type scale for the current language |
 
-Colour roles: `background`, `surface`, `raised`, `border`, `text`, `textSecondary`,
-`textMuted`, `brand`, `brandInset`, `onBrand`, `onBrandMuted`, `onBrandFaint`, `action`,
-`onAction`, `accentText`, `star`, `danger`, `dangerText`, `dangerSoft`, `overlay`.
+Colour roles:
+- Surfaces: `background`, `adminBackground`, `surface`, `raised`, `soft`, `softer`, `tint`, `chip`, `selected`.
+- Lines: `divider` (between rows), `border`, `borderStrong`, `overlay`, `shadow`.
+- Text: `text`, `textStrong`, `textSecondary`, `textMuted`.
+- Brand surface: `brand`, `brandInset`, `onBrand`, `onBrandMuted`, `onBrandFaint`, `onBrandLine`.
+- Brand as text and logo: `accentText`, `positive`, `logo`.
+- Actions: `action`, `onAction` (lime fill), `pill`, `onPill` (inverted button).
+- Status: `star`, `danger`, `dangerText`, `dangerSoft`.
+
+The values come from the El 7al mobile redesign (light and dark are one token set). Legacy names
+at the bottom of each palette map onto these roles until every screen has moved over.
 
 Spacing: 4, 8, 12, 16, 20, 24, 32. Page margin: 20.
 Radii: 8 (tags, chips), 14 (controls, panels), 24 (hero, sheets).
-Type sizes: 12, 14, 16 (IBM Plex Sans) and 22, 34, 44 (Barlow Condensed).
+Type sizes: 12, 14, 16 for text and 22, 34, 44 for headings (all Plus Jakarta Sans in French and English).
 Touch targets: 44 minimum. Controls: 52 high.
 
 ## Typography
 
-- Barlow Condensed: headings, numerals, status labels.
-- IBM Plex Sans: everything people read or tap.
-- IBM Plex Sans Arabic: both roles when the language is Arabic.
+- Plus Jakarta Sans (400 to 800): every role in French and English. Titles, numerals and the wordmark use ExtraBold with a tight negative letter spacing.
+- IBM Plex Sans Arabic: every role when the language is Arabic, because Plus Jakarta Sans has no Arabic letters.
+- Plus Jakarta Sans is wider than the condensed face used before: capitalised labels in tight rows (like the mission rail) must be tested at their real width, because `adjustsFontSizeToFit` does nothing on the web.
 
 Use `<Txt variant="...">` instead of `<Text>`. Do not set `fontWeight` next to these
 families: each weight is its own font file. Write labels in sentence case

@@ -6,112 +6,152 @@
  * been migrated yet keep working. They map onto the same palette.
  *
  * Rules of use:
- *  - `brand` is the one deep-green surface per screen (hero panels).
- *  - `action` (lime) is a FILL for the single primary action and for live status. It is
- *    never used as text on a light background. For green text or icons use `accentText`,
- *    which is lime in dark mode and brand green in light mode.
+ *  - `brand` is the deep-green surface of hero panels and primary buttons (same in both themes).
+ *  - `accentText` is brand green as TEXT or an icon: brand green in light mode, mint in dark mode.
+ *  - `action` (lime) is a FILL for live status and the logo in dark mode. It is never text on a light background.
+ *  - `pill` / `onPill` is the inverted button (near-black in light mode, near-white in dark mode).
  *  - Every text/background pair below passes WCAG AA (4.5:1) for body text.
  */
 export const DarkColors = {
   // Surfaces
-  background: '#0B1410',
-  surface: '#131E18',
-  raised: '#1B2921',
-  border: '#26362D',
-  overlay: 'rgba(4, 9, 7, 0.72)',
+  background: '#0B120F',
+  adminBackground: '#0B120F',
+  surface: '#131D18',
+  raised: '#1C2A23',
+  soft: '#18241E',
+  softer: '#0F1814',
+  tint: '#1C2A23',
+  chip: '#1E3A2A',
+  selected: '#1D2E22',
+
+  // Lines
+  divider: '#22302A',
+  border: '#2B3B33',
+  borderStrong: '#3A4C42',
+  overlay: 'rgba(0, 0, 0, 0.66)',
+  shadow: 'rgba(0, 0, 0, 0.4)',
 
   // Text
-  text: '#F2F6F2',
-  textSecondary: '#B4C2B8',
-  textMuted: '#8FA094',
+  text: '#EEF3EC',
+  textStrong: '#D6DED4',
+  textSecondary: '#C3CEC1',
+  textMuted: '#A3B0A2',
 
   // Brand surface (same in both themes)
-  brand: '#0D5C3A',
-  brandInset: '#084229',
+  brand: '#0F5C3A',
+  brandInset: '#0B4A2E',
   onBrand: '#FFFFFF',
-  onBrandMuted: '#CFE6D8',
+  onBrandMuted: '#D5E7DB',
   onBrandFaint: '#B9D4C6',
   onBrandLine: 'rgba(255, 255, 255, 0.18)',
+
+  // Brand as text, icons and the logo
+  accentText: '#86D9A6',
+  positive: '#5ED39A',
+  logo: '#A3E635',
 
   // Primary action / live status
   action: '#A3E635',
   onAction: '#052E16',
-  accentText: '#A3E635',
+
+  // Inverted button
+  pill: '#EEF3EC',
+  onPill: '#10140F',
 
   // Status
   star: '#F2B544',
   danger: '#EF4444',
-  dangerText: '#FF8A80',
+  dangerText: '#F28B8B',
   dangerSoft: 'rgba(239, 68, 68, 0.16)',
 
   // Legacy names (screens not yet migrated)
-  surfaceBorder: '#26362D',
-  card: '#131E18',
-  cardBorder: '#26362D',
-  muted: '#1B2921',
-  mutedForeground: '#8FA094',
-  primary: '#0D5C3A',
+  surfaceBorder: '#2B3B33',
+  card: '#131D18',
+  cardBorder: '#2B3B33',
+  muted: '#1C2A23',
+  mutedForeground: '#A3B0A2',
+  primary: '#0F5C3A',
   primaryForeground: '#FFFFFF',
-  secondary: '#1B2921',
-  secondaryForeground: '#F2F6F2',
+  secondary: '#1C2A23',
+  secondaryForeground: '#EEF3EC',
   accent: '#A3E635',
-  accentStrong: '#A3E635',
+  accentStrong: '#86D9A6',
   accentForeground: '#052E16',
   destructive: '#EF4444',
   destructiveForeground: '#FFFFFF',
   warning: '#F2B544',
   warningForeground: '#451A03',
   info: '#60A5FA',
-  inputBg: '#131E18',
-  inputBorder: '#3A4D42',
+  inputBg: '#131D18',
+  inputBorder: '#3A4C42',
   inputFocusBorder: '#A3E635',
-  glassBg: '#131E18',
+  glassBg: '#131D18',
 };
 
 export const LightColors: typeof DarkColors = {
   // Surfaces
-  background: '#F4F6F4',
+  background: '#F2F4EE',
+  adminBackground: '#E9EDE6',
   surface: '#FFFFFF',
-  raised: '#E9EEEA',
-  border: '#D3DCD5',
-  overlay: 'rgba(15, 26, 20, 0.5)',
+  raised: '#E4EADF',
+  soft: '#EEF2EA',
+  softer: '#F7F9F4',
+  tint: '#E4EADF',
+  chip: '#D7EEDF',
+  selected: '#F1F8E6',
+
+  // Lines
+  divider: '#E1E6DC',
+  border: '#DCE2D6',
+  borderStrong: '#CBD3C5',
+  overlay: 'rgba(16, 20, 15, 0.5)',
+  shadow: 'rgba(16, 20, 15, 0.12)',
 
   // Text
-  text: '#0F1A14',
-  textSecondary: '#3D4B43',
-  textMuted: '#56665C',
+  text: '#10140F',
+  textStrong: '#2A3328',
+  textSecondary: '#3B463A',
+  textMuted: '#556052',
 
   // Brand surface
-  brand: '#0D5C3A',
-  brandInset: '#084229',
+  brand: '#0F5C3A',
+  brandInset: '#0B4A2E',
   onBrand: '#FFFFFF',
-  onBrandMuted: '#CFE6D8',
+  onBrandMuted: '#D5E7DB',
   onBrandFaint: '#B9D4C6',
   onBrandLine: 'rgba(255, 255, 255, 0.18)',
+
+  // Brand as text, icons and the logo
+  accentText: '#0F5C3A',
+  positive: '#08744E',
+  logo: '#0F5C3A',
 
   // Primary action / live status
   action: '#A3E635',
   onAction: '#052E16',
-  accentText: '#0D5C3A',
+
+  // Inverted button
+  pill: '#10140F',
+  onPill: '#FFFFFF',
 
   // Status
   star: '#D97706',
   danger: '#DC2626',
-  dangerText: '#B42318',
+  dangerText: '#B4232A',
   dangerSoft: 'rgba(220, 38, 38, 0.1)',
 
   // Legacy names (screens not yet migrated)
-  surfaceBorder: '#D3DCD5',
+  surfaceBorder: '#DCE2D6',
   card: '#FFFFFF',
-  cardBorder: '#D3DCD5',
-  muted: '#E9EEEA',
-  mutedForeground: '#56665C',
-  primary: '#0D5C3A',
+  cardBorder: '#DCE2D6',
+  muted: '#E4EADF',
+  mutedForeground: '#556052',
+  primary: '#0F5C3A',
   primaryForeground: '#FFFFFF',
-  secondary: '#E9EEEA',
-  secondaryForeground: '#0F1A14',
+  secondary: '#E4EADF',
+  secondaryForeground: '#10140F',
   accent: '#A3E635',
-  accentStrong: '#0D5C3A',
+  accentStrong: '#0F5C3A',
   accentForeground: '#052E16',
   destructive: '#DC2626',
   destructiveForeground: '#FFFFFF',
@@ -120,7 +160,7 @@ export const LightColors: typeof DarkColors = {
   info: '#2563EB',
   inputBg: '#FFFFFF',
   inputBorder: '#B8C4BB',
-  inputFocusBorder: '#0D5C3A',
+  inputFocusBorder: '#0F5C3A',
   glassBg: '#FFFFFF',
 };
 

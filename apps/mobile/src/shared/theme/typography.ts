@@ -1,21 +1,19 @@
 /**
  * El 7al design tokens: typography.
  *
- * Two families:
- *  - Barlow Condensed for headings, numerals and status labels (the "signage" voice).
- *  - IBM Plex Sans for everything people read or tap.
- * Arabic uses IBM Plex Sans Arabic for both roles, so French and Arabic look like one product.
+ * Latin (French, English): Plus Jakarta Sans, from ExtraBold for titles and numerals down to Regular for text.
+ * Arabic: IBM Plex Sans Arabic for every role, because Plus Jakarta Sans has no Arabic letters.
  *
  * Each weight is its own font file, so styles set `fontFamily` only. Do not add
  * `fontWeight` next to these families: the weight is already in the file, and an
  * extra `fontWeight` makes the platform synthesise a second, heavier bold on top.
  */
 import { TextStyle } from 'react-native';
-import { BarlowCondensed_600SemiBold } from '@expo-google-fonts/barlow-condensed/600SemiBold';
-import { BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed/700Bold';
-import { IBMPlexSans_400Regular } from '@expo-google-fonts/ibm-plex-sans/400Regular';
-import { IBMPlexSans_500Medium } from '@expo-google-fonts/ibm-plex-sans/500Medium';
-import { IBMPlexSans_600SemiBold } from '@expo-google-fonts/ibm-plex-sans/600SemiBold';
+import { PlusJakartaSans_400Regular } from '@expo-google-fonts/plus-jakarta-sans/400Regular';
+import { PlusJakartaSans_500Medium } from '@expo-google-fonts/plus-jakarta-sans/500Medium';
+import { PlusJakartaSans_600SemiBold } from '@expo-google-fonts/plus-jakarta-sans/600SemiBold';
+import { PlusJakartaSans_700Bold } from '@expo-google-fonts/plus-jakarta-sans/700Bold';
+import { PlusJakartaSans_800ExtraBold } from '@expo-google-fonts/plus-jakarta-sans/800ExtraBold';
 import { IBMPlexSansArabic_400Regular } from '@expo-google-fonts/ibm-plex-sans-arabic/400Regular';
 import { IBMPlexSansArabic_500Medium } from '@expo-google-fonts/ibm-plex-sans-arabic/500Medium';
 import { IBMPlexSansArabic_600SemiBold } from '@expo-google-fonts/ibm-plex-sans-arabic/600SemiBold';
@@ -23,11 +21,11 @@ import { fontSize } from './tokens';
 
 /** Passed to `useFonts` once, in the root layout. */
 export const FONT_ASSETS = {
-  BarlowCondensed_600SemiBold,
-  BarlowCondensed_700Bold,
-  IBMPlexSans_400Regular,
-  IBMPlexSans_500Medium,
-  IBMPlexSans_600SemiBold,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
   IBMPlexSansArabic_400Regular,
   IBMPlexSansArabic_500Medium,
   IBMPlexSansArabic_600SemiBold,
@@ -50,28 +48,37 @@ export type TextVariant =
 export type TypeScale = Record<TextVariant, TextStyle>;
 
 const latin: TypeScale = {
-  display: { fontFamily: 'BarlowCondensed_600SemiBold', fontSize: fontSize.display, lineHeight: 46 },
-  title: { fontFamily: 'BarlowCondensed_600SemiBold', fontSize: fontSize.title, lineHeight: 36 },
-  heading: { fontFamily: 'BarlowCondensed_600SemiBold', fontSize: fontSize.heading, lineHeight: 26 },
+  display: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: fontSize.display,
+    lineHeight: 48,
+    letterSpacing: -1.6,
+  },
+  title: { fontFamily: 'PlusJakartaSans_800ExtraBold', fontSize: fontSize.title, lineHeight: 38, letterSpacing: -1.4 },
+  heading: {
+    fontFamily: 'PlusJakartaSans_800ExtraBold',
+    fontSize: fontSize.heading,
+    lineHeight: 28,
+    letterSpacing: -0.6,
+  },
   overline: {
-    fontFamily: 'BarlowCondensed_600SemiBold',
-    fontSize: fontSize.small,
-    lineHeight: 18,
-    letterSpacing: 1.1,
+    fontFamily: 'PlusJakartaSans_700Bold',
+    fontSize: fontSize.caption,
+    lineHeight: 16,
+    letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
-  body: { fontFamily: 'IBMPlexSans_400Regular', fontSize: fontSize.body, lineHeight: 22 },
-  bodyMedium: { fontFamily: 'IBMPlexSans_500Medium', fontSize: fontSize.body, lineHeight: 22 },
-  bodyStrong: { fontFamily: 'IBMPlexSans_600SemiBold', fontSize: fontSize.body, lineHeight: 22 },
-  small: { fontFamily: 'IBMPlexSans_400Regular', fontSize: fontSize.small, lineHeight: 20 },
-  smallStrong: { fontFamily: 'IBMPlexSans_500Medium', fontSize: fontSize.small, lineHeight: 20 },
-  caption: { fontFamily: 'IBMPlexSans_400Regular', fontSize: fontSize.caption, lineHeight: 16 },
-  captionStrong: { fontFamily: 'IBMPlexSans_500Medium', fontSize: fontSize.caption, lineHeight: 16 },
-  button: { fontFamily: 'IBMPlexSans_600SemiBold', fontSize: fontSize.body, lineHeight: 22 },
+  body: { fontFamily: 'PlusJakartaSans_400Regular', fontSize: fontSize.body, lineHeight: 24 },
+  bodyMedium: { fontFamily: 'PlusJakartaSans_500Medium', fontSize: fontSize.body, lineHeight: 24 },
+  bodyStrong: { fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: fontSize.body, lineHeight: 24 },
+  small: { fontFamily: 'PlusJakartaSans_400Regular', fontSize: fontSize.small, lineHeight: 21 },
+  smallStrong: { fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: fontSize.small, lineHeight: 21 },
+  caption: { fontFamily: 'PlusJakartaSans_400Regular', fontSize: fontSize.caption, lineHeight: 17 },
+  captionStrong: { fontFamily: 'PlusJakartaSans_600SemiBold', fontSize: fontSize.caption, lineHeight: 17 },
+  button: { fontFamily: 'PlusJakartaSans_700Bold', fontSize: fontSize.body, lineHeight: 22 },
 };
 
-// Arabic: no condensed face and no letter-spacing (it breaks joined letters).
-// Display sizes are reduced because Plex Arabic is wider than Barlow Condensed.
+// Arabic: no letter-spacing (it breaks joined letters). Display sizes are reduced because Plex Arabic is wide.
 const arabic: TypeScale = {
   display: { fontFamily: 'IBMPlexSansArabic_600SemiBold', fontSize: 34, lineHeight: 46 },
   title: { fontFamily: 'IBMPlexSansArabic_600SemiBold', fontSize: 26, lineHeight: 38 },
@@ -92,5 +99,5 @@ export function getTypeScale(language: string): TypeScale {
 }
 
 /** Family for the brand wordmark and large numerals, which are always Latin. */
-export const numeralFont = 'BarlowCondensed_600SemiBold';
-export const wordmarkFont = 'BarlowCondensed_700Bold';
+export const numeralFont = 'PlusJakartaSans_800ExtraBold';
+export const wordmarkFont = 'PlusJakartaSans_800ExtraBold';
