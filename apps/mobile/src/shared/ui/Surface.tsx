@@ -16,9 +16,9 @@ export function Surface({ style, children, ...rest }: ViewProps) {
       style={[
         {
           backgroundColor: colors.surface,
-          borderColor: colors.border,
+          borderColor: colors.divider,
           borderWidth: 1,
-          borderRadius: radius.md,
+          borderRadius: radius.lg,
           overflow: 'hidden',
         },
         style,
@@ -32,5 +32,5 @@ export function Surface({ style, children, ...rest }: ViewProps) {
 /** A 1px divider between rows inside a Surface. */
 export function Hairline({ style, ...rest }: ViewProps) {
   const colors = useThemeStore((state) => state.colors);
-  return <View {...rest} style={[{ height: 1, backgroundColor: colors.border }, style]} />;
+  return <View {...rest} style={[{ height: 1, backgroundColor: colors.divider }, style]} />;
 }

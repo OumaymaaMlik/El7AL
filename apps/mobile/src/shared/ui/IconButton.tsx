@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   button: {
     width: hitTarget,
     height: hitTarget,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     justifyContent: 'center',
     alignItems: 'center',
   },

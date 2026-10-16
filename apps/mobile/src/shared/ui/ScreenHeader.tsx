@@ -42,7 +42,7 @@ export function ScreenHeader({ title, subtitle, onBack, trailing }: ScreenHeader
           {title}
         </Txt>
         {Boolean(subtitle) && (
-          <Txt variant="caption" color={colors.textMuted} numberOfLines={1}>
+          <Txt variant="small" color={colors.textMuted} numberOfLines={1}>
             {subtitle}
           </Txt>
         )}

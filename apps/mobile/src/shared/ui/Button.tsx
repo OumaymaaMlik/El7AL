@@ -2,14 +2,14 @@ import React from 'react';
 import { Pressable, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, StyleProp } from 'react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { useType } from '../theme/useType';
-import { controlHeight, radius, space } from '../theme/tokens';
+import { buttonHeight, radius, space } from '../theme/tokens';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
   /**
    * accent: the single primary action of a screen (lime).
-   * primary: brand green. secondary: quiet filled. outline: bordered. destructive: red.
+   * primary: brand green. secondary: quiet filled. outline: ink border. destructive: deep red.
    */
   variant?: 'primary' | 'accent' | 'secondary' | 'outline' | 'destructive';
   loading?: boolean;
@@ -45,11 +45,11 @@ export function Button({
         return { button: { backgroundColor: colors.raised }, text: { color: colors.text } };
       case 'outline':
         return {
-          button: { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.border },
+          button: { backgroundColor: 'transparent', borderWidth: 1.5, borderColor: colors.text },
           text: { color: colors.text },
         };
       case 'destructive':
-        return { button: { backgroundColor: colors.danger }, text: { color: '#FFFFFF' } };
+        return { button: { backgroundColor: colors.dangerFill }, text: { color: colors.onBrand } };
       case 'accent':
       default:
         return { button: { backgroundColor: colors.action }, text: { color: colors.onAction } };
@@ -96,8 +96,8 @@ export function Button({
 
 const styles = StyleSheet.create({
   button: {
-    height: controlHeight,
-    borderRadius: radius.md,
+    height: buttonHeight,
+    borderRadius: radius.full,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -28,13 +28,13 @@ export function Avatar({ uri, name, size = 72, failed = false, onError, tint }: 
     <View
       style={[
         styles.avatar,
-        { width: size, height: size, borderRadius: size / 2, backgroundColor: tint?.background ?? colors.raised },
+        { width: size, height: size, borderRadius: size / 2, backgroundColor: tint?.background ?? colors.brand },
       ]}
     >
       {showImage ? (
         <Image source={{ uri: uri as string }} style={styles.image} onError={handleError} />
       ) : (
-        <Text style={[styles.text, { color: tint?.color ?? colors.text, fontSize: size * 0.39 }]}>
+        <Text style={[styles.text, { color: tint?.color ?? colors.onBrand, fontSize: size * 0.39 }]}>
           {initialsOf(name)}
         </Text>
       )}

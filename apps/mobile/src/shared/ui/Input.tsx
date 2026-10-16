@@ -40,17 +40,22 @@ export function Input({
   const { t } = useTranslation();
   const type = useType();
 
-  const borderColor = error ? colors.danger : isFocused ? colors.accentText : colors.inputBorder;
+  const readOnly = props.editable === false;
+  const borderColor = error ? colors.dangerText : isFocused ? colors.accentText : colors.inputBorder;
 
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {Boolean(label) && (
-        <Txt variant="captionStrong" color={colors.textSecondary}>
+        <Txt variant="smallStrong" color={colors.text}>
           {label}
         </Txt>
       )}
       <View
-        style={[styles.field, multiline && styles.fieldMultiline, { backgroundColor: colors.surface, borderColor }]}
+        style={[
+          styles.field,
+          multiline && styles.fieldMultiline,
+          { backgroundColor: readOnly ? colors.background : colors.surface, borderColor },
+        ]}
       >
         {icon && <View style={multiline && styles.iconTop}>{icon}</View>}
         <TextInput
@@ -60,7 +65,7 @@ export function Input({
             styles.input,
             inputReset,
             multiline && styles.inputMultiline,
-            { color: colors.text },
+            { color: readOnly ? colors.textSecondary : colors.text },
             style,
           ]}
           placeholderTextColor={colors.textMuted}
@@ -102,7 +107,7 @@ export function Input({
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: space.sm,
+    gap: 6,
   },
   field: {
     minHeight: controlHeight,

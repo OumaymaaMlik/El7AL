@@ -12,7 +12,7 @@ interface ToggleProps {
   disabled?: boolean;
 }
 
-const TRACK_W = 50;
+const TRACK_W = 52;
 const TRACK_H = 30;
 const THUMB = 24;
 const TRAVEL = TRACK_W - THUMB - 6;
@@ -30,7 +30,7 @@ export function Toggle({ value, onValueChange, accessibilityLabel, onBrand = fal
     Animated.timing(progress, { toValue: value ? 1 : 0, duration: 160, useNativeDriver: false }).start();
   }, [value, progress]);
 
-  const offTrack = onBrand ? 'rgba(255, 255, 255, 0.3)' : colors.inputBorder;
+  const offTrack = onBrand ? 'rgba(255, 255, 255, 0.3)' : colors.borderStrong;
   const onTrack = onBrand ? colors.action : colors.brand;
 
   if (Platform.OS !== 'web') {
@@ -60,6 +60,7 @@ export function Toggle({ value, onValueChange, accessibilityLabel, onBrand = fal
       <Animated.View
         style={[
           styles.thumb,
+          { backgroundColor: onBrand ? '#FFFFFF' : colors.surface },
           {
             transform: [
               { translateX: progress.interpolate({ inputRange: [0, 1], outputRange: [0, isRTL ? -TRAVEL : TRAVEL] }) },

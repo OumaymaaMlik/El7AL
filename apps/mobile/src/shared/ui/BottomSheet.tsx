@@ -4,7 +4,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { useTranslation } from '../store/useLanguageStore';
-import { Shadows } from '../theme/colors';
 import { radius, space } from '../theme/tokens';
 import { IconButton } from './IconButton';
 import { Txt } from './Txt';
@@ -61,16 +60,15 @@ export function BottomSheet({ visible, onClose, title, subtitle, headerAction, c
               styles.sheet,
               {
                 backgroundColor: colors.surface,
-                borderColor: colors.border,
                 paddingBottom: Math.max(insets.bottom, space.lg) + space.sm,
               },
             ]}
           >
-            <View style={[styles.handle, { backgroundColor: colors.border }]} />
+            <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
 
             <View style={styles.header}>
               <View style={styles.headerText}>
-                <Txt variant="heading" accessibilityRole="header">
+                <Txt variant="title" accessibilityRole="header" style={styles.title}>
                   {title}
                 </Txt>
                 {Boolean(subtitle) && (
@@ -80,11 +78,7 @@ export function BottomSheet({ visible, onClose, title, subtitle, headerAction, c
                 )}
               </View>
               {headerAction}
-              <IconButton
-                accessibilityLabel={t('close')}
-                onPress={onClose}
-                style={{ backgroundColor: colors.raised, borderWidth: 0 }}
-              >
+              <IconButton accessibilityLabel={t('close')} onPress={onClose}>
                 <X size={18} color={colors.text} />
               </IconButton>
             </View>
@@ -103,18 +97,15 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    borderWidth: 1,
-    borderBottomWidth: 0,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     paddingHorizontal: space.xl,
     paddingTop: space.md,
-    ...Shadows.soft,
   },
   handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
+    width: 44,
+    height: 5,
+    borderRadius: 3,
     alignSelf: 'center',
     marginBottom: space.md,
   },
@@ -127,5 +118,11 @@ const styles = StyleSheet.create({
   headerText: {
     flex: 1,
     gap: 2,
+  },
+  // Sheet titles are one step below a page title.
+  title: {
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -1,
   },
 });

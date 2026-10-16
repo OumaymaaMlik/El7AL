@@ -1,9 +1,9 @@
 import React from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { useTranslation } from '../store/useLanguageStore';
-import { Shadows } from '../theme/colors';
 import { radius, space } from '../theme/tokens';
 import { IconButton } from './IconButton';
 import { Txt } from './Txt';
@@ -22,12 +22,13 @@ interface DialogProps {
 }
 
 /**
- * The one centred dialog for the app: an opaque panel over a dimmed page.
+ * The one dialog for the app: an opaque panel that rises from the bottom over a dimmed page.
  * Use it for a decision or a short task. For a list or a form, use `BottomSheet`.
  */
 export function Dialog({ visible, onClose, title, subtitle, icon, tone = 'default', children }: DialogProps) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
@@ -45,8 +46,12 @@ export function Dialog({ visible, onClose, title, subtitle, icon, tone = 'defaul
         )}
         <View
           accessibilityViewIsModal
-          style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          style={[
+            styles.panel,
+            { backgroundColor: colors.surface, paddingBottom: Math.max(insets.bottom, space.lg) + space.sm },
+          ]}
         >
+          <View style={[styles.handle, { backgroundColor: colors.borderStrong }]} />
           {(icon || onClose) && (
             <View style={styles.top}>
               {icon ? (
@@ -59,11 +64,7 @@ export function Dialog({ visible, onClose, title, subtitle, icon, tone = 'defaul
                 <View />
               )}
               {onClose && (
-                <IconButton
-                  accessibilityLabel={t('close')}
-                  onPress={onClose}
-                  style={{ backgroundColor: colors.raised, borderWidth: 0 }}
-                >
+                <IconButton accessibilityLabel={t('close')} onPress={onClose}>
                   <X size={18} color={colors.text} />
                 </IconButton>
               )}
@@ -71,11 +72,11 @@ export function Dialog({ visible, onClose, title, subtitle, icon, tone = 'defaul
           )}
 
           <View style={styles.text}>
-            <Txt variant="heading" accessibilityRole="header">
+            <Txt variant="title" accessibilityRole="header" style={styles.title}>
               {title}
             </Txt>
             {Boolean(subtitle) && (
-              <Txt variant="small" color={colors.textSecondary}>
+              <Txt variant="body" color={colors.textMuted}>
                 {subtitle}
               </Txt>
             )}
@@ -96,15 +97,20 @@ export function DialogActions({ children }: { children: React.ReactNode }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    justifyContent: 'center',
-    padding: space.xl,
+    justifyContent: 'flex-end',
   },
   panel: {
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    padding: space.xl,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: space.xl,
+    paddingTop: space.md,
     gap: space.lg,
-    ...Shadows.soft,
+  },
+  handle: {
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    alignSelf: 'center',
   },
   top: {
     flexDirection: 'row',
@@ -113,16 +119,22 @@ const styles = StyleSheet.create({
     minHeight: 0,
   },
   iconBadge: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
   },
   text: {
-    gap: space.xs,
+    gap: space.sm,
+  },
+  // Dialog titles are one step below a page title.
+  title: {
+    fontSize: 26,
+    lineHeight: 30,
+    letterSpacing: -0.9,
   },
   actions: {
-    gap: space.sm,
+    gap: 10,
   },
 });

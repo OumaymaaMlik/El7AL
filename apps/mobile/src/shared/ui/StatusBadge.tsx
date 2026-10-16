@@ -21,7 +21,7 @@ export function StatusBadge({ label, tone = 'neutral', icon = 'auto' }: StatusBa
   const colors = useThemeStore((state) => state.colors);
 
   const color = tone === 'success' ? colors.accentText : tone === 'danger' ? colors.dangerText : colors.textSecondary;
-  const background = tone === 'danger' ? colors.dangerSoft : colors.raised;
+  const background = tone === 'danger' ? colors.dangerSoft : tone === 'success' ? colors.chip : colors.raised;
   const Icon = tone === 'success' ? Check : tone === 'danger' ? X : Clock;
 
   return (
@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 4,
     alignSelf: 'flex-start',
-    borderRadius: radius.sm,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
 });

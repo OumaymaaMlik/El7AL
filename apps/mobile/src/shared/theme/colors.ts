@@ -63,6 +63,8 @@ export const DarkColors = {
   danger: '#EF4444',
   dangerText: '#F28B8B',
   dangerSoft: 'rgba(239, 68, 68, 0.16)',
+  /** Fill of destructive buttons (white text on it passes AA in both themes). */
+  dangerFill: '#B4232A',
 
   // Legacy names (screens not yet migrated)
   surfaceBorder: '#2B3B33',
@@ -139,6 +141,7 @@ export const LightColors: typeof DarkColors = {
   danger: '#DC2626',
   dangerText: '#B4232A',
   dangerSoft: 'rgba(220, 38, 38, 0.1)',
+  dangerFill: '#B4232A',
 
   // Legacy names (screens not yet migrated)
   surfaceBorder: '#DCE2D6',

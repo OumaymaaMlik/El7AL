@@ -29,8 +29,10 @@ export const radius = {
   sm: 8,
   /** Controls, cards, list panels */
   md: 14,
-  /** Hero panels and bottom sheets */
+  /** Cards, list panels and hero panels */
   lg: 24,
+  /** Bottom sheets (top corners) */
+  xl: 28,
   /** Circles (avatars, dots, switches) */
   full: 999,
 } as const;
@@ -38,8 +40,11 @@ export const radius = {
 /** Minimum touch target on both platforms. */
 export const hitTarget = 44;
 
-/** Standard control height (buttons, inputs). */
+/** Standard control height (inputs, secondary buttons). */
 export const controlHeight = 52;
+
+/** Height of the pill buttons. */
+export const buttonHeight = 54;
 
 /** Height of the bottom tab bar above the device's bottom inset. */
 export const tabBarHeight = 64;

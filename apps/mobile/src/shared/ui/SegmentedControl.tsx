@@ -15,13 +15,10 @@ interface SegmentedControlProps<T extends string> {
 export function SegmentedControl<T extends string>({ options, value, onChange, style }: SegmentedControlProps<T>) {
   const colors = useThemeStore((state) => state.colors);
   return (
-    <View
-      accessibilityRole="radiogroup"
-      style={[styles.track, { backgroundColor: colors.raised, borderColor: colors.border }, style]}
-    >
+    <View accessibilityRole="radiogroup" style={[styles.track, { backgroundColor: colors.tint }, style]}>
       {options.map((option) => {
         const selected = option.key === value;
-        const color = selected ? colors.onBrand : colors.textSecondary;
+        const color = selected ? colors.onBrand : colors.text;
         return (
           <Pressable
             key={option.key}
@@ -44,10 +41,9 @@ export function SegmentedControl<T extends string>({ options, value, onChange, s
 const styles = StyleSheet.create({
   track: {
     flexDirection: 'row',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    padding: 3,
-    gap: 3,
+    borderRadius: radius.full,
+    padding: 4,
+    gap: 4,
   },
   segment: {
     flex: 1,
@@ -56,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
-    borderRadius: radius.md - 3,
+    borderRadius: radius.full,
     paddingHorizontal: 8,
   },
 });

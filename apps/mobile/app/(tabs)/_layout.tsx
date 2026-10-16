@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Navigation, MessageCircle } from 'lucide-react-native';
@@ -27,22 +27,55 @@ const NavAvatar = ({ focused, avatarUrl, colors, initials }: NavAvatarProps) => 
       style={[
         styles.navAvatarBox,
         {
-          backgroundColor: colors.raised,
+          backgroundColor: colors.brand,
           borderColor: focused ? colors.accentText : 'transparent',
         },
       ]}
     >
       {avatarUrl && !failed ? (
-        <Image 
-          source={{ uri: avatarUrl }} 
-          style={styles.navAvatarImage} 
-          onError={() => setFailed(true)}
-        />
+        <Image source={{ uri: avatarUrl }} style={styles.navAvatarImage} onError={() => setFailed(true)} />
       ) : (
-        <Text style={[styles.navAvatarText, { color: colors.text }]}>{initials}</Text>
+        <Text style={[styles.navAvatarText, { color: colors.onBrand }]}>{initials}</Text>
       )}
     </View>
   );
+};
+
+const TAB_ITEM = { marginHorizontal: 3, marginBottom: 2 } as const;
+
+/** A tab button whose current tab is drawn on a pill (the navigation library cannot round that highlight). */
+function TabButton({
+  style,
+  children,
+  onPress,
+  onLongPress,
+  accessibilityLabel,
+  testID,
+  'aria-selected': ariaSelected,
+}: TabButtonProps) {
+  const colors = useThemeStore((state) => state.colors);
+  const selected = Boolean(ariaSelected);
+  return (
+    <Pressable
+      accessibilityRole="tab"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel}
+      testID={testID}
+      onPress={onPress as PressableProps['onPress']}
+      onLongPress={onLongPress as PressableProps['onLongPress']}
+      style={[style, styles.tabButton, { backgroundColor: selected ? colors.tint : 'transparent' }]}
+    >
+      {children}
+    </Pressable>
+  );
+}
+
+// The navigator passes more props than a plain Pressable needs; these are the ones the button uses.
+type TabButtonProps = Pick<PressableProps, 'onLongPress' | 'accessibilityLabel' | 'testID'> & {
+  'aria-selected'?: boolean;
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  onPress?: unknown;
 };
 
 export default function TabsLayout() {
@@ -83,16 +116,20 @@ export default function TabsLayout() {
           borderTopColor: colors.border,
           height: tabBarHeight + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: 6,
+          paddingTop: 8,
+          paddingHorizontal: 8,
           elevation: 0,
           shadowOpacity: 0,
         },
+        // The current tab sits on a pill, as in the redesign.
+        tabBarButton: (props) => <TabButton {...props} />,
+        tabBarItemStyle: TAB_ITEM,
         tabBarActiveTintColor: colors.accentText,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
           fontFamily: type.captionStrong.fontFamily,
-          fontSize: 12,
-          lineHeight: 16,
+          fontSize: 11,
+          lineHeight: 15,
         },
       }}
     >
@@ -109,6 +146,7 @@ export default function TabsLayout() {
           title: t('suivi'),
           href: hasActiveIntervention ? '/(tabs)/tracking' : null,
           tabBarItemStyle: {
+            ...TAB_ITEM,
             display: hasActiveIntervention ? 'flex' : 'none',
           },
           tabBarIcon: ({ color, focused }) => <Navigation size={22} color={color} strokeWidth={focused ? 2.4 : 2} />,
@@ -120,8 +158,8 @@ export default function TabsLayout() {
           title: t('messages') || t('chat') || 'Messages',
           tabBarBadge: totalUnreadCount > 0 ? (totalUnreadCount > 99 ? '99+' : totalUnreadCount) : undefined,
           tabBarBadgeStyle: {
-            backgroundColor: '#DC2626',
-            color: '#FFFFFF',
+            backgroundColor: colors.action,
+            color: colors.onAction,
             fontSize: 10,
             fontFamily: numeralFont,
             fontWeight: '700',
@@ -139,7 +177,12 @@ export default function TabsLayout() {
         options={{
           title: t('profil') || 'Profil',
           tabBarIcon: ({ focused }) => (
-            <NavAvatar focused={focused} avatarUrl={typeof user?.avatarUrl === 'string' ? user.avatarUrl : null} colors={colors} initials={initials} />
+            <NavAvatar
+              focused={focused}
+              avatarUrl={typeof user?.avatarUrl === 'string' ? user.avatarUrl : null}
+              colors={colors}
+              initials={initials}
+            />
           ),
         }}
       />
@@ -148,6 +191,9 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  tabButton: {
+    borderRadius: 999,
+  },
   navAvatarBox: {
     width: 26,
     height: 26,
