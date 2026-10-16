@@ -1,18 +1,20 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useLocalSearchParams } from 'expo-router';
 import { ArrowLeft, ArrowRight, User, Wrench } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { Mirrored } from '../../../shared/ui/Mirrored';
-import { ScreenHeader } from '../../../shared/ui/ScreenHeader';
 import { SegmentedControl } from '../../../shared/ui/SegmentedControl';
+import { Hairline, Surface } from '../../../shared/ui/Surface';
 import { Txt } from '../../../shared/ui/Txt';
-import { gutter, hitTarget, space } from '../../../shared/theme/tokens';
+import { hitTarget, space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { AddressMapSheet } from '../../map/components/AddressMapSheet';
+import { AuthBackLink } from '../components/AuthBackLink';
 import { AuthErrorBanner } from '../components/AuthErrorBanner';
+import { AuthHero } from '../components/AuthHero';
+import { AuthLayout } from '../components/AuthLayout';
 import { DocumentsStep } from '../components/DocumentsStep';
 import { IdentityStep } from '../components/IdentityStep';
 import { OtpVerificationSheet } from '../components/OtpVerificationSheet';
@@ -32,29 +34,43 @@ export function RegisterScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title={t('createAccountTitle')} onBack={goBack} trailing={null} />
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        enableOnAndroid={true}
-        extraScrollHeight={100}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Txt variant="small" color={colors.textSecondary}>
-          {t('registerIntro')}
-        </Txt>
+    <AuthLayout>
+      <AuthBackLink label={t('backToWelcome')} onPress={goBack} />
+      <AuthHero compact title={t('registerHeroTitle')} text={t('registerHeroText')} />
 
-        <SegmentedControl<RegisterRole>
-          value={form.role}
-          onChange={form.changeRole}
-          options={[
-            { key: 'CLIENT', label: t('iAmClient'), icon: (color) => <User size={16} color={color} /> },
-            { key: 'PROVIDER', label: t('iAmArtisan'), icon: (color) => <Wrench size={16} color={color} /> },
-          ]}
-        />
+      <SegmentedControl<RegisterRole>
+        value={form.role}
+        onChange={form.changeRole}
+        options={[
+          { key: 'CLIENT', label: t('iAmClient'), icon: (color) => <User size={16} color={color} /> },
+          { key: 'PROVIDER', label: t('iAmArtisan'), icon: (color) => <Wrench size={16} color={color} /> },
+        ]}
+      />
 
-        {isProvider && <RegisterStepper currentStep={step} />}
+      {isProvider && <RegisterStepper currentStep={step} />}
+
+      <Surface style={styles.card}>
+        <View style={styles.heading}>
+          <Txt variant="overline" color={colors.textSecondary}>
+            {isProvider ? t('accountEyebrowArtisan') : t('accountEyebrowClient')}
+          </Txt>
+          <Txt variant="title" accessibilityRole="header" style={styles.title}>
+            {isProvider ? t('createArtisanTitle') : t('createClientTitle')}
+          </Txt>
+          <Txt variant="small" color={colors.textMuted}>
+            {isProvider ? t('artisanIntro') : t('clientIntro')}
+          </Txt>
+        </View>
+
+        {(!isProvider || step === 1) && (
+          <View style={styles.section}>
+            <Txt variant="smallStrong">{t('accountInfoTitle')}</Txt>
+            <Txt variant="caption" color={colors.textMuted}>
+              {t('accountInfoText')}
+            </Txt>
+            <Hairline style={styles.sectionLine} />
+          </View>
+        )}
 
         {(!isProvider || step === 1) && <IdentityStep form={form} />}
         {isProvider && step === 2 && <TradesStep form={form} />}
@@ -81,20 +97,27 @@ export function RegisterScreen() {
 
           {isProvider && step < REGISTER_STEP_COUNT ? (
             <Button
+              variant="primary"
               title={t('next')}
               onPress={form.next}
               icon={
                 <Mirrored>
-                  <ArrowRight size={18} color={colors.onAction} />
+                  <ArrowRight size={18} color={colors.onBrand} />
                 </Mirrored>
               }
               style={styles.flex}
             />
           ) : (
             <Button
+              variant="primary"
               title={isProvider ? t('submitApplication') : t('createClientAccount')}
               onPress={form.submit}
               loading={form.loading}
+              icon={
+                <Mirrored>
+                  <ArrowRight size={18} color={colors.onBrand} />
+                </Mirrored>
+              }
               style={styles.flex}
             />
           )}
@@ -105,11 +128,14 @@ export function RegisterScreen() {
           onPress={form.goToLogin}
           style={({ pressed }) => [styles.link, pressed && { opacity: 0.7 }]}
         >
-          <Txt variant="smallStrong" color={colors.accentText}>
-            {t('hasAccount')}
+          <Txt variant="small" color={colors.textMuted} style={styles.centered}>
+            {t('hasAccountPrompt')}{' '}
+            <Txt variant="smallStrong" color={colors.accentText}>
+              {t('login')}
+            </Txt>
           </Txt>
         </Pressable>
-      </KeyboardAwareScrollView>
+      </Surface>
 
       <OtpVerificationSheet
         visible={form.otpVisible}
@@ -128,19 +154,19 @@ export function RegisterScreen() {
         onClose={() => form.setMapOpen(false)}
         onSelect={form.selectMapLocation}
       />
-    </View>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   flex: { flex: 1 },
-  content: {
-    paddingHorizontal: gutter,
-    paddingTop: space.sm,
-    paddingBottom: space.xxxl,
-    gap: space.lg,
-  },
-  footer: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
-  link: { minHeight: hitTarget, justifyContent: 'center', alignItems: 'center' },
+  card: { padding: space.xl, gap: 16 },
+  heading: { gap: space.xs },
+  // The card title is a step below a page title.
+  title: { fontSize: 30, lineHeight: 33 },
+  section: { gap: 2 },
+  sectionLine: { marginTop: space.sm },
+  footer: { flexDirection: 'row', gap: 10, marginTop: space.xs },
+  link: { minHeight: hitTarget, justifyContent: 'center' },
+  centered: { textAlign: 'center' },
 });

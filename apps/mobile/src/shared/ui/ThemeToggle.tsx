@@ -7,15 +7,13 @@ import { hitTarget, radius } from '../theme/tokens';
 
 interface ThemeToggleProps {
   style?: StyleProp<ViewStyle>;
-  /** Use on the brand-green background (the Welcome screen). */
-  forceWhite?: boolean;
 }
 
 /** A compact dark/light button for screens shown before sign-in. */
-export function ThemeToggle({ style, forceWhite }: ThemeToggleProps) {
+export function ThemeToggle({ style }: ThemeToggleProps) {
   const { mode, colors, toggleTheme } = useThemeStore();
   const { t } = useTranslation();
-  const foreground = forceWhite ? colors.onBrand : colors.text;
+  const foreground = colors.text;
 
   return (
     <Pressable
@@ -25,9 +23,7 @@ export function ThemeToggle({ style, forceWhite }: ThemeToggleProps) {
       onPress={toggleTheme}
       style={({ pressed }) => [
         styles.button,
-        forceWhite
-          ? { borderColor: 'rgba(255, 255, 255, 0.35)' }
-          : { borderColor: colors.border, backgroundColor: colors.surface },
+        { borderColor: colors.border, backgroundColor: colors.surface },
         pressed && { opacity: 0.7 },
         style,
       ]}
@@ -41,7 +37,7 @@ const styles = StyleSheet.create({
   button: {
     width: hitTarget,
     height: hitTarget,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',

@@ -1,56 +1,75 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useRouter } from 'expo-router';
-import { Hash, Lock, Phone } from 'lucide-react-native';
+import { ArrowRight, Hash, Lock, Mail } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
+import { Mirrored } from '../../../shared/ui/Mirrored';
 import { PasswordStrengthMeter } from '../../../shared/ui/PasswordStrengthMeter';
-import { ScreenHeader } from '../../../shared/ui/ScreenHeader';
+import { Surface } from '../../../shared/ui/Surface';
 import { Txt } from '../../../shared/ui/Txt';
-import { gutter, space } from '../../../shared/theme/tokens';
+import { space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
+import { useTranslation } from '../../../shared/store/useLanguageStore';
+import { AuthBackLink } from '../components/AuthBackLink';
 import { AuthErrorBanner } from '../components/AuthErrorBanner';
+import { AuthLayout } from '../components/AuthLayout';
 import { useForgotPassword } from '../hooks/useForgotPassword';
 
 export function ForgotPasswordScreen() {
   const router = useRouter();
   const colors = useThemeStore((state) => state.colors);
+  const { t } = useTranslation();
   const form = useForgotPassword();
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader
-        title="Mot de passe oublié"
-        onBack={() => (form.step === 2 ? form.backToIdentifier() : router.back())}
-        trailing={null}
+    <AuthLayout>
+      <AuthBackLink
+        label={t('backToLogin')}
+        onPress={() => (form.step === 2 ? form.backToIdentifier() : router.back())}
       />
-      <KeyboardAwareScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+
+      <View style={styles.heading}>
+        <Txt variant="overline" color={colors.textSecondary}>
+          {t('forgotEyebrow')}
+        </Txt>
+        <Txt variant="title" accessibilityRole="header">
+          {t('forgotTitle')}
+        </Txt>
+        <Txt variant="body" color={colors.textMuted}>
+          {form.step === 1 ? t('forgotIntro') : t('forgotSentIntro')}
+        </Txt>
+      </View>
+
+      <Surface style={styles.card}>
         {form.step === 1 ? (
           <>
-            <Txt variant="bodyMedium" color={colors.textSecondary}>
-              Entrez votre e-mail ou numéro de téléphone. Nous vous enverrons un code de vérification par e-mail.
-            </Txt>
             <Input
-              label="Téléphone ou E-mail"
-              placeholder="22 123 456 ou nom@example.com"
+              label={t('forgotIdentifierLabel')}
+              placeholder="22 123 456 / nom@exemple.tn"
               value={form.identifier}
               onChangeText={form.setIdentifier}
               autoCapitalize="none"
               autoCorrect={false}
-              icon={<Phone size={18} color={colors.textMuted} />}
+              icon={<Mail size={18} color={colors.textMuted} />}
             />
             <AuthErrorBanner message={form.error} />
-            <Button title="Envoyer le code" onPress={form.sendCode} loading={form.loading} />
+            <Button
+              variant="primary"
+              title={t('sendCode')}
+              onPress={form.sendCode}
+              loading={form.loading}
+              icon={
+                <Mirrored>
+                  <ArrowRight size={18} color={colors.onBrand} />
+                </Mirrored>
+              }
+            />
           </>
         ) : (
           <>
-            <Txt variant="bodyMedium" color={colors.textSecondary}>
-              Si un compte correspond, un code vient d'être envoyé par e-mail. Entrez-le avec votre nouveau mot de
-              passe.
-            </Txt>
             <Input
-              label="Code de vérification"
+              label={t('verificationCode')}
               placeholder="123456"
               value={form.code}
               onChangeText={form.setCode}
@@ -59,7 +78,7 @@ export function ForgotPasswordScreen() {
               icon={<Hash size={18} color={colors.textMuted} />}
             />
             <Input
-              label="Nouveau mot de passe"
+              label={t('newPassword')}
               value={form.newPassword}
               onChangeText={form.setNewPassword}
               secureTextEntry
@@ -67,16 +86,16 @@ export function ForgotPasswordScreen() {
             />
             <PasswordStrengthMeter password={form.newPassword} />
             <AuthErrorBanner message={form.error} />
-            <Button title="Réinitialiser" onPress={form.submitReset} loading={form.loading} />
-            <Button title="Renvoyer le code" variant="outline" onPress={form.sendCode} disabled={form.loading} />
+            <Button variant="primary" title={t('resetPassword')} onPress={form.submitReset} loading={form.loading} />
+            <Button variant="outline" title={t('resendCode')} onPress={form.sendCode} disabled={form.loading} />
           </>
         )}
-      </KeyboardAwareScrollView>
-    </View>
+      </Surface>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: { paddingHorizontal: gutter, paddingTop: space.lg, paddingBottom: space.xxxl, gap: space.md },
+  heading: { gap: space.sm, marginTop: space.md },
+  card: { padding: space.xl, gap: 16 },
 });

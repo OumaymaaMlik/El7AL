@@ -1,6 +1,6 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Lock, Mail, MapPin, User } from 'lucide-react-native';
+import { StyleSheet, View } from 'react-native';
+import { Lock, Mail, MapPin, Phone, User } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
 import { Txt } from '../../../shared/ui/Txt';
@@ -41,7 +41,7 @@ export function IdentityStep({ form }: { form: RegisterWizard }) {
         error={errors.phone}
         icon={
           <View style={styles.phonePrefixWrap}>
-            <Text style={styles.phoneFlag}>🇹🇳</Text>
+            <Phone size={16} color={colors.textMuted} />
             <Txt variant="bodyStrong" color={colors.text}>
               +216
             </Txt>
@@ -91,7 +91,7 @@ export function IdentityStep({ form }: { form: RegisterWizard }) {
             icon={<MapPin size={18} color={colors.textMuted} />}
           />
           <Button
-            title="Placer sur la carte"
+            title={t('placeOnMap')}
             variant="outline"
             onPress={() => form.setMapOpen(true)}
             iconPosition="left"
@@ -106,6 +106,5 @@ export function IdentityStep({ form }: { form: RegisterWizard }) {
 const styles = StyleSheet.create({
   group: { gap: space.sm },
   phonePrefixWrap: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingEnd: 4 },
-  phoneFlag: { fontSize: 16 },
   phoneDivider: { width: 1, height: 18, marginStart: 4 },
 });

@@ -73,18 +73,16 @@ export function LanguagePickerSheet({ visible, onClose }: LanguagePickerSheetPro
 
 interface LanguageToggleProps {
   style?: StyleProp<ViewStyle>;
-  /** Use on the brand-green background (the Welcome screen). */
-  forceWhite?: boolean;
 }
 
 /** A compact language button for screens shown before sign-in. */
-export function LanguageToggle({ style, forceWhite }: LanguageToggleProps) {
+export function LanguageToggle({ style }: LanguageToggleProps) {
   const [open, setOpen] = useState(false);
   const language = useLanguageStore((state) => state.language);
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
 
-  const foreground = forceWhite ? colors.onBrand : colors.text;
+  const foreground = colors.text;
 
   return (
     <>
@@ -94,9 +92,7 @@ export function LanguageToggle({ style, forceWhite }: LanguageToggleProps) {
         onPress={() => setOpen(true)}
         style={({ pressed }) => [
           styles.button,
-          forceWhite
-            ? { borderColor: 'rgba(255, 255, 255, 0.35)' }
-            : { borderColor: colors.border, backgroundColor: colors.surface },
+          { borderColor: colors.border, backgroundColor: colors.surface },
           pressed && { opacity: 0.7 },
           style,
         ]}
@@ -122,7 +118,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: space.md,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     borderWidth: 1,
   },
   row: {

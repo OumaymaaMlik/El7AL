@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, LayoutChangeEvent, StyleSheet, View } from 'react-native';
+import { Animated, Easing, LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import { Txt } from './Txt';
+import { useReducedMotion } from './useReducedMotion';
 
 const GAP = 40;
 /** Milliseconds per pixel: slow enough to read. */
@@ -17,12 +18,8 @@ type TxtProps = React.ComponentProps<typeof Txt>;
 export function MarqueeText({ children, ...textProps }: Omit<TxtProps, 'numberOfLines'> & { children: string }) {
   const [boxWidth, setBoxWidth] = useState(0);
   const [textWidth, setTextWidth] = useState(0);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReducedMotion();
   const offset = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    void AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-  }, []);
 
   const overflows = boxWidth > 0 && textWidth > boxWidth;
 

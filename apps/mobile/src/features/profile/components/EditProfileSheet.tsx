@@ -98,7 +98,7 @@ export function EditProfileSheet({ form, isClient, displayName }: Props) {
               icon={<MapPin size={18} color={colors.textMuted} />}
             />
             <Button
-              title="Placer sur la carte"
+              title={t('placeOnMap')}
               variant="outline"
               onPress={() => form.setMapOpen(true)}
               iconPosition="left"

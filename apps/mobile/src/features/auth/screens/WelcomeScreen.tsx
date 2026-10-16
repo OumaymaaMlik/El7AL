@@ -1,138 +1,78 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, Pressable } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowRight, Navigation, ShieldCheck, Star } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
-import { Txt } from '../../../shared/ui/Txt';
-import { ThemeToggle } from '../../../shared/ui/ThemeToggle';
+import { BrandMark } from '../../../shared/ui/BrandMark';
 import { LanguageToggle } from '../../../shared/ui/LanguageToggle';
+import { Mirrored } from '../../../shared/ui/Mirrored';
+import { ThemeToggle } from '../../../shared/ui/ThemeToggle';
+import { Txt } from '../../../shared/ui/Txt';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
-import { wordmarkFont } from '../../../shared/theme/typography';
-import { controlHeight, gutter, radius, space } from '../../../shared/theme/tokens';
+import { space } from '../../../shared/theme/tokens';
+import { AuthHero } from '../components/AuthHero';
+import { AuthLayout } from '../components/AuthLayout';
 
 /**
- * The first screen. The whole screen is the brand-green surface, with the name,
- * what the service is, and the two ways in. Language and theme can be set here
- * because there is no profile yet.
+ * The first screen: the name, what the service is, and the two ways in. Language and theme can be set
+ * here because there is no profile yet.
  */
 export function WelcomeScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
 
+  const trust = [
+    { Icon: ShieldCheck, label: t('welcomeTrustVerified') },
+    { Icon: Navigation, label: t('welcomeTrustLive') },
+    { Icon: Star, label: t('welcomeTrustReviews') },
+  ];
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.brand }]}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-
-      {/* The "7" of the name, as a quiet mark behind the content */}
-      <Text
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-        style={[styles.mark, { color: colors.brandInset }]}
-      >
-        7
-      </Text>
-
-      <View style={[styles.header, { paddingTop: insets.top + space.md }]}>
-        <Text
-          accessibilityRole="header"
-          accessibilityLabel="El 7al"
-          style={[styles.wordmark, { color: colors.onBrand }]}
-        >
-          El <Text style={{ color: colors.action }}>7</Text>al
-        </Text>
+    <AuthLayout>
+      <View style={styles.header}>
+        <BrandMark />
         <View style={styles.controls}>
-          <LanguageToggle forceWhite />
-          <ThemeToggle forceWhite />
+          <LanguageToggle />
+          <ThemeToggle />
         </View>
       </View>
 
-      <View style={[styles.bottom, { paddingBottom: Math.max(insets.bottom, space.lg) + space.lg }]}>
-        <View style={styles.tagRow}>
-          <View style={[styles.marker, { backgroundColor: colors.action }]} />
-          <Txt variant="overline" color={colors.onBrandMuted}>
-            {t('emergencyTag')}
-          </Txt>
-        </View>
-        <Txt variant="display" color={colors.onBrand} style={styles.headline}>
-          {t('heroTitle')}
-        </Txt>
+      <AuthHero tag={t('accessTag')} title={t('welcomeHeadline')} text={t('welcomeText')} />
 
-        <View style={styles.actions}>
-          <Button title={t('login')} onPress={() => router.push('/(auth)/login')} />
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push('/(auth)/register')}
-            style={({ pressed }) => [styles.secondary, pressed && { opacity: 0.75 }]}
-          >
-            <Txt variant="button" color={colors.onBrand}>
-              {t('register')}
+      <View style={styles.actions}>
+        <Button
+          variant="primary"
+          title={t('login')}
+          onPress={() => router.push('/(auth)/login')}
+          icon={
+            <Mirrored>
+              <ArrowRight size={18} color={colors.onBrand} />
+            </Mirrored>
+          }
+        />
+        <Button variant="outline" title={t('register')} onPress={() => router.push('/(auth)/register')} />
+      </View>
+
+      <View style={styles.trust}>
+        {trust.map(({ Icon, label }) => (
+          <View key={label} style={styles.trustItem}>
+            <Icon size={14} color={colors.accentText} />
+            <Txt variant="captionStrong" color={colors.accentText}>
+              {label}
             </Txt>
-          </Pressable>
-        </View>
+          </View>
+        ))}
       </View>
-    </View>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
-  },
-  mark: {
-    position: 'absolute',
-    end: -40,
-    top: 60,
-    fontFamily: wordmarkFont,
-    fontSize: 520,
-    lineHeight: 520,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: gutter,
-  },
-  wordmark: {
-    fontFamily: wordmarkFont,
-    fontSize: 34,
-    lineHeight: 38,
-    letterSpacing: -0.3,
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-  },
-  bottom: {
-    paddingHorizontal: gutter,
-    gap: space.md,
-  },
-  tagRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-  },
-  marker: {
-    width: 8,
-    height: 8,
-  },
-  headline: {
-    marginBottom: space.lg,
-  },
-  actions: {
-    gap: space.sm,
-  },
-  secondary: {
-    height: controlHeight,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.45)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  controls: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  actions: { gap: 10 },
+  trust: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 14, rowGap: space.xs },
+  trustItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 });

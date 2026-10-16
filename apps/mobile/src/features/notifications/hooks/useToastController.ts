@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, PanResponder } from 'react-native';
+import { Animated, Easing, PanResponder } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useMissionStore } from '../../missions';
 import { useNotificationStore } from '../store/useNotificationStore';
+import { useReducedMotion } from '../../../shared/ui/useReducedMotion';
 
 const SLIDE_DISTANCE = 20; // calm slide from the top
 const AUTO_DISMISS_MS = 4000;
@@ -20,20 +21,13 @@ export function useToastController() {
   const activeToast = useNotificationStore((state) => state.activeToast);
   const dismissToast = useNotificationStore((state) => state.dismissToast);
 
-  const [reduceMotion, setReduceMotion] = useState(false);
+  const reduceMotion = useReducedMotion();
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   const restingY = Math.max(insets.top, 12) + 6;
   const translateY = useRef(new Animated.Value(restingY - SLIDE_DISTANCE)).current;
   const opacity = useRef(new Animated.Value(0)).current;
   const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Check accessibility reduced motion preference
-  useEffect(() => {
-    AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    const sub = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
-    return () => sub?.remove?.();
-  }, []);
 
   // Timer controls: Pause when user touches, resume when released
   const clearDismissTimer = useCallback(() => {

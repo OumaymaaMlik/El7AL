@@ -132,7 +132,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     lineHeight: 30,
-    letterSpacing: -0.9,
   },
   actions: {
     gap: 10,

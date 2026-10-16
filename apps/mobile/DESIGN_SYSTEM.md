@@ -66,6 +66,10 @@ families: each weight is its own font file. Write labels in sentence case
 | `Input` | The one text field: label above, error or hint below, show/hide for passwords. `editable={false}` draws it as read-only |
 | `SegmentedControl` | Two to four mutually exclusive choices with short labels |
 | `Toggle` | The one on/off switch (52 by 30) |
+| `PixelBackground` | The twinkling squares behind the access screens. Decorative; stands still when the system asks for less motion |
+| `HeroArt`, `SpinningSeven` | The illustration: a 7 turning above green waves. Drawn as stacked slices on the native driver, because React Native has no 3D scene |
+| `BrandMark` | The logo (the 7 and the name), always Latin |
+| `useReducedMotion` | True when the system asks for less motion. Every decorative animation checks it |
 | `Surface`, `Hairline` | The standard bordered card (24 radius) and its row divider |
 | `SectionHeader` | Section title, with an optional link that must do something |
 | `ScreenHeader` | The header of every screen: optional back button, title, subtitle, bell |
@@ -81,6 +85,10 @@ families: each weight is its own font file. Write labels in sentence case
 
 Outside `ui`: `ChatThread` is the one conversation view (Chat tab and chat drawer),
 and `home/HeroPanel` is the green hero used on Home, Tracking and Profile.
+
+## Access screens
+
+Welcome, Login, Register and Forgot password share `features/auth/components`: `AuthLayout` (page colour, pixel background, keyboard-aware scrolling), `AuthHero` (the green panel with the illustration), and `AuthBackLink`. The main action on these screens is a `primary` (brand-green) button, not lime. The artisan sign-up keeps its three steps (identity, trades, documents) inside the same card.
 
 ## Tab bar
 
@@ -118,6 +126,7 @@ screen. They are kept so nothing breaks, and can be deleted.
 
 ## Still open
 
+- The access screens' Arabic texts (added with the redesign) need a review by a native speaker, and the turning 7 and the pixel background need a look on a real phone (frame rate, battery).
 - Right-to-left was checked in the web build only. Check it on an iPhone and an
   Android phone before release.
 - The Arabic strings added during the redesign need a review by a native speaker.

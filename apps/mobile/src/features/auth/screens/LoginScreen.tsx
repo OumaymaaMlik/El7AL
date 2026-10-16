@@ -1,17 +1,19 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useRouter } from 'expo-router';
-import { Mail, Lock } from 'lucide-react-native';
+import { ArrowRight, Mail, Lock } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
-import { ScreenHeader } from '../../../shared/ui/ScreenHeader';
+import { Mirrored } from '../../../shared/ui/Mirrored';
 import { Txt } from '../../../shared/ui/Txt';
-import { gutter, hitTarget, space } from '../../../shared/theme/tokens';
+import { hitTarget, space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { ROUTES } from '../../../navigation/routes';
+import { AuthBackLink } from '../components/AuthBackLink';
 import { AuthErrorBanner } from '../components/AuthErrorBanner';
+import { AuthHero } from '../components/AuthHero';
+import { AuthLayout } from '../components/AuthLayout';
 import { useLogin } from '../hooks/useLogin';
 
 export function LoginScreen() {
@@ -26,18 +28,23 @@ export function LoginScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <ScreenHeader title={t('loginTitle')} onBack={goBack} trailing={null} />
-      <KeyboardAwareScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-        enableOnAndroid={true}
-        extraScrollHeight={80}
-        keyboardShouldPersistTaps="handled"
-      >
+    <AuthLayout>
+      <AuthBackLink label={t('backToWelcome')} onPress={goBack} />
+      <AuthHero compact title={t('loginHeroTitle')} text={t('loginHeroText')} />
+
+      <View style={styles.heading}>
+        <Txt variant="title" accessibilityRole="header">
+          {t('loginTitle')}
+        </Txt>
+        <Txt variant="small" color={colors.textMuted}>
+          {t('loginSubtitle')}
+        </Txt>
+      </View>
+
+      <View style={styles.form}>
         <Input
           label={t('identifierLabel')}
-          placeholder="nom@example.com"
+          placeholder="nom@exemple.tn"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
@@ -66,44 +73,51 @@ export function LoginScreen() {
           onSubmitEditing={form.submit}
         />
 
-        <AuthErrorBanner message={form.errors.submit} />
-
-        <Button title={t('login')} onPress={form.submit} loading={form.loading} style={styles.submit} />
-
         <Pressable
           accessibilityRole="link"
           onPress={() => router.push(ROUTES.forgotPassword)}
-          style={({ pressed }) => [styles.link, pressed && { opacity: 0.7 }]}
+          style={({ pressed }) => [styles.forgot, pressed && { opacity: 0.7 }]}
         >
-          <Txt variant="smallStrong" color={colors.textSecondary}>
-            Mot de passe oublié ?
+          <Txt variant="smallStrong" color={colors.accentText}>
+            {t('forgotPasswordLink')}
           </Txt>
         </Pressable>
 
-        <Pressable
-          accessibilityRole="link"
-          onPress={() => router.push(ROUTES.register)}
-          style={({ pressed }) => [styles.link, pressed && { opacity: 0.7 }]}
-        >
+        <AuthErrorBanner message={form.errors.submit} />
+
+        <Button
+          variant="primary"
+          title={t('login')}
+          onPress={form.submit}
+          loading={form.loading}
+          icon={
+            <Mirrored>
+              <ArrowRight size={18} color={colors.onBrand} />
+            </Mirrored>
+          }
+        />
+      </View>
+
+      <Pressable
+        accessibilityRole="link"
+        onPress={() => router.push(ROUTES.register)}
+        style={({ pressed }) => [styles.footer, pressed && { opacity: 0.7 }]}
+      >
+        <Txt variant="small" color={colors.textMuted} style={styles.centered}>
+          {t('noAccountPrompt')}{' '}
           <Txt variant="smallStrong" color={colors.accentText}>
-            {t('noAccount')}
+            {t('createAccountTitle')}
           </Txt>
-        </Pressable>
-      </KeyboardAwareScrollView>
-    </View>
+        </Txt>
+      </Pressable>
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: gutter,
-    paddingTop: space.lg,
-    paddingBottom: space.xxxl,
-    gap: space.lg,
-  },
-  submit: { marginTop: space.sm },
-  link: { minHeight: hitTarget, justifyContent: 'center', alignItems: 'center' },
+  heading: { gap: space.xs },
+  form: { gap: 14 },
+  forgot: { alignSelf: 'flex-start', minHeight: hitTarget, justifyContent: 'center' },
+  footer: { minHeight: hitTarget, justifyContent: 'center' },
+  centered: { textAlign: 'center' },
 });
