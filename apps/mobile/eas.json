@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 7.0.0"
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -14,7 +15,7 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.el7al.tn/api/v1",
-        "EXPO_PUBLIC_SENTRY_DSN": "",
+        "EXPO_PUBLIC_EL7AL_RIB": "TN59 0000 0000 0000 0000 0000",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     },
@@ -22,7 +23,7 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.el7al.tn/api/v1",
-        "EXPO_PUBLIC_SENTRY_DSN": "",
+        "EXPO_PUBLIC_EL7AL_RIB": "TN59 0000 0000 0000 0000 0000",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
     }

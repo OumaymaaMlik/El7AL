@@ -9,7 +9,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "eas-build-pre-install": "node scripts/check-release-env.js"
+    "eas-build-pre-install": "node scripts/check-release-env.js",
+    "eas-build-post-install": "npm run build --workspace=@el7al/shared"
   },
   "dependencies": {
     "@el7al/shared": "^1.0.0",

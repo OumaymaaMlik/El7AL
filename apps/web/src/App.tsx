@@ -10,6 +10,9 @@ const RegisterPage = lazy(() => import('./pages/RegisterPage').then((m) => ({ de
 const HowItWorksPage = lazy(() => import('./pages/HowItWorksPage').then((m) => ({ default: m.HowItWorksPage })));
 const FaqPage = lazy(() => import('./pages/FaqPage').then((m) => ({ default: m.FaqPage })));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then((m) => ({ default: m.PrivacyPage })));
+const DeleteAccountInfoPage = lazy(() =>
+  import('./pages/DeleteAccountInfoPage').then((m) => ({ default: m.DeleteAccountInfoPage })),
+);
 const ContactPage = lazy(() => import('./pages/ContactPage').then((m) => ({ default: m.ContactPage })));
 const ClientProfilePage = lazy(() =>
   import('./pages/ClientProfilePage').then((m) => ({ default: m.ClientProfilePage })),
@@ -46,6 +49,7 @@ export const App: React.FC = () => {
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/delete-account" element={<DeleteAccountInfoPage />} />
 
           {/* Admin Login & Dedicated Dashboard Routes */}
           <Route path="/admin" element={<AdminLoginPage />} />
