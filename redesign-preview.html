@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>El 7al · Redesign preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Cairo:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* El 7al redesign tokens */
+  --night:#06281B; --forest:#0B4F34; --forest-2:#136B46; --mint:#DCEBE0;
+  --sand:#F7F4EC; --card:#FFFFFF; --ink:#0B1F16; --muted:#4E6358; --line:#E3DECF; --tile:#EFEADC;
+  --action:#2BB673; --on-action:#04170F; --live:#B5F23D; --danger:#B3261E;
+  --r-lg:24px; --r-md:16px; --r-pill:999px;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);background:#D9D6CA;color:var(--ink);padding:32px 24px 56px;-webkit-font-smoothing:antialiased}
+header.top{max-width:1500px;margin:0 auto 28px}
+header.top h1{font-size:26px;font-weight:800;letter-spacing:-.02em}
+header.top p{color:var(--muted);font-size:14px;margin-top:4px}
+.swatches{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.sw{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;background:#fff;padding:5px 12px 5px 5px;border-radius:99px}
+.sw i{width:22px;height:22px;border-radius:50%;border:1px solid rgba(0,0,0,.12)}
+.row{display:flex;gap:28px;justify-content:center;flex-wrap:wrap;max-width:1500px;margin:0 auto}
+figure{display:flex;flex-direction:column;align-items:center;gap:12px}
+figcaption{font-size:13px;font-weight:700;text-align:center}
+figcaption small{display:block;font-weight:500;color:var(--muted);font-size:12px;margin-top:2px}
+
+/* phone */
+.phone{width:320px;height:664px;border-radius:42px;background:var(--night);padding:8px;box-shadow:0 24px 50px -18px rgba(6,40,27,.55)}
+.scr{width:100%;height:100%;border-radius:34px;overflow:hidden;background:var(--sand);display:flex;flex-direction:column;position:relative}
+.scr.dark{background:var(--night);color:#fff}
+.sb{height:30px;flex:none;display:flex;justify-content:space-between;align-items:center;padding:0 22px;font-size:12px;font-weight:700}
+.body{flex:1;min-height:0;display:flex;flex-direction:column}
+svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}
+h2{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.1}
+.pad{padding:0 18px}
+.muted{color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--live);display:inline-block;flex:none;animation:pulse 1.8s infinite}
+.dot.g{background:var(--forest-2)}
+@keyframes pulse{50%{box-shadow:0 0 0 5px rgba(181,242,61,.25)}}
+
+/* slide to act */
+.slide{height:60px;border-radius:var(--r-pill);background:var(--night);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 14px}
+.scr.dark .slide,.slide.light{background:#fff;color:var(--ink)}
+.slide span{font-weight:700;font-size:14px;color:#fff;padding-left:38px;animation:hint 2.6s infinite}
+.slide.light span{color:var(--ink)}
+.slide .th{position:absolute;left:5px;top:5px;width:50px;height:50px;border-radius:50%;background:var(--action);color:var(--on-action);display:grid;place-items:center;font-size:22px;animation:nudge 2.6s infinite}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(14px)}}
+@keyframes hint{50%{opacity:.7}}
+
+/* primary button */
+.btn{height:56px;border-radius:var(--r-pill);background:var(--action);color:var(--on-action);font:800 15px var(--font);display:flex;align-items:center;justify-content:center;gap:8px;margin:0 14px;border:0}
+
+/* tab bar */
+.tabs{flex:none;height:64px;background:#fff;border-top:1px solid var(--line);display:flex;padding:6px 8px 8px}
+.tabs div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;font-weight:600;color:var(--muted);border-radius:14px}
+.tabs div.on{color:var(--forest);font-weight:800}
+.tabs div.on svg{background:var(--mint);width:44px;height:26px;padding:3px 13px;border-radius:99px}
+.tabs svg{font-size:20px}
+
+/* service grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 18px}
+.box{background:#fff;border:1.5px solid var(--line);border-radius:var(--r-md);height:96px;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+.box .ic{width:36px;height:36px;border-radius:11px;background:var(--tile);color:var(--forest);display:grid;place-items:center;font-size:21px}
+.box b{font-size:14px;font-weight:800}
+.box .on{font-size:11px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:5px;position:absolute;right:11px;top:13px}
+.box .on .dot{width:7px;height:7px;background:var(--forest-2);animation:none}
+.box.sel{background:var(--forest);border-color:var(--forest);color:#fff}
+.box.sel .ic{background:rgba(255,255,255,.14);color:var(--live)}
+.box.sel .on{color:var(--mint)}
+.box.sel .on .dot{background:var(--live)}
+
+/* welcome orbit */
+.orbit{position:relative;width:210px;height:210px;margin:0 auto}
+.orbit .ring{position:absolute;inset:0;animation:spin 18s linear infinite}
+.orbit .ring span{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px;border-radius:13px;background:rgba(255,255,255,.1);color:var(--live);display:grid;place-items:center;font-size:22px;transform:rotate(var(--a)) translateY(-90px) rotate(calc(-1*var(--a)))}
+.orbit .ring span svg{animation:spin 18s linear infinite reverse}
+.orbit .seven{position:absolute;inset:55px;border-radius:50%;background:var(--live);color:var(--night);display:grid;place-items:center;font-weight:800;font-size:64px;letter-spacing:-.04em}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* chips / rows */
+.chip{height:40px;padding:0 14px;border-radius:var(--r-pill);background:#fff;border:1.5px solid var(--line);font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px}
+.chip.on{background:var(--forest);border-color:var(--forest);color:#fff}
+.list{background:#fff;border-radius:var(--r-md);border:1px solid var(--line)}
+.li{display:flex;align-items:center;gap:12px;padding:12px 14px;min-height:56px}
+.li+.li{border-top:1px solid var(--line)}
+.li .ic{width:36px;height:36px;border-radius:11px;background:var(--mint);color:var(--forest);display:grid;place-items:center;font-size:18px;flex:none}
+.li small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.li b{font-size:14px}
+.av{width:46px;height:46px;border-radius:50%;background:var(--forest);color:#fff;display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+.round{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:20px;background:var(--mint);color:var(--forest);flex:none}
+.round.fill{background:var(--forest);color:#fff}
+.live-chip{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 12px;border-radius:99px;background:rgba(181,242,61,.16);color:var(--live);font-size:11px;font-weight:800;letter-spacing:.08em}
+.steps{display:flex;gap:5px}
+.steps i{flex:1;height:6px;border-radius:9px;background:rgba(255,255,255,.18)}
+.steps i.on{background:var(--live)}
+.steps i.now{background:linear-gradient(90deg,var(--live) 50%,rgba(255,255,255,.18) 50%)}
+.sheet{background:var(--sand);border-radius:26px 26px 0 0;padding:10px 18px 16px;margin-top:-22px;position:relative;display:flex;flex-direction:column;gap:12px;flex:none}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);align-self:center}
+.toggle{width:64px;height:36px;border-radius:99px;background:var(--live);position:relative;flex:none}
+.toggle::after{content:"";position:absolute;right:4px;top:4px;width:28px;height:28px;border-radius:50%;background:var(--night)}
+.legend{max-width:1500px;margin:36px auto 0;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.legend span{background:#fff;border-radius:99px;padding:8px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
+.legend svg{color:var(--forest)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+[data-go],[data-toast],.box{cursor:pointer}
+.th{touch-action:none;cursor:grab}
+.phone{transition:box-shadow .3s,transform .3s}
+.phone.flash{box-shadow:0 0 0 4px var(--action),0 24px 50px -18px rgba(6,40,27,.55);transform:translateY(-6px)}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--night);color:#fff;padding:12px 20px;border-radius:99px;font-weight:700;font-size:14px;opacity:0;pointer-events:none;transition:opacity .25s;z-index:9}
+.toast.show{opacity:1}
+
+.stage{display:flex;gap:40px;justify-content:center;align-items:center;flex-wrap:wrap;min-height:calc(100vh - 220px)}
+.screens{width:100%;height:100%;border-radius:34px;overflow:hidden;position:relative;background:var(--night)}
+.layer{position:absolute!important;inset:0;display:none!important;transition:transform .45s cubic-bezier(.22,.8,.3,1),opacity .45s ease}
+.layer.cur{display:flex!important}
+.layer.tr-from-right{transform:translateX(100%)}
+.layer.tr-from-left{transform:translateX(-30%);opacity:.6}
+.layer.tr-to-left{transform:translateX(-30%);opacity:.6}
+.layer.tr-to-right{transform:translateX(100%)}
+.layer.tr-fade-in{opacity:0;transform:scale(.96)}
+.layer.tr-fade-out{opacity:0;transform:scale(1.03)}
+.layer.tr-to-right,.layer.tr-from-right,.layer.tr-fade-in{z-index:2}
+.snav{display:flex;flex-direction:column;gap:8px}
+.snav button{font:700 14px var(--font);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 8px;border-radius:99px;border:0;background:#fff;color:var(--ink);cursor:pointer;min-height:44px;text-align:left}
+.snav button i{font-style:normal;width:28px;height:28px;border-radius:50%;background:var(--tile);display:grid;place-items:center;font-size:12px}
+.snav button.on{background:var(--night);color:#fff}.snav button.on i{background:var(--action);color:var(--on-action)}
+.snav button.wfb{background:var(--action);color:var(--on-action);font-weight:800;justify-content:center;padding:8px 18px;margin-bottom:6px}
+
+/* workflow board */
+.wf{position:fixed;inset:0;z-index:50;background:var(--sand);overflow:auto;transform:translateY(100%);visibility:hidden;transition:transform .45s cubic-bezier(.22,.8,.3,1),visibility 0s .45s}
+.wf.open{transform:none;visibility:visible;transition:transform .45s cubic-bezier(.22,.8,.3,1)}
+.wf .wi{max-width:1240px;margin:0 auto;padding:40px 28px 80px}
+.wf .x{position:sticky;top:16px;float:right;margin:16px 16px 0 0;z-index:2;height:44px;padding:0 20px;border-radius:99px;background:var(--night);color:#fff;font:700 14px var(--font);border:0;cursor:pointer}
+.wf .tp{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start;padding-right:110px;margin-bottom:12px}
+.wf .eyb{font-weight:800;font-size:12px;letter-spacing:.12em;color:var(--forest-2)}
+.wf h1{font-size:54px;font-weight:800;letter-spacing:-.035em;line-height:1.05;margin:8px 0 10px}
+.wf .lead{max-width:600px;color:var(--muted);font-size:16px;line-height:1.55;font-weight:500}
+.wf .leg{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:9px;min-width:270px}
+.wf .leg b{font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.wf .lr{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14px}
+.wf .sec{margin-top:38px}
+.wf .sh{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+.wf .sn{font-size:38px;font-weight:800;letter-spacing:-.04em;color:var(--action);line-height:1}
+.wf .st{font-size:28px;font-weight:800;letter-spacing:-.03em}
+.wf .rp{height:28px;padding:0 12px;border-radius:99px;background:var(--tile);color:var(--forest);font-size:12px;font-weight:700;display:inline-flex;align-items:center}
+.wf .sd{flex-basis:100%;font-size:14px;color:var(--muted);font-weight:500}
+.wf .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.wf .cd{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px 17px;display:flex;flex-direction:column;gap:10px;text-align:left;font-family:var(--font);color:var(--ink);transition:transform .2s,box-shadow .2s,border-color .2s}
+.wf button.cd{cursor:pointer}
+.wf button.cd:hover{transform:translateY(-3px);box-shadow:0 14px 30px -14px rgba(6,40,27,.28);border-color:var(--action)}
+.wf .ch{display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px}
+.wf .num{width:26px;height:26px;border-radius:50%;background:var(--night);color:var(--live);display:grid;place-items:center;font-size:12px;font-weight:800;flex:none}
+.wf .ds{font-size:13.5px;line-height:1.45;color:var(--muted);font-weight:500}
+.wf .if{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.45;font-weight:600}
+.wf .si{flex:none;height:20px;padding:0 6px;border-radius:6px;font-size:10px;font-weight:800;line-height:20px;letter-spacing:.04em}
+.wf .si.g{background:rgba(43,182,115,.18);color:var(--forest)}.wf .si.y{background:#FDF0C8;color:#8A4B05}.wf .si.r{background:rgba(179,38,30,.1);color:var(--danger)}
+.wf .op{margin-top:auto;font-size:12px;font-weight:800;color:var(--forest-2)}
+.wf .rule{background:#fff;border:1px solid var(--line);border-left:4px solid var(--action);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.wf .rule b{font-size:15px;font-weight:800}
+@media (max-width:760px){.wf .tp{padding-right:0}.wf h1{font-size:38px}.wf .wi{padding:24px 16px 60px}.wf .leg{min-width:0;flex:1 1 100%}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="plomb" viewBox="0 0 24 24"><path d="M14.5 3a4.5 4.5 0 0 0-3.9 6.7L3 17.3 6.7 21l7.6-7.6A4.5 4.5 0 0 0 21 9.5l-3 3-3-1-1-3 3-3A4.5 4.5 0 0 0 14.5 3z"/></symbol>
+    <symbol id="elec" viewBox="0 0 24 24"><path d="M14 4l6 6-2.5 2.5-6-6zM11.5 7.5L4 15v5h5l7.5-7.5"/></symbol>
+    <symbol id="meca" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+    <symbol id="clim" viewBox="0 0 24 24"><path d="M4 18a8 8 0 1 1 16 0"/><path d="M12 18l4-5"/><circle cx="12" cy="18" r="1"/></symbol>
+    <symbol id="serr" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3"/></symbol>
+    <symbol id="peint" viewBox="0 0 24 24"><rect x="4" y="3" width="14" height="5" rx="1.5"/><path d="M18 5.5h2V11H11v3"/><rect x="9" y="14" width="4" height="7" rx="1"/></symbol>
+    <symbol id="home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></symbol>
+    <symbol id="list" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+    <symbol id="chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4-6 8-6s7 1.5 8 6"/></symbol>
+    <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="cam" viewBox="0 0 24 24"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+    <symbol id="chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+    <symbol id="arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="cash" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.8"/></symbol>
+    <symbol id="bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/></symbol>
+    <symbol id="star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.7 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3 1.2-6.2L3 9.5l6.3-.8z"/></symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <h1>El 7al · Redesign preview</h1>
+  <p>Cliquez ou glissez : les écrans sont reliés entre eux. 6 écrans clés · mêmes règles produit : prix au dernier écran seulement, espèces uniquement, barres à glisser, texte minimal.</p>
+  <div class="swatches">
+    <div class="sw"><i style="background:#06281B"></i>Night #06281B</div>
+    <div class="sw"><i style="background:#0B4F34"></i>Forest #0B4F34</div>
+    <div class="sw"><i style="background:#2BB673"></i>Action #2BB673</div>
+    <div class="sw"><i style="background:#B5F23D"></i>Live #B5F23D (sur fond sombre)</div>
+    <div class="sw"><i style="background:#F7F4EC"></i>Sand #F7F4EC</div>
+    <div class="sw">Plus Jakarta Sans + Cairo (AR)</div>
+  </div>
+</header>
+
+<div class="row">
+
+<!-- 1 WELCOME -->
+<figure id="s1">
+  <div class="phone"><div class="scr dark">
+    <div class="sb"><span>9:41</span><span>●●●</span></div>
+    <div class="body" style="justify-content:space-between;padding:10px 0 22px">
+      <div style="padding-top:26px">
+        <div class="orbit">
+          <div class="ring">
+            <span style="--a:0deg"><svg class="i"><use href="#plomb"/></svg></span>
+            <span style="--a:60deg"><svg class="i"><use href="#elec"/></svg></span>
+            <span style="--a:120deg"><svg class="i"><use href="#meca"/></svg></span>
+            <span style="--a:180deg"><svg class="i"><use href="#clim"/></svg></span>
+            <span style="--a:240deg"><svg class="i"><use href="#serr"/></svg></span>
+            <span style="--a:300deg"><svg class="i"><use href="#peint"/></svg></span>
+          </div>
+          <div class="seven">7</div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:0 24px">
+        <h2 style="font-size:32px">Un artisan,<br>tout de suite.</h2>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:20px">
+          <i style="width:22px;height:6px;border-radius:9px;background:var(--live)"></i><i style="width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.3)"></i><i style="width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.3)"></i><i style="width:6px;height:6px;border-radius:9px;background:rgba(255,255,255,.3)"></i>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="slide light" data-go="s2"><span>Glissez pour commencer</span><div class="th"><svg class="i"><use href="#arrow"/></svg></div></div>
+        <div data-go="s2" style="text-align:center;font-size:14px;font-weight:700;color:var(--live);min-height:40px;display:grid;place-items:center">J'ai déjà un compte</div><div data-go="s6" style="text-align:center;font-size:13px;font-weight:600;color:var(--mint);min-height:32px;display:grid;place-items:center;margin-top:-10px">Espace artisan</div>
+      </div>
+    </div>
+  </div></div>
+  <figcaption>1 · Bienvenue<small>Fond sombre, un seul geste</small></figcaption>
+</figure>
+
+<!-- 2 CLIENT HOME -->
+<figure id="s2">
+  <div class="phone"><div class="scr">
+    <div class="sb"><span>9:41</span><span>●●●</span></div>
+    <div class="body">
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:center;padding-top:4px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="av" style="width:42px;height:42px;font-size:16px">S</div><div><small class="muted" style="font-size:12px">Bonjour</small><div style="font-weight:800;font-size:15px;line-height:1.1">Samir</div></div></div>
+        <div style="display:flex;gap:8px"><span class="chip" style="height:44px"><svg class="i" style="color:var(--forest)"><use href="#pin"/></svg>La Marsa</span><span class="round" style="width:44px;height:44px;background:#fff;border:1.5px solid var(--line);color:var(--ink);font-size:18px"><svg class="i"><use href="#bell"/></svg></span></div>
+      </div>
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:flex-end;padding-top:20px;padding-bottom:12px">
+        <h2>Quel service ?</h2>
+        <span style="font-size:12px;font-weight:700;display:flex;gap:6px;align-items:center;padding-bottom:2px"><i class="dot g" style="animation:none"></i>58 en ligne</span>
+      </div>
+      <div class="grid">
+        <div class="box sel"><span class="ic"><svg class="i"><use href="#plomb"/></svg></span><b>Plomberie</b><span class="on"><i class="dot"></i>12</span></div>
+        <div class="box"><span class="ic"><svg class="i"><use href="#elec"/></svg></span><b>Électricité</b><span class="on"><i class="dot"></i>9</span></div>
+        <div class="box"><span class="ic"><svg class="i"><use href="#meca"/></svg></span><b>Mécanique</b><span class="on"><i class="dot"></i>14</span></div>
+        <div class="box"><span class="ic"><svg class="i"><use href="#clim"/></svg></span><b>Climatisation</b><span class="on"><i class="dot"></i>7</span></div>
+        <div class="box"><span class="ic"><svg class="i"><use href="#serr"/></svg></span><b>Serrurerie</b><span class="on"><i class="dot"></i>6</span></div>
+        <div class="box"><span class="ic"><svg class="i"><use href="#peint"/></svg></span><b>Peinture</b><span class="on"><i class="dot"></i>10</span></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="slide" data-go="s3" style="margin-bottom:12px"><span>Glissez pour lancer · Plomberie</span><div class="th"><svg class="i"><use href="#arrow"/></svg></div></div>
+    </div>
+    <div class="tabs"><div class="on" data-go="s2"><svg class="i"><use href="#home"/></svg>Accueil</div><div data-go="s4"><svg class="i"><use href="#list"/></svg>Demandes</div><div><svg class="i"><use href="#chat"/></svg>Messages</div><div><svg class="i"><use href="#user"/></svg>Profil</div></div>
+  </div></div>
+  <figcaption>2 · Accueil client<small>6 services, en ligne, aucun prix</small></figcaption>
+</figure>
+
+<!-- 3 PROBLEM -->
+<figure id="s3">
+  <div class="phone"><div class="scr">
+    <div class="sb"><span>9:41</span><span>●●●</span></div>
+    <div class="body">
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+        <span class="round" data-go="s2" style="background:#fff;border:1.5px solid var(--line);color:var(--ink);width:44px;height:44px"><svg class="i" style="transform:rotate(180deg)"><use href="#chev"/></svg></span>
+        <span class="chip on" style="height:44px"><svg class="i" style="color:var(--live)"><use href="#plomb"/></svg>Plomberie</span>
+        <span style="width:44px"></span>
+      </div>
+      <div class="pad" style="padding-top:20px;display:flex;flex-direction:column;gap:14px;flex:1;min-height:0">
+        <h2>Décrivez<br>le problème</h2>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="chip on">Fuite</span><span class="chip">Bouché</span><span class="chip">Robinet</span><span class="chip">Chauffe-eau</span>
+        </div>
+        <div style="background:#fff;border:2px solid var(--forest);border-radius:var(--r-md);padding:14px;height:88px;font-size:14px;position:relative">Fuite sous l'évier<span style="position:absolute;right:12px;bottom:8px;font-size:11px;color:var(--muted)">17 / 300</span></div>
+        <div class="list">
+          <div class="li"><span class="ic"><svg class="i"><use href="#pin"/></svg></span><div style="flex:1"><small>Adresse</small><b>12 Rue Habib Thameur</b></div><svg class="i muted"><use href="#chev"/></svg></div>
+          <div class="li"><span class="ic"><svg class="i"><use href="#clock"/></svg></span><div style="flex:1"><small>Arrivée</small><b>Dès que possible</b></div><svg class="i muted"><use href="#chev"/></svg></div>
+          <div class="li"><span class="ic"><svg class="i"><use href="#cam"/></svg></span><div style="flex:1"><small>Photo · facultatif</small><b>Ajouter</b></div><svg class="i muted"><use href="#chev"/></svg></div>
+        </div>
+      </div>
+      <div style="padding:10px 0 22px"><div class="slide" data-go="s4"><span>Glissez pour lancer</span><div class="th"><svg class="i"><use href="#arrow"/></svg></div></div></div>
+    </div>
+  </div></div>
+  <figcaption>3 · Le problème<small>Raccourcis = presque rien à taper</small></figcaption>
+</figure>
+
+<!-- 4 TRACKING -->
+<figure id="s4">
+  <div class="phone"><div class="scr dark" style="background:var(--sand);color:var(--ink)">
+    <div style="background:var(--night);color:#fff;padding-bottom:36px;flex:none">
+      <div class="sb"><span>9:41</span><span>●●●</span></div>
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:center">
+        <span class="round" data-go="s3" style="background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px"><svg class="i" style="transform:rotate(180deg)"><use href="#chev"/></svg></span>
+        <span class="live-chip"><i class="dot"></i>EN ROUTE</span>
+        <span class="round" style="background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px"><svg class="i"><use href="#chat"/></svg></span>
+      </div>
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:flex-end;padding-top:14px">
+        <h2 style="font-size:27px">Ahmed arrive</h2>
+        <div style="display:flex;align-items:baseline;gap:5px"><b style="font-size:34px;font-weight:800;color:var(--live);line-height:1">8</b><span style="font-size:13px;font-weight:700;color:var(--mint)">min</span></div>
+      </div>
+      <div class="pad" data-go="s5" style="padding-top:14px"><div class="steps"><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i></div></div>
+    </div>
+    <div style="flex:1;min-height:0;position:relative;background:#E4E9DD;overflow:hidden">
+      <svg viewBox="0 0 304 260" preserveAspectRatio="xMidYMid slice" style="position:absolute;inset:0;width:100%;height:100%" fill="none">
+        <path d="M-10 70L320 30M-10 190L320 160M60 -10L90 280M200 -10L180 280" stroke="#fff" stroke-width="12"/>
+        <path d="M-10 130L320 100" stroke="#fff" stroke-width="6"/>
+        <rect x="215" y="180" width="70" height="55" rx="9" fill="#D2E1C9"/><rect x="12" y="195" width="40" height="50" rx="8" fill="#D2E1C9"/>
+        <path d="M78 215C110 190 118 150 130 118C138 98 160 88 188 80" stroke="#0B4F34" stroke-width="4.5" stroke-linecap="round" stroke-dasharray="1 9"/>
+        <circle cx="188" cy="80" r="22" fill="#0B4F34" fill-opacity=".14"/><circle cx="188" cy="80" r="9" fill="#0B4F34" stroke="#fff" stroke-width="3.5"/>
+        <circle cx="96" cy="196" r="26" fill="#B5F23D" fill-opacity=".4"/><circle cx="96" cy="196" r="18" fill="#06281B"/>
+        <g transform="translate(86 186) scale(.83)" stroke="#B5F23D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 3a4.5 4.5 0 0 0-3.9 6.7L3 17.3 6.7 21l7.6-7.6A4.5 4.5 0 0 0 21 9.5l-3 3-3-1-1-3 3-3A4.5 4.5 0 0 0 14.5 3z"/></g>
+      </svg>
+    </div>
+    <div class="sheet">
+      <span class="grab"></span>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="av">A</div>
+        <div style="flex:1"><b style="font-size:16px">Ahmed P.</b><div class="muted" style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px">Plombier · 4,9 <svg class="i" style="fill:var(--forest);stroke:var(--forest);font-size:12px"><use href="#star"/></svg></div></div>
+        <span class="round"><svg class="i"><use href="#chat"/></svg></span>
+        <span class="round fill"><svg class="i"><use href="#phone"/></svg></span>
+      </div>
+      <div class="list"><div class="li" style="min-height:48px"><span class="ic"><svg class="i"><use href="#plomb"/></svg></span><b style="flex:1">Fuite sous l'évier</b></div></div>
+      <div style="text-align:center;font-size:13px;font-weight:700;color:var(--danger);min-height:30px" data-go="s2">Annuler la demande</div>
+    </div>
+  </div></div>
+  <figcaption>4 · Suivi<small>Gros ETA, 6 étapes, carte lisible au soleil</small></figcaption>
+</figure>
+
+<!-- 5 END OF JOB -->
+<figure id="s5">
+  <div class="phone"><div class="scr">
+    <div class="sb"><span>9:41</span><span>●●●</span></div>
+    <div class="body">
+      <div style="text-align:center;padding:12px 24px 0;display:flex;flex-direction:column;align-items:center;gap:8px">
+        <span style="width:60px;height:60px;border-radius:50%;background:var(--forest);color:var(--live);display:grid;place-items:center;font-size:30px"><svg class="i" style="stroke-width:2.6"><use href="#check"/></svg></span>
+        <h2 style="font-size:28px">C'est réparé !</h2>
+        <span class="muted" style="font-size:13px;font-weight:600">Plomberie · Ahmed P.</span>
+      </div>
+      <div class="pad" style="padding-top:18px">
+        <div style="background:var(--night);color:#fff;border-radius:var(--r-lg);padding:20px;text-align:center;display:flex;flex-direction:column;gap:6px;align-items:center">
+          <span style="font-size:12px;font-weight:600;color:var(--mint)">Montant déclaré par Ahmed P.</span>
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:58px;font-weight:800;line-height:1;letter-spacing:-.03em">85</b><b style="font-size:20px;color:var(--live)">TND</b></div>
+          <span style="display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,.1);font-size:12px;font-weight:700;color:var(--mint)"><svg class="i" style="font-size:16px"><use href="#cash"/></svg>Espèces uniquement</span>
+        </div>
+      </div>
+      <div style="text-align:center;padding-top:20px;display:flex;flex-direction:column;gap:10px;align-items:center">
+        <b style="font-size:14px">Notez Ahmed</b>
+        <div style="display:flex;gap:6px">
+          <svg class="i" style="font-size:36px;fill:var(--forest);stroke:var(--forest)"><use href="#star"/></svg><svg class="i" style="font-size:36px;fill:var(--forest);stroke:var(--forest)"><use href="#star"/></svg><svg class="i" style="font-size:36px;fill:var(--forest);stroke:var(--forest)"><use href="#star"/></svg><svg class="i" style="font-size:36px;fill:var(--forest);stroke:var(--forest)"><use href="#star"/></svg><svg class="i" style="font-size:36px;fill:none;stroke:#C9C3B0"><use href="#star"/></svg>
+        </div>
+      </div>
+      <div style="flex:1"></div>
+      <div style="padding-bottom:14px;display:flex;flex-direction:column;gap:6px">
+        <div class="btn" data-go="s2" style="height:58px">J'ai payé 85 TND en espèces</div>
+        <div style="text-align:center;font-size:12px;font-weight:700;color:var(--muted);min-height:44px;display:grid;place-items:center">Un problème avec le montant ?</div>
+      </div>
+    </div>
+  </div></div>
+  <figcaption>5 · Fin d'intervention<small>Seul écran avec un prix · 1 action</small></figcaption>
+</figure>
+
+<!-- 6 ARTISAN HOME -->
+<figure id="s6">
+  <div class="phone"><div class="scr">
+    <div style="background:var(--night);color:#fff;padding-bottom:22px;flex:none;border-radius:0 0 28px 28px">
+      <div class="sb"><span>9:41</span><span>●●●</span></div>
+      <div class="pad" style="display:flex;justify-content:space-between;align-items:center;padding-top:4px">
+        <div style="display:flex;align-items:center;gap:10px"><div class="av" style="background:var(--forest-2)">A</div><div><small style="font-size:12px;color:var(--mint)">Plombier</small><div style="font-weight:800;font-size:16px;line-height:1.1">Ahmed</div></div></div>
+        <span class="live-chip" style="height:34px">COMPTE ACTIF</span>
+      </div>
+      <div class="pad" style="display:flex;align-items:center;justify-content:space-between;padding-top:20px">
+        <div><h2 style="font-size:28px">En ligne</h2><span style="font-size:12px;color:var(--mint);font-weight:600">Vous recevez les demandes</span></div>
+        <div class="toggle"></div>
+      </div>
+    </div>
+    <div class="body pad" style="padding-top:18px;gap:14px">
+      <div style="display:flex;gap:10px">
+        <div class="list" style="flex:1;padding:12px 14px"><small class="muted" style="font-size:11px;font-weight:600">Ce mois</small><div style="font-size:26px;font-weight:800;line-height:1.1">12</div><small class="muted" style="font-size:11px;font-weight:600">missions</small></div>
+        <div class="list" style="flex:1;padding:12px 14px"><small class="muted" style="font-size:11px;font-weight:600">Note</small><div style="font-size:26px;font-weight:800;line-height:1.1">4,9</div><small class="muted" style="font-size:11px;font-weight:600">214 avis</small></div>
+      </div>
+      <div style="background:#fff;border:2px solid var(--action);border-radius:var(--r-lg);padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="live-chip" style="background:var(--night);height:26px;font-size:10px">NOUVELLE DEMANDE</span><b style="font-size:13px;color:var(--forest)">0:42</b></div>
+        <div style="display:flex;align-items:center;gap:12px"><span class="ic round"><svg class="i"><use href="#plomb"/></svg></span><div><b style="font-size:16px">Fuite sous l'évier</b><div class="muted" style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:4px"><svg class="i" style="font-size:13px"><use href="#pin"/></svg>La Marsa · 1,2 km</div></div></div>
+      </div>
+      <div style="flex:1"></div>
+      <div class="slide" data-toast="Mission acceptée" style="margin:0 -4px 12px"><span>Glissez pour accepter</span><div class="th"><svg class="i"><use href="#arrow"/></svg></div></div>
+    </div>
+    <div class="tabs"><div class="on" data-go="s6"><svg class="i"><use href="#home"/></svg>Accueil</div><div data-toast="Missions"><svg class="i"><use href="#list"/></svg>Missions</div><div><svg class="i"><use href="#chat"/></svg>Messages</div><div><svg class="i"><use href="#user"/></svg>Profil</div></div>
+  </div></div>
+  <figcaption>6 · Accueil artisan<small>Une demande à la fois, glisser pour accepter</small></figcaption>
+</figure>
+
+</div>
+
+<div class="legend">
+  <span><svg class="i"><use href="#cash"/></svg>Espèces uniquement</span>
+  <span><svg class="i"><use href="#arrow"/></svg>Barres à glisser : lancer, accepter, étapes, montant</span>
+  <span><svg class="i"><use href="#check"/></svg>Prix visible seulement à l'écran 5</span>
+</div>
+<section class="wf" id="wf" aria-label="Workflow" aria-hidden="true"></section>
+<div class="toast" id="toast"></div>
+<script>
+const toast=t=>{const e=document.getElementById('toast');e.textContent=t;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1500)};
+const NAMES=['Bienvenue','Accueil client','Le problème','Suivi',"Fin d'intervention",'Accueil artisan'];
+const row=document.querySelector('.row');
+const layers=[...row.querySelectorAll('figure')].map(f=>f.querySelector('.scr'));
+const stage=document.createElement('div');stage.className='stage';
+stage.innerHTML='<div class="phone"><div class="screens"></div></div><nav class="snav"></nav>';
+const holder=stage.querySelector('.screens'),snav=stage.querySelector('.snav');
+layers.forEach((l,i)=>{l.classList.add('layer');l.dataset.i=i;holder.appendChild(l);
+ const b=document.createElement('button');b.innerHTML='<i>'+(i+1)+'</i>'+NAMES[i];b.onclick=()=>go('s'+(i+1));snav.appendChild(b)});
+row.replaceWith(stage);
+let cur=0,busy=false;
+function mark(){[...snav.children].forEach((b,i)=>b.classList.toggle('on',i===cur))}
+layers.forEach((l,i)=>l.classList.toggle('cur',i===0));mark();
+function go(id){const n=+id.slice(1)-1;if(n===cur||busy||!layers[n])return;busy=true;
+ const from=layers[cur],to=layers[n];const fade=cur===5||n===5;const fwd=n>cur;
+ const inStart=fade?'tr-fade-in':fwd?'tr-from-right':'tr-from-left';
+ const outEnd=fade?'tr-fade-out':fwd?'tr-to-left':'tr-to-right';
+ to.classList.add('cur',inStart);void to.offsetWidth;
+ from.classList.add(outEnd);to.classList.remove(inStart);
+ cur=n;mark();
+ setTimeout(()=>{from.classList.remove('cur',outEnd);busy=false},480)}
+function act(el){if(el.dataset.go)go(el.dataset.go);else if(el.dataset.toast)toast(el.dataset.toast)}
+document.addEventListener('click',e=>{
+ const b=e.target.closest('.box');if(b){b.closest('.grid').querySelectorAll('.box').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');return}
+ const t=e.target.closest('[data-go],[data-toast]');if(t&&!t.classList.contains('slide'))act(t)});
+/* ---------- workflow board ---------- */
+const WF=[
+ {n:'01',t:'Accès',r:'Tous les rôles',d:"Entrer dans l'app en un seul geste.",c:[
+  ['1','Bienvenue','s1',"Fond nuit, les 6 outils tournent autour du « 7 ». Une seule barre à glisser.",[['g','Glisser « pour commencer » → Accueil client'],['y','« J\'ai déjà un compte » → Accueil client (connexion à venir)'],['y','« Espace artisan » → Accueil artisan']]]]},
+ {n:'02',t:'Client · une demande',r:'Client',d:"De la panne au paiement en espèces. Le prix n'apparaît qu'à la dernière étape.",c:[
+  ['2','Accueil client','s2',"6 services avec « N en ligne » en direct. Un service est choisi, la barre verte apparaît. Aucun prix.",[['g','Glisser « pour lancer · Plomberie » → Le problème'],['y','Toucher un autre service → il devient le service choisi'],['y','Onglet Demandes → Suivi']]],
+  ['3','Le problème','s3',"Raccourcis (Fuite, Bouché, Robinet…), description de 300 caractères max, adresse, arrivée, photo facultative.",[['g','Glisser « pour lancer » → Suivi'],['r','Flèche retour → Accueil client, le service reste choisi']]],
+  ['4','Suivi','s4',"Gros ETA en lime, 6 étapes, carte lisible au soleil, fiche de l'artisan avec Message et Appel.",[['g','Toucher la barre des étapes → Fin d\'intervention (l\'artisan a terminé)'],['y','Flèche retour → Le problème'],['r','« Annuler la demande » → Accueil client']]],
+  ['5','Fin d\'intervention','s5',"Seul écran avec un prix : « Montant déclaré par Ahmed P. », espèces uniquement, note en étoiles.",[['g','« J\'ai payé 85 TND en espèces » → Accueil client'],['y','« Un problème avec le montant ? » → le support rappelle']]]]},
+ {n:'03',t:'Artisan · une mission',r:'Artisan',d:"Recevoir une demande et l'accepter d'un geste.",c:[
+  ['6','Accueil artisan','s6',"Interrupteur En ligne, missions du mois, note. Une demande à la fois avec un compte à rebours.",[['g','Glisser « pour accepter » → Mission acceptée'],['y','Onglet Missions → liste (à venir)'],['r','Compte en pause → pas de demandes (écran à venir)']]]]},
+ {n:'04',t:'Règles partout dans l\'app',r:'Produit',d:'',rules:[
+  ['Prix à la dernière étape',"Aucun prix avant l'écran 5. L'artisan saisit le montant, le client confirme."],
+  ['Espèces uniquement',"Le client paie l'artisan en espèces. Seule la commission de 30 TND passe par virement."],
+  ['Barres à glisser',"Lancer, accepter, avancer une étape, envoyer le montant : tout se valide en glissant. Fond nuit, bouton vert."],
+  ['Vert action = agir',"#2BB673 sert aux boutons et aux barres. C'est la seule couleur d'action."],
+  ['Lime = en direct',"Le lime et le point qui pulse marquent ce qui se passe maintenant (en route, minutes). Toujours sur fond sombre."],
+  ['Texte minimal',"Des libellés et des actions, pas de phrases. Cibles de 44 px au moins."],
+  ['Langue',"Français d'abord, arabe (Cairo, RTL) ensuite."]]}];
+(function(){
+ const w=document.getElementById('wf'),si=k=>'<span class="si '+k+'">SI</span>';
+ w.innerHTML='<button class="x" data-wfx>Fermer ✕</button><div class="wi"><div class="tp"><div><div class="eyb">EL 7AL · PARCOURS</div><h1>Workflow</h1><p class="lead">Chaque écran, dans l\'ordre, avec ce qui se passe selon le geste. Touchez une carte pour ouvrir l\'écran.</p></div>'+
+ '<div class="leg"><b>LÉGENDE</b><span class="lr"><span class="num">1</span>Écran, dans l\'ordre du parcours</span><span class="lr">'+si('g')+'Cas normal → écran suivant</span><span class="lr">'+si('y')+'Alternative ou attente</span><span class="lr">'+si('r')+'Retour, refus ou annulation</span></div></div>'+
+ WF.map(s=>'<section class="sec"><div class="sh"><span class="sn">'+s.n+'</span><span class="st">'+s.t+'</span><span class="rp">'+s.r+'</span>'+(s.d?'<span class="sd">'+s.d+'</span>':'')+'</div><div class="cards">'+
+  (s.rules?s.rules.map(r=>'<div class="rule"><b>'+r[0]+'</b><span class="ds">'+r[1]+'</span></div>').join(''):s.c.map(c=>'<button class="cd" data-wfj="'+c[2]+'"><span class="ch"><span class="num">'+c[0]+'</span>'+c[1]+'</span><p class="ds">'+c[3]+'</p>'+c[4].map(f=>'<span class="if">'+si(f[0])+'<span>'+f[1]+'</span></span>').join('')+'<span class="op">Ouvrir l\'écran →</span></button>').join(''))+'</div></section>').join('')+'</div>';
+ const open=v=>{w.classList.toggle('open',v);w.setAttribute('aria-hidden',String(!v));if(v)w.scrollTop=0};
+ const b=document.createElement('button');b.className='wfb';b.textContent='Voir le workflow';b.onclick=()=>open(true);snav.prepend(b);
+ w.addEventListener('click',e=>{if(e.target.closest('[data-wfx]'))return open(false);const j=e.target.closest('[data-wfj]');if(j){open(false);go(j.dataset.wfj)}});
+ addEventListener('keydown',e=>{if(e.key==='Escape')open(false)});
+ if(location.hash==='#workflow')open(true);
+})();
+document.querySelectorAll('.slide').forEach(sl=>{
+ const th=sl.querySelector('.th');let x0=null,max=0;
+ sl.addEventListener('click',e=>{if(e.target.closest('.th')&&sl._dragged){sl._dragged=false;return}act(sl)});
+ th.addEventListener('pointerdown',e=>{x0=e.clientX;max=sl.clientWidth-60;th.setPointerCapture(e.pointerId);th.style.animation='none';sl._dragged=false});
+ th.addEventListener('pointermove',e=>{if(x0===null)return;const d=Math.max(0,Math.min(max,e.clientX-x0));if(d>4)sl._dragged=true;th.style.transform=`translateX(${d}px)`;th._d=d});
+ const end=()=>{if(x0===null)return;x0=null;const ok=th._d>max*.7;th._d=0;th.style.transition='transform .25s';th.style.transform='';setTimeout(()=>{th.style.transition='';th.style.animation=''},260);if(ok)act(sl)};
+ th.addEventListener('pointerup',end);th.addEventListener('pointercancel',end)});
+</script>
+</body>
+</html>

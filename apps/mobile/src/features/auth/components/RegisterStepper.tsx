@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Txt } from '../../../shared/ui/Txt';
 import type { TranslationKeys } from '../../../shared/i18n/translations';

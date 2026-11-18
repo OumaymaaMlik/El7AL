@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { noSelect } from '../../../shared/theme/webStyles';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -11,30 +11,32 @@ import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { ROUTES } from '../../../navigation/routes';
 import { useAuthStore } from '../../auth';
-import { DirectPaymentModal } from '../../missions/components/DirectPaymentModal';
-import { DualCompletionModal } from '../../missions/components/DualCompletionModal';
-import { LiveGpsNavigationModal } from '../../missions/components/LiveGpsNavigationModal';
-import { ProviderReviewReceivedModal } from '../../missions/components/ProviderReviewReceivedModal';
-import { RatingModal } from '../../missions/components/RatingModal';
 import { useActiveMissionSync } from '../../missions/hooks/useActiveMissionSync';
 import { useMissionFlow } from '../../missions/hooks/useMissionFlow';
 import { useMissionSearch } from '../../missions/hooks/useMissionSearch';
 import { useMissionStore } from '../../missions/store/useMissionStore';
 import { isMissionActive } from '../../missions/utils/missionState';
-import { RecentClients, StatLedger } from '../components/ArtisanStats';
+import { ArtisanBody } from '../components/ArtisanBody';
+import { ArtisanHeader } from '../components/ArtisanHome';
 import { CategoryGrid } from '../components/CategoryGrid';
-import { ClientHero } from '../components/ClientHero';
+import { ThanksPage } from '../../missions/components/ThanksPage';
+import { ActiveMissionPill } from '../components/ActiveMissionPill';
+import { HomeMissionModals } from '../components/HomeMissionModals';
+import { CoachTip } from '../components/CoachTip';
+import { ClientSearch } from '../components/ClientSearch';
+import { LocationPrompt } from '../components/LocationPrompt';
+import { useLocationGate } from '../hooks/useLocationGate';
 import { HomeActionBar } from '../components/HomeActionBar';
 import { HomeHeader } from '../components/HomeHeader';
-import { NoArtisanDialog } from '../components/NoArtisanDialog';
-import { PartnerRow } from '../components/PartnerRow';
+import { LiveDot } from '../../../shared/ui/LiveDot';
 import { VerificationBanner } from '../components/VerificationBanner';
-import { ProviderHero } from '../components/ProviderHero';
 import { RequestSheet } from '../components/RequestSheet';
+import { onlineCountOf, useCategoryStats } from '../hooks/useCategoryStats';
+import { useSearchPhase } from '../hooks/useSearchPhase';
 import { useProviderDashboard } from '../hooks/useProviderDashboard';
 import { useServiceRequest } from '../hooks/useServiceRequest';
 
-const ACTION_BAR_HEIGHT = 142;
+const ACTION_BAR_HEIGHT = 100;
 
 export function HomeScreen() {
   const router = useRouter();
@@ -48,18 +50,17 @@ export function HomeScreen() {
   const isProviderRole = activeRole === 'PROVIDER' || user?.role === 'PROVIDER';
 
   const isSearching = useMissionStore((state) => state.isSearching);
-  const searchingMissionId = useMissionStore((state) => state.searchingMissionId);
   const partner = useMissionStore((state) => state.activePairingProvider);
-  const activeMission = useMissionStore((state) => state.activeMission);
-  const distanceKm = useMissionStore((state) => state.distanceKm);
-  const etaMinutes = useMissionStore((state) => state.etaMinutes);
-  const reviewData = useMissionStore((state) => state.reviewData);
-  const setReviewData = useMissionStore((state) => state.setReviewData);
+  const thanks = useMissionStore((state) => state.thanks);
+  const setThanks = useMissionStore((state) => state.setThanks);
   const missionActive = useMissionStore(isMissionActive);
 
-  const request = useServiceRequest(!isProviderRole);
+  const { locStep, setLocStep, locBusy, allowLocation } = useLocationGate(isProviderRole);
+
+  const request = useServiceRequest(!isProviderRole && locStep === 'ready');
   const flow = useMissionFlow();
   const search = useMissionSearch();
+  const { phase, dismiss } = useSearchPhase(isSearching, Boolean(partner), search.noArtisanOpen);
   const { history, completedCount, sync } = useActiveMissionSync(isProviderRole);
   const dashboard = useProviderDashboard(history, completedCount);
 
@@ -83,64 +84,84 @@ export function HomeScreen() {
     setRefreshing(false);
   };
 
-  const openChat = () => router.push({ pathname: '/(tabs)/chat', params: { missionId: searchingMissionId || '' } });
-
-  const showActionBar = !isProviderRole && Boolean(request.selectedCategory) && !partner && !isSearching;
+  // The slide bar is always at the bottom for a client (a hint before a choice, the slide after it).
+  const showActionBar = !isProviderRole && !partner && !isSearching && !missionActive;
   const bottomInset = Math.max(insets.bottom, 10);
-  const contentPaddingBottom = tabBarHeight + bottomInset + space.xxl + (showActionBar ? ACTION_BAR_HEIGHT : 0);
+  const contentPaddingBottom =
+    tabBarHeight + bottomInset + space.xxl + (showActionBar ? ACTION_BAR_HEIGHT : 0) + (missionActive ? 72 : 0);
+  const { onlineTotal, popularId } = useCategoryStats(request.categories);
+
+  if (!isProviderRole && locStep === 'prompt') {
+    return <LocationPrompt busy={locBusy} onAllow={allowLocation} onTypeAddress={() => setLocStep('ready')} />;
+  }
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <InstagramPullToRefresh
         refreshing={refreshing}
         onRefresh={refresh}
-        headerComponent={<HomeHeader isProvider={isProviderRole} locationText={request.locationText} />}
+        headerComponent={
+          isProviderRole ? (
+            <ArtisanHeader
+              stats={dashboard.stats}
+              trade={
+                (
+                  dashboard.providerProfile?.categories as { category?: { name?: string }; name?: string }[] | undefined
+                )?.[0]?.category?.name ?? null
+              }
+              available={dashboard.isProviderAvailable}
+              onToggleAvailability={dashboard.toggleAvailability}
+            />
+          ) : (
+            <HomeHeader locationText={request.locationText} />
+          )
+        }
         style={[styles.container, { backgroundColor: colors.background }]}
         contentContainerStyle={[styles.content, { paddingBottom: contentPaddingBottom }]}
         showsVerticalScrollIndicator={false}
       >
-        {isProviderRole && <VerificationBanner />}
-
-        {isProviderRole ? (
-          <ProviderHero
-            flow={flow}
-            available={dashboard.isProviderAvailable}
-            onToggleAvailability={dashboard.toggleAvailability}
-            onOpenChat={openChat}
-          />
-        ) : (
-          <ClientHero
-            missionActive={missionActive}
-            flow={flow}
-            needText={request.needText}
-            onChangeNeed={request.changeNeed}
-            onFindArtisan={request.openSheet}
-            onCancelSearch={search.cancelSearch}
-            onOpenChat={openChat}
-          />
-        )}
-
-        {partner && <PartnerRow partner={partner} isProviderRole={isProviderRole} />}
-
         {isProviderRole ? (
           <>
-            <StatLedger stats={dashboard.stats} onOpenHistory={() => router.push('/(tabs)/tracking')} />
-            <RecentClients missions={dashboard.completedMissions} />
+            <VerificationBanner />
+            <ArtisanBody
+              due={Math.max(0, -(dashboard.stats.walletBalance ?? 0))}
+              available={dashboard.isProviderAvailable}
+              missionActive={missionActive}
+              completed={dashboard.completedMissions}
+            />
           </>
         ) : (
-          <View>
-            <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: type.heading.fontFamily }]}>
-              {t('allServicesTitle')}
-            </Text>
-            <CategoryGrid
-              categories={request.categories}
-              loading={request.loadingCategories}
-              error={request.categoriesError}
-              selectedId={request.selectedCategory?.id}
-              onSelect={request.toggleCategory}
-              onRetry={request.loadCategories}
-            />
-          </View>
+          <>
+            <View>
+              <View style={styles.titleRow}>
+                <Text style={[styles.sectionTitle, { color: colors.text, fontFamily: type.title.fontFamily }]}>
+                  {t('whichService')}
+                </Text>
+                {onlineTotal > 0 && (
+                  <View style={styles.onlineNow}>
+                    <LiveDot />
+                    <Text
+                      style={[
+                        styles.onlineText,
+                        { color: colors.textMuted, fontFamily: type.captionStrong.fontFamily },
+                      ]}
+                    >
+                      {t('onlineCount').replace('{n}', String(onlineTotal))}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <CategoryGrid
+                categories={request.categories}
+                loading={request.loadingCategories}
+                error={request.categoriesError}
+                selectedId={request.selectedCategory?.id}
+                popularId={popularId}
+                onSelect={request.toggleCategory}
+                onRetry={request.loadCategories}
+              />
+            </View>
+          </>
         )}
 
         <RequestSheet
@@ -158,44 +179,57 @@ export function HomeScreen() {
           errors={request.formErrors}
         />
 
-        <LiveGpsNavigationModal
-          visible={flow.gpsOpen}
-          onClose={() => flow.setGpsOpen(false)}
-          onStartDrive={flow.startDrive}
-          destinationAddress={activeMission?.addressText ?? undefined}
-          destinationLat={activeMission?.pickupLat}
-          destinationLng={activeMission?.pickupLng}
-          distanceKm={distanceKm}
-          etaMinutes={etaMinutes}
-          loading={flow.actionLoading}
-        />
-        <DualCompletionModal
-          visible={flow.dualOpen}
-          onConfirm={flow.clientConfirm}
-          onClose={() => flow.setDualOpen(false)}
-          loading={flow.actionLoading}
-        />
-        <DirectPaymentModal
-          visible={flow.paymentOpen}
-          onProceed={flow.submitPayment}
-          onClose={() => flow.setPaymentOpen(false)}
-          loading={flow.actionLoading}
-        />
-        <RatingModal
-          visible={flow.ratingOpen}
-          onSubmit={flow.submitRating}
-          onClose={() => flow.setRatingOpen(false)}
-          loading={flow.actionLoading}
-        />
-        <ProviderReviewReceivedModal visible={!!reviewData} data={reviewData} onClose={() => setReviewData(null)} />
-        <NoArtisanDialog visible={search.noArtisanOpen} onClose={() => search.setNoArtisanOpen(false)} />
+        <HomeMissionModals flow={flow} />
       </InstagramPullToRefresh>
+
+      {!isProviderRole && showActionBar && locStep === 'ready' && !request.selectedCategory && !thanks && (
+        <CoachTip bottom={tabBarHeight + bottomInset + ACTION_BAR_HEIGHT + 8} />
+      )}
+
+      {/* After the rating, the green "Merci" page closes the job. */}
+      {!isProviderRole && thanks && (
+        <ThanksPage
+          data={thanks}
+          onHome={() => setThanks(null)}
+          onRequests={() => {
+            setThanks(null);
+            router.push('/(tabs)/tracking');
+          }}
+        />
+      )}
+
+      {/* While the request is out, the radar page slides in over the home page. */}
+      {!isProviderRole && phase !== 'idle' && (
+        <ClientSearch
+          phase={phase}
+          online={onlineCountOf(request.selectedCategory) || onlineTotal}
+          provider={partner}
+          onCancel={() => {
+            search.setNoArtisanOpen(false);
+            dismiss();
+            if (phase === 'searching') void search.cancelSearch();
+          }}
+          onTrack={() => {
+            dismiss();
+            router.push('/(tabs)/tracking');
+          }}
+          onRetry={() => {
+            search.setNoArtisanOpen(false);
+            dismiss();
+            void request.submit();
+          }}
+        />
+      )}
+
+      {!isProviderRole && missionActive && !isSearching && (
+        <ActiveMissionPill bottom={tabBarHeight + bottomInset + 10} onPress={() => router.push('/(tabs)/tracking')} />
+      )}
 
       {/* Docked action bar once a service is selected */}
       {!isProviderRole && !missionActive && !isSearching && (
         <HomeActionBar
           category={request.selectedCategory}
-          visible={showActionBar}
+          visible
           bottomOffset={tabBarHeight + bottomInset}
           onConfirm={request.openSheet}
           onNotifyAvailable={request.notifyWhenAvailable}
@@ -210,5 +244,8 @@ const styles = StyleSheet.create({
   screen: { flex: 1 },
   container: { flex: 1, ...noSelect },
   content: { paddingHorizontal: gutter, paddingTop: space.xs, gap: space.xxl },
-  sectionTitle: { fontSize: 20, lineHeight: 24, fontWeight: '800', letterSpacing: -0.4, marginBottom: 12 },
+  titleRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 14 },
+  sectionTitle: { fontSize: 30, lineHeight: 33, letterSpacing: -0.5 },
+  onlineNow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingBottom: 3 },
+  onlineText: { fontSize: 13, lineHeight: 17 },
 });

@@ -5,8 +5,6 @@ import { getStorageItem } from '../storage/secureStorage';
 import { logger } from '../../shared/utils/logger';
 import { requestNewTokens } from './session';
 
-export { API_URL };
-
 export const api = axios.create({
   baseURL: API_URL,
   headers: { 'Content-Type': 'application/json' },

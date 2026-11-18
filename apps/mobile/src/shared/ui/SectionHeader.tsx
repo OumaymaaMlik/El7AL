@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, Pressable, StyleSheet, StyleProp, ViewStyle } from 'react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { hitTarget, space } from '../theme/tokens';

@@ -70,5 +70,3 @@ export function useProfile() {
     balance: toNumber(profile?.providerProfile?.walletBalance) ?? toNumber(profile?.walletBalance) ?? 0,
   };
 }
-
-export type ProfileData = ReturnType<typeof useProfile>;

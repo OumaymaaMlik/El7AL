@@ -1,21 +1,22 @@
-/** Colors of the notification center sheet, for the light and dark themes. */
+/** Colors of the notification page, for the light and dark themes (the app's sand and night tokens). */
 export function notificationPalette(isDark: boolean) {
   return {
-    sheetBg: isDark ? '#101B14' : '#F3F5F1',
-    cardBg: isDark ? '#16241B' : '#FFFFFF',
-    cardBorder: isDark ? '#263B2E' : '#E1E7DF',
-    hairline: isDark ? '#203327' : '#E8ECE6',
-    textTitle: isDark ? '#F2F6F2' : '#0E1F16',
-    textSub: isDark ? '#D1DCD5' : '#34453A',
-    textMuted: isDark ? '#8FA094' : '#5F6B63',
-    unreadItemBg: isDark ? '#1B3224' : '#F3FAE3',
-    greenBrand: isDark ? '#10B981' : '#0F5B3A',
-    unreadGreen: isDark ? '#4ADE80' : '#17803A',
-    redDanger: isDark ? '#EF4444' : '#B3261E',
-    handle: isDark ? '#263B2E' : '#C9D2C8',
-    closeBorder: isDark ? '#263B2E' : '#DCE3DB',
+    sheetBg: isDark ? '#06281B' : '#F2F4EE',
+    cardBg: isDark ? '#131D18' : '#FFFFFF',
+    cardBorder: isDark ? '#2B3B33' : '#DAE1D3',
+    hairline: isDark ? '#22302A' : '#DAE1D3',
+    textTitle: isDark ? '#EEF3EC' : '#0B1F16',
+    textSub: isDark ? '#C3CEC1' : '#4E6358',
+    textMuted: isDark ? '#A3B0A2' : '#4E6358',
+    unreadItemBg: isDark ? '#16281F' : '#FFFFFF',
+    greenBrand: isDark ? '#86D9A6' : '#0D5C3A',
+    unreadGreen: isDark ? '#5ED39A' : '#0D5C3A',
+    redDanger: isDark ? '#EF4444' : '#B4232A',
+    handle: isDark ? '#2B3B33' : '#DAE1D3',
+    closeBorder: isDark ? '#2B3B33' : '#DAE1D3',
     confirmBg: isDark ? '#2A1717' : '#FEE2E2',
-    emptyIconBg: isDark ? '#16241B' : '#E8ECE6',
+    emptyIconBg: isDark ? '#1C2A23' : '#E8EEE1',
+    tile: isDark ? '#1C2A23' : '#E8EEE1',
   };
 }
 

@@ -34,7 +34,7 @@ export async function requestEmailChange(
   if (!(await sendEmailVerificationCode(email, code, user.fullName, 'email-change'))) {
     return { ok: false, status: 502, error: "Le code n'a pas pu être envoyé. Réessayez." };
   }
-  return { ok: true, email, devCode: process.env.NODE_ENV !== 'production' ? code : undefined };
+  return { ok: true, email, devCode: process.env.NODE_ENV === 'test' ? code : undefined };
 }
 
 /** Step 2: the right code proves the person reads the new address, and only then the account is updated. */

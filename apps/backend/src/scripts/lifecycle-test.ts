@@ -364,12 +364,36 @@ async function main() {
     );
     const strangerFinish = await call('POST', `/missions/${missionId}/dual-confirm`, stranger.token);
     check('another artisan cannot finish the mission', strangerFinish.status >= 400, String(strangerFinish.status));
-    const providerDone = waitFor(clientSocket, 'mission:status_update', 4000, (d) => d.status === 'DUAL_CONFIRM');
-    const finish = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token);
+    // The artisan declares the amount at the end: nonsense amounts are refused and change nothing.
+    for (const bad of [0, -5, 'abc', 1_000_000_000]) {
+      const refused = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token, { amount: bad });
+      check(`a declared amount of ${JSON.stringify(bad)} is refused`, refused.status >= 400, String(refused.status));
+    }
+    const stillWorking = await call('GET', `/missions/${missionId}`, client.token);
     check(
-      'artisan finishes: client is asked to confirm',
+      'refused amounts leave the mission in progress',
+      stillWorking.body?.data?.status === 'IN_PROGRESS' && !stillWorking.body?.data?.declaredAmount,
+      String(stillWorking.body?.data?.status),
+    );
+    const providerDone = waitFor(clientSocket, 'mission:status_update', 4000, (d) => d.status === 'DUAL_CONFIRM');
+    const finish = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token, { amount: 85.5 });
+    check(
+      'artisan finishes with an amount: client is asked to confirm',
       finish.status === 200 && Boolean(await providerDone),
       JSON.stringify(finish.body).slice(0, 100),
+    );
+    const declared = await call('GET', `/missions/${missionId}`, client.token);
+    check(
+      'the client sees the amount the artisan declared',
+      Number(declared.body?.data?.declaredAmount) === 85.5,
+      String(declared.body?.data?.declaredAmount),
+    );
+    const providerAgain = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token, { amount: 999 });
+    const kept = await call('GET', `/missions/${missionId}`, client.token);
+    check(
+      'the artisan cannot change the amount after declaring it',
+      Number(kept.body?.data?.declaredAmount) === 85.5,
+      `${providerAgain.status} / ${String(kept.body?.data?.declaredAmount)}`,
     );
 
     const completed = waitFor(providerSocket, 'mission:completed');

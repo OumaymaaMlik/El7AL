@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Pressable, PressableProps, StyleProp, ViewStyle } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Navigation, MessageCircle } from 'lucide-react-native';
+import { TabIcon } from '../../src/shared/ui/TabIcon';
 import { useThemeStore } from '../../src/shared/store/useThemeStore';
 import { useTranslation } from '../../src/shared/store/useLanguageStore';
 import { useAuthStore } from '../../src/features/auth/store/useAuthStore';
@@ -12,93 +11,23 @@ import { useType } from '../../src/shared/theme/useType';
 import { numeralFont } from '../../src/shared/theme/typography';
 import { tabBarHeight } from '../../src/shared/theme/tokens';
 
-interface NavAvatarProps {
-  focused: boolean;
-  avatarUrl: string | null;
-  colors: ReturnType<typeof useThemeStore.getState>['colors'];
-  initials: string;
-}
-
-const NavAvatar = ({ focused, avatarUrl, colors, initials }: NavAvatarProps) => {
-  const [failed, setFailed] = React.useState(false);
-
-  return (
-    <View
-      style={[
-        styles.navAvatarBox,
-        {
-          backgroundColor: colors.brand,
-          borderColor: focused ? colors.accentText : 'transparent',
-        },
-      ]}
-    >
-      {avatarUrl && !failed ? (
-        <Image source={{ uri: avatarUrl }} style={styles.navAvatarImage} onError={() => setFailed(true)} />
-      ) : (
-        <Text style={[styles.navAvatarText, { color: colors.onBrand }]}>{initials}</Text>
-      )}
-    </View>
-  );
-};
-
-const TAB_ITEM = { marginHorizontal: 3, marginBottom: 2 } as const;
-
-/** A tab button whose current tab is drawn on a pill (the navigation library cannot round that highlight). */
-function TabButton({
-  style,
-  children,
-  onPress,
-  onLongPress,
-  accessibilityLabel,
-  testID,
-  'aria-selected': ariaSelected,
-}: TabButtonProps) {
-  const colors = useThemeStore((state) => state.colors);
-  const selected = Boolean(ariaSelected);
-  return (
-    <Pressable
-      accessibilityRole="tab"
-      accessibilityState={{ selected }}
-      accessibilityLabel={accessibilityLabel}
-      testID={testID}
-      onPress={onPress as PressableProps['onPress']}
-      onLongPress={onLongPress as PressableProps['onLongPress']}
-      style={[style, styles.tabButton, { backgroundColor: selected ? colors.tint : 'transparent' }]}
-    >
-      {children}
-    </Pressable>
-  );
-}
-
-// The navigator passes more props than a plain Pressable needs; these are the ones the button uses.
-type TabButtonProps = Pick<PressableProps, 'onLongPress' | 'accessibilityLabel' | 'testID'> & {
-  'aria-selected'?: boolean;
-  children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
-  onPress?: unknown;
-};
-
+/** The bar of the prototype: four plain icons with a label, the current one in green, no pill behind it. */
 export default function TabsLayout() {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
   const type = useType();
   const insets = useSafeAreaInsets();
   const user = useAuthStore((state) => state.user);
-  const { isSearching, activePairingProvider, activeMission, searchingMissionId } = useMissionStore();
+  const activeRole = useAuthStore((state) => state.activeRole);
+  const searchPhase = useMissionStore((state) => state.searchPhase);
+  const thanks = useMissionStore((state) => state.thanks);
   const unreadCounts = useChatStore((state) => state.unreadCounts);
 
   const totalUnreadCount = Object.values(unreadCounts).reduce((acc, c) => acc + (c || 0), 0);
 
-  const hasActiveIntervention = Boolean(activePairingProvider || isSearching || activeMission || searchingMissionId);
-
-  const initials = user?.fullName
-    ? user.fullName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : 'KA';
+  const isProvider = activeRole === 'PROVIDER' || user?.role === 'PROVIDER';
+  // The prototype's bar always has four tabs: Accueil, Demandes (Missions for the artisan), Messages, Profil.
+  const showTracking = true;
 
   const bottomInset = Math.max(insets.bottom, 10);
 
@@ -106,6 +35,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // Switching tab is a quick crossfade, as in the prototype (250 ms).
+        animation: 'fade',
+        transitionSpec: { animation: 'timing', config: { duration: 250 } },
         tabBarStyle: {
           position: 'absolute',
           bottom: 0,
@@ -116,14 +48,14 @@ export default function TabsLayout() {
           borderTopColor: colors.border,
           height: tabBarHeight + bottomInset,
           paddingBottom: bottomInset,
-          paddingTop: 8,
+          paddingTop: 12,
           paddingHorizontal: 8,
           elevation: 0,
           shadowOpacity: 0,
+          // The searching page fills the screen, like the prototype's.
+          display: (searchPhase !== 'idle' && !isProvider) || thanks ? 'none' : 'flex',
         },
-        // The current tab sits on a pill, as in the redesign.
-        tabBarButton: (props) => <TabButton {...props} />,
-        tabBarItemStyle: TAB_ITEM,
+        tabBarItemStyle: styles.item,
         tabBarActiveTintColor: colors.accentText,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarLabelStyle: {
@@ -137,19 +69,16 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: t('accueil'),
-          tabBarIcon: ({ color, focused }) => <Home size={22} color={color} strokeWidth={focused ? 2.4 : 2} />,
+          tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />
       <Tabs.Screen
         name="tracking"
         options={{
-          title: t('suivi'),
-          href: hasActiveIntervention ? '/(tabs)/tracking' : null,
-          tabBarItemStyle: {
-            ...TAB_ITEM,
-            display: hasActiveIntervention ? 'flex' : 'none',
-          },
-          tabBarIcon: ({ color, focused }) => <Navigation size={22} color={color} strokeWidth={focused ? 2.4 : 2} />,
+          title: isProvider ? t('missionsTab') : t('requestsTab'),
+          href: showTracking ? '/(tabs)/tracking' : null,
+          tabBarItemStyle: { ...styles.item, display: showTracking ? 'flex' : 'none' },
+          tabBarIcon: ({ color, focused }) => <TabIcon name="list" color={color} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />
       <Tabs.Screen
@@ -169,21 +98,14 @@ export default function TabsLayout() {
             lineHeight: 14,
             alignSelf: 'center',
           },
-          tabBarIcon: ({ color, focused }) => <MessageCircle size={22} color={color} strokeWidth={focused ? 2.4 : 2} />,
+          tabBarIcon: ({ color, focused }) => <TabIcon name="chat" color={color} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: t('profil') || 'Profil',
-          tabBarIcon: ({ focused }) => (
-            <NavAvatar
-              focused={focused}
-              avatarUrl={typeof user?.avatarUrl === 'string' ? user.avatarUrl : null}
-              colors={colors}
-              initials={initials}
-            />
-          ),
+          tabBarIcon: ({ color, focused }) => <TabIcon name="user" color={color} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />
     </Tabs>
@@ -191,24 +113,5 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabButton: {
-    borderRadius: 999,
-  },
-  navAvatarBox: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  navAvatarText: {
-    fontFamily: numeralFont,
-    fontSize: 12,
-  },
-  navAvatarImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 13,
-  },
+  item: { minWidth: 64 },
 });

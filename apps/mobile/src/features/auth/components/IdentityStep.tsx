@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Lock, Mail, MapPin, Phone, User } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';

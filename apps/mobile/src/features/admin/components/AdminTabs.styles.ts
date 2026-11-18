@@ -4,6 +4,8 @@ import { radius, space } from '../../../shared/theme/tokens';
 
 export const styles = StyleSheet.create({
   flex: { flex: 1 },
+  flexWide: { flex: 1.6 },
+  receipt: { width: 96, height: 120, borderRadius: 8 },
   list: { gap: space.md },
   skeletonRow: { height: 88, borderRadius: radius.md },
   skeletonPanel: { height: 220, borderRadius: radius.md },
@@ -20,7 +22,7 @@ export const styles = StyleSheet.create({
     paddingEnd: space.sm,
     minHeight: 60,
   },
-  topupCard: { padding: space.lg, gap: space.lg },
+  topupCard: { padding: 16, gap: 14 },
   topupActions: { flexDirection: 'row', gap: space.md },
   amount: { fontFamily: numeralFont, fontSize: 34, lineHeight: 38 },
   amountUnit: { fontFamily: numeralFont, fontSize: 18 },

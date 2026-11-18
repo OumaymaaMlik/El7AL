@@ -136,6 +136,8 @@ model Mission {
   addressText        String
   description        String?
   commissionFee      Decimal       @default(30.00) // 30 TND
+  /// What the artisan says the client owes, in TND, entered when the work is finished. The client pays it in cash.
+  declaredAmount     Decimal?
 
   cancellationReason String?
   cancelledByRole    UserRole?

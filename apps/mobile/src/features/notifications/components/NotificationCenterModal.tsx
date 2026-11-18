@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Animated, Modal, Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, X } from 'lucide-react-native';
+import { Bell, ChevronLeft } from 'lucide-react-native';
+import { Mirrored } from '../../../shared/ui/Mirrored';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { useNotificationNavigation } from '../hooks/useNotificationNavigation';
@@ -10,6 +11,7 @@ import { useNotificationStore } from '../store/useNotificationStore';
 import { groupNotifications } from '../utils/groupNotifications';
 import { notificationPalette } from '../utils/palette';
 import { NotificationRow } from './NotificationRows';
+import { useTopPad } from '../../../shared/theme/useTopPad';
 
 interface Props {
   visible: boolean;
@@ -18,9 +20,9 @@ interface Props {
 
 export function NotificationCenterModal({ visible, onClose }: Props) {
   const insets = useSafeAreaInsets();
+  const topPad = useTopPad();
   const { height } = useWindowDimensions();
-  const colors = useThemeStore((state) => state.colors);
-  const isDark = colors.background === '#0B1410';
+  const isDark = useThemeStore((state) => state.mode) === 'dark';
   const palette = notificationPalette(isDark);
   const { t, language } = useTranslation();
 
@@ -50,42 +52,40 @@ export function NotificationCenterModal({ visible, onClose }: Props) {
         <Animated.View
           style={[
             styles.sheet,
-            { height: Math.min(height * 0.85, 780), backgroundColor: palette.sheetBg, transform: [{ translateY }] },
+            { height, backgroundColor: palette.sheetBg, paddingTop: topPad, transform: [{ translateY }] },
           ]}
         >
-          <View style={styles.handleWrap}>
-            <View style={[styles.handleBar, { backgroundColor: palette.handle }]} />
-          </View>
-
-          <View style={styles.header}>
-            <View style={styles.headerTitleWrap}>
-              <Text style={[styles.headerTitle, { color: palette.textTitle }]}>
-                {t('notifications') || 'Notifications'}
-              </Text>
-              {totalUnread > 0 ? (
-                <Text style={[styles.headerUnread, { color: palette.unreadGreen }]}>
-                  {totalUnread} {t('unreadCountLabel')?.replace('{n}', '') || 'non lues'}
-                </Text>
-              ) : null}
-            </View>
-
+          <View style={styles.navRow}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t('close')}
               onPress={close}
               style={[styles.closeBtn, { backgroundColor: palette.cardBg, borderColor: palette.closeBorder }]}
             >
-              <X size={20} color={palette.textTitle} strokeWidth={2.2} />
+              <Mirrored>
+                <ChevronLeft size={20} color={palette.textTitle} strokeWidth={2.2} />
+              </Mirrored>
             </Pressable>
+            {notifications.length > 0 && (
+              <Pressable accessibilityRole="button" onPress={markAllAsRead} hitSlop={10}>
+                <Text style={[styles.actionMarkText, { color: palette.greenBrand }]}>{t('readAll')}</Text>
+              </Pressable>
+            )}
+          </View>
+
+          <View style={styles.header}>
+            <Text style={[styles.headerTitle, { color: palette.textTitle }]}>
+              {t('notifications') || 'Notifications'}
+            </Text>
+            {totalUnread > 0 ? (
+              <Text style={[styles.headerUnread, { color: palette.unreadGreen }]}>
+                {totalUnread} {t('unreadCountLabel')?.replace('{n}', '') || 'non lues'}
+              </Text>
+            ) : null}
           </View>
 
           {notifications.length > 0 && (
             <View style={styles.actionsRow}>
-              <Pressable accessibilityRole="button" onPress={markAllAsRead} style={styles.actionBtn}>
-                <Text style={[styles.actionMarkText, { color: palette.greenBrand }]}>
-                  {t('markAllAsRead') || 'Tout marquer comme lu'}
-                </Text>
-              </Pressable>
               <Pressable accessibilityRole="button" onPress={() => setConfirmingClear(true)} style={styles.actionBtn}>
                 <Text style={[styles.actionClearText, { color: palette.redDanger }]}>
                   {t('clearAll') || 'Tout effacer'}
@@ -142,16 +142,14 @@ export function NotificationCenterModal({ visible, onClose }: Props) {
               sections.map((section) => (
                 <View key={section.key} style={styles.sectionWrap}>
                   <Text style={[styles.sectionTitle, { color: palette.textMuted }]}>{section.title}</Text>
-                  <View
-                    style={[styles.sectionCard, { backgroundColor: palette.cardBg, borderColor: palette.cardBorder }]}
-                  >
-                    {section.items.map((item, idx) => (
+                  <View style={styles.sectionList}>
+                    {section.items.map((item) => (
                       <NotificationRow
                         key={item.id}
                         item={item}
                         palette={palette}
                         isDark={isDark}
-                        showDivider={idx > 0}
+                        showDivider={false}
                         onPress={openNotification}
                       />
                     ))}
@@ -169,30 +167,18 @@ export function NotificationCenterModal({ visible, onClose }: Props) {
 const styles = StyleSheet.create({
   modalRoot: { flex: 1, justifyContent: 'flex-end' },
   backdrop: { ...StyleSheet.absoluteFillObject },
-  sheet: {
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 32,
-    elevation: 20,
-    overflow: 'hidden',
-  },
-  handleWrap: { alignItems: 'center', paddingTop: 10, paddingBottom: 4 },
-  handleBar: { width: 40, height: 4, borderRadius: 2 },
-  header: {
+  sheet: { overflow: 'hidden' },
+  navRow: {
+    minHeight: 46,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 4,
   },
-  headerTitleWrap: { gap: 2 },
-  headerTitle: { fontSize: 22, lineHeight: 26, fontWeight: '800', letterSpacing: -0.4 },
+  header: { paddingHorizontal: 20, paddingTop: 18, paddingBottom: 6, gap: 2 },
+  headerTitle: { fontSize: 32, lineHeight: 34, fontWeight: '800', letterSpacing: -0.5 },
   headerUnread: { fontSize: 13, fontWeight: '600' },
-  closeBtn: { width: 44, height: 44, borderRadius: 14, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  closeBtn: { width: 44, height: 44, borderRadius: 22, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
   actionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -206,7 +192,7 @@ const styles = StyleSheet.create({
   confirmBox: { marginHorizontal: 20, marginBottom: 8, padding: 12, borderRadius: 12, borderWidth: 1, gap: 8 },
   confirmText: { fontSize: 14, fontWeight: '600' },
   confirmBtnRow: { flexDirection: 'row', gap: 10 },
-  confirmBtn: { flex: 1, height: 36, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
+  confirmBtn: { flex: 1, height: 44, borderRadius: 8, justifyContent: 'center', alignItems: 'center' },
   confirmBtnCancelText: { fontSize: 13, fontWeight: '600' },
   confirmBtnDeleteText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
   scrollArea: { flex: 1 },
@@ -216,6 +202,6 @@ const styles = StyleSheet.create({
   emptyTitle: { fontSize: 17, fontWeight: '700' },
   emptySub: { fontSize: 14, textAlign: 'center', paddingHorizontal: 30 },
   sectionWrap: { marginTop: 14 },
-  sectionTitle: { fontSize: 13, fontWeight: '700', marginBottom: 8 },
-  sectionCard: { borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+  sectionTitle: { fontSize: 12, fontWeight: '700', letterSpacing: 0.7, textTransform: 'uppercase', marginBottom: 8 },
+  sectionList: { gap: 8 },
 });

@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Check, X, Clock } from 'lucide-react-native';
 import { useThemeStore } from '../store/useThemeStore';

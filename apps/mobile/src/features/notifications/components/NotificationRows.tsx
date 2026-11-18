@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AlertTriangle, Bell, CheckCircle2, MessageSquare, XCircle, Zap } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
@@ -35,7 +34,8 @@ export function NotificationRow({ item, palette, isDark, showDivider, onPress }:
         onPress={() => onPress(item)}
         style={({ pressed }) => [
           styles.row,
-          { backgroundColor: unread ? palette.unreadItemBg : palette.cardBg },
+          styles.card,
+          { backgroundColor: unread ? palette.unreadItemBg : palette.cardBg, borderColor: palette.cardBorder },
           pressed && { opacity: 0.8 },
         ]}
       >
@@ -66,7 +66,7 @@ function ChatContent({
           uri={item.senderAvatar}
           name={item.senderName}
           size={44}
-          tint={{ background: '#0F5B3A', color: '#FFFFFF' }}
+          tint={{ background: '#0D5C3A', color: '#FFFFFF' }}
         />
         {/* Tiny lime badge with a message icon at the bottom-right corner */}
         <View style={[styles.avatarBadge, { borderColor: badgeBorder }]}>
@@ -119,7 +119,7 @@ function SystemContent({
     : isSuccess
       ? isDark
         ? '#1A3324'
-        : '#E2F5B5'
+        : '#DCEBE0'
       : isDark
         ? '#1E293B'
         : '#E0F2FE';
@@ -149,21 +149,22 @@ function SystemContent({
 
 const styles = StyleSheet.create({
   hairline: { height: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 16 },
+  card: { borderRadius: 24, borderWidth: 1 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 14, paddingHorizontal: 14 },
   avatarWrap: { position: 'relative', width: 44, height: 44 },
   avatarBadge: {
     position: 'absolute',
-    right: -3,
+    end: -3,
     bottom: -3,
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: '#B4EB3B',
+    backgroundColor: '#A3E635',
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  systemIconBox: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
+  systemIconBox: { width: 40, height: 40, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
   content: { flex: 1, gap: 3 },
   headerRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
   title: { fontSize: 15, fontWeight: '700', letterSpacing: -0.15, flex: 1 },

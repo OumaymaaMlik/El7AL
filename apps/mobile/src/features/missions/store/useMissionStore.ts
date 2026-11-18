@@ -2,6 +2,16 @@ import { create } from 'zustand';
 import { translate } from '../../../shared/store/useLanguageStore';
 import type { ActiveMission, IncomingOffer, PairedProvider, ReviewData } from '../types';
 
+/** What the closing "Merci" page shows once a job is paid and rated. */
+export interface ThanksData {
+  providerName: string | null;
+  amount: number | null;
+  rating: number;
+}
+
+/** How the artisan search is going, for the search page. */
+export type SearchPhase = 'idle' | 'searching' | 'found' | 'none';
+
 interface MissionStoreState {
   activeMission: ActiveMission | null;
   activePairingProvider: PairedProvider | null;
@@ -22,12 +32,18 @@ interface MissionStoreState {
   startedAt: string | null;
   providerConfirmed: boolean;
   clientConfirmed: boolean;
+  /** The amount in TND the artisan declared for the client to confirm in cash. */
+  declaredAmount: number | null;
   reviewData: ReviewData | null;
+  thanks: ThanksData | null;
+  searchPhase: SearchPhase;
 
   setActiveMission: (mission: ActiveMission | null) => void;
   setActivePairingProvider: (provider: PairedProvider | null) => void;
   setIncomingOffer: (offer: IncomingOffer | null) => void;
   setReviewData: (data: ReviewData | null) => void;
+  setThanks: (data: ThanksData | null) => void;
+  setSearchPhase: (phase: SearchPhase) => void;
   startSearching: (missionId: string) => void;
   updateSearchStatus: (statusText: string) => void;
   updateMissionState: (partial: Partial<MissionStoreState>) => void;
@@ -52,7 +68,10 @@ export const useMissionStore = create<MissionStoreState>((set) => ({
   startedAt: null,
   providerConfirmed: false,
   clientConfirmed: false,
+  declaredAmount: null,
   reviewData: null,
+  thanks: null,
+  searchPhase: 'idle',
 
   setActiveMission: (mission) => {
     const isAct = Boolean(
@@ -73,6 +92,8 @@ export const useMissionStore = create<MissionStoreState>((set) => ({
     }),
   setIncomingOffer: (offer) => set({ incomingOffer: offer }),
   setReviewData: (data) => set({ reviewData: data }),
+  setThanks: (data) => set({ thanks: data }),
+  setSearchPhase: (phase) => set({ searchPhase: phase }),
 
   startSearching: (missionId) =>
     set({
@@ -119,5 +140,6 @@ export const useMissionStore = create<MissionStoreState>((set) => ({
       startedAt: null,
       providerConfirmed: false,
       clientConfirmed: false,
+      declaredAmount: null,
     }),
 }));

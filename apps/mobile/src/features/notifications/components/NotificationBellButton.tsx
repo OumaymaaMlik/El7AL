@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Bell } from 'lucide-react-native';
 import { useNotificationStore } from '../store/useNotificationStore';
@@ -20,7 +20,7 @@ export function NotificationBellButton() {
       <IconButton accessibilityLabel={label} onPress={() => setModalOpen(true)}>
         <Bell size={20} color={colors.text} />
         {unreadCount > 0 && (
-          <View style={[styles.badge, { backgroundColor: colors.accentText, borderColor: colors.surface }]} />
+          <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.surface }]} />
         )}
       </IconButton>
 

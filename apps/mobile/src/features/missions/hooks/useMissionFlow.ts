@@ -28,9 +28,8 @@ export function useMissionFlow({ missionId: overrideId, onReviewDone }: Options 
   const [actionLoading, setActionLoading] = useState(false);
   const [gpsOpen, setGpsOpen] = useState(false);
   const [dualOpen, setDualOpen] = useState(false);
-  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [amountOpen, setAmountOpen] = useState(false);
   const [ratingOpen, setRatingOpen] = useState(false);
-  const [paymentAmount, setPaymentAmount] = useState('');
 
   /** Runs a mission action with a loading flag; failures show a toast. Returns true on success. */
   const run = async (action: (id: string) => Promise<void>, errorKey: TranslationKeys): Promise<boolean> => {
@@ -50,33 +49,40 @@ export function useMissionFlow({ missionId: overrideId, onReviewDone }: Options 
   const startDrive = () => run(startRoute, 'errStartRoute');
   const arrived = () => run(markArrived, 'errUpdateStatus');
   const beginWork = () => run(startWork, 'errStartWork');
-  const providerFinish = () => run(dualConfirm, 'errFinishWork');
+  /** The artisan finishes by declaring the amount: the sheet opens, and sending it ends the work. */
+  const providerFinish = () => setAmountOpen(true);
 
-  const clientConfirm = async () => {
-    if (await run(dualConfirm, 'errConfirmFinish')) {
-      setDualOpen(false);
-      setPaymentOpen(true);
-    }
+  const sendAmount = async (amount: number) => {
+    if (await run((id) => dualConfirm(id, amount), 'errFinishWork')) setAmountOpen(false);
   };
 
-  const submitPayment = (_method: string, amount: string) => {
-    setPaymentAmount(amount);
-    setPaymentOpen(false);
-    setRatingOpen(true);
+  /** The client confirms they paid the declared amount in cash; the job closes and the rating follows. */
+  const clientConfirm = async () => {
+    if (await run((id) => dualConfirm(id), 'errConfirmFinish')) {
+      setDualOpen(false);
+      setRatingOpen(true);
+    }
   };
 
   const submitRating = async (rating: number, comment: string) => {
     if (!missionId) return;
+    const before = useMissionStore.getState();
+    const thanks = {
+      providerName: before.activePairingProvider?.fullName ?? null,
+      amount: before.declaredAmount,
+      rating,
+    };
     setActionLoading(true);
     try {
-      await submitReview(missionId, rating, comment, paymentAmount);
+      const declared = useMissionStore.getState().declaredAmount;
+      await submitReview(missionId, rating, comment, declared === null ? '' : String(declared));
     } catch (e) {
       logger.warn('Submit review warning:', e);
     } finally {
       setActionLoading(false);
       setRatingOpen(false);
       clearActiveMission();
-      flashToast({ title: t('thanksTitle'), message: t('reviewSubmitted'), tone: 'success' });
+      useMissionStore.getState().setThanks(thanks);
       onReviewDone?.();
     }
   };
@@ -87,8 +93,8 @@ export function useMissionFlow({ missionId: overrideId, onReviewDone }: Options 
     setGpsOpen,
     dualOpen,
     setDualOpen,
-    paymentOpen,
-    setPaymentOpen,
+    amountOpen,
+    setAmountOpen,
     ratingOpen,
     setRatingOpen,
     startDrive,
@@ -96,7 +102,7 @@ export function useMissionFlow({ missionId: overrideId, onReviewDone }: Options 
     beginWork,
     providerFinish,
     clientConfirm,
-    submitPayment,
+    sendAmount,
     submitRating,
   };
 }

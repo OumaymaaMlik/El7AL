@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { AlertTriangle, Camera, Mail, MapPin, Phone, ShieldCheck, User } from 'lucide-react-native';
 import { Avatar } from '../../../shared/ui/Avatar';

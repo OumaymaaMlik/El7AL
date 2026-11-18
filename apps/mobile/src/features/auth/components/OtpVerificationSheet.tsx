@@ -20,7 +20,6 @@ interface OtpVerificationSheetProps {
   email?: string;
   identifier?: string;
   loading?: boolean;
-  initialCode?: string;
   fullName?: string;
   /** How a code is sent and checked; defaults to the sign-up flow. The profile passes the e-mail change flow. */
   sendCode?: (email: string, fullName?: string) => Promise<{ success: boolean; message?: string }>;
@@ -35,7 +34,6 @@ export function OtpVerificationSheet({
   email,
   identifier,
   loading: parentLoading,
-  initialCode,
   fullName,
   sendCode = sendEmailVerification,
   checkCode = verifyEmailCode,
@@ -44,7 +42,7 @@ export function OtpVerificationSheet({
   const colors = useThemeStore((state) => state.colors);
   const targetEmail = (email || identifier || '').trim();
 
-  const [code, setCode] = useState(initialCode || '');
+  const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(60);
@@ -55,7 +53,7 @@ export function OtpVerificationSheet({
 
   useEffect(() => {
     if (visible) {
-      setCode(initialCode || '');
+      setCode('');
       setErrorMessage(null);
       setFeedbackMessage(null);
       setCountdown(60);
@@ -78,7 +76,7 @@ export function OtpVerificationSheet({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [visible, initialCode]);
+  }, [visible]);
 
   const handleResend = async () => {
     if (countdown > 0 || resending || !targetEmail) return;

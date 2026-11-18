@@ -7,6 +7,8 @@ export const ROUTES = {
   forgotPassword: '/(auth)/forgot-password',
   home: '/(tabs)/home',
   adminDashboard: '/dashboard_admin',
+  docsSent: '/docs-sent',
+  pay: '/pay',
 } as const;
 
 /** Landing route after authentication, by role. */

@@ -57,7 +57,7 @@ export async function passwordResetRoutes(app: FastifyInstance) {
         if (code) {
           const sent = await sendEmailVerificationCode(user.email, code, user.fullName, 'reset');
           if (!sent) request.log.error({ userId: user.id }, 'Failed to send password reset email');
-          if (process.env.NODE_ENV !== 'production') devCode = code;
+          if (process.env.NODE_ENV === 'test') devCode = code;
         }
       }
 

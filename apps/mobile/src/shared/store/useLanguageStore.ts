@@ -11,7 +11,7 @@ import { logger } from '../utils/logger';
  * only mirrors the layout when the app starts, so this returns `true` when the
  * app has to be restarted for the new direction to show.
  */
-export function applyDirection(lang: Language): boolean {
+function applyDirection(lang: Language): boolean {
   const rtl = lang === 'ar';
 
   if (Platform.OS === 'web') {

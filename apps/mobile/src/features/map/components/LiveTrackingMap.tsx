@@ -17,6 +17,8 @@ interface Props {
   /** When set, a button opens the turn-by-turn navigation sheet (artisan only). */
   onOpenNavigation?: () => void;
   height?: number;
+  /** Edge to edge, with no border or rounded corners (the full-screen live view). */
+  flush?: boolean;
 }
 
 /**
@@ -28,7 +30,7 @@ const WebViewComponent = WebView as unknown as React.ComponentType<
   WebViewProps & { ref?: React.Ref<{ injectJavaScript: (script: string) => void }> }
 >;
 
-export function LiveTrackingMap({ pickup, provider, onOpenNavigation, height = 240 }: Props) {
+export function LiveTrackingMap({ pickup, provider, onOpenNavigation, height = 240, flush = false }: Props) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
   const html = useMemo(buildLiveMapHtml, []);
@@ -71,7 +73,10 @@ export function LiveTrackingMap({ pickup, provider, onOpenNavigation, height = 2
   const border = { borderColor: colors.border, backgroundColor: colors.surface };
 
   return (
-    <View style={[styles.container, border, { height }]} accessibilityLabel={t('viewRoute')}>
+    <View
+      style={[styles.container, border, { height }, flush && { borderWidth: 0, borderRadius: 0 }]}
+      accessibilityLabel={t('viewRoute')}
+    >
       {Platform.OS === 'web' ? (
         <iframe
           ref={iframeRef as React.RefObject<HTMLIFrameElement>}
@@ -113,7 +118,7 @@ const styles = StyleSheet.create({
   fill: { flex: 1 },
   navButton: {
     position: 'absolute',
-    left: space.md,
+    start: space.md,
     top: space.md,
     flexDirection: 'row',
     alignItems: 'center',

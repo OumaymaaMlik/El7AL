@@ -91,7 +91,7 @@ export const GlobalLoadingOverlay: React.FC = () => {
       statusBarTranslucent={true}
       onRequestClose={() => {}}
     >
-      <StatusBar style="light" backgroundColor="#0F5B3A" />
+      <StatusBar style="light" backgroundColor="#0D5C3A" />
       <View style={styles.container} accessibilityRole="alert" aria-busy={true}>
         {/* Animated Brand "7" Mark */}
         <View style={styles.markContainer}>
@@ -121,7 +121,7 @@ export const GlobalLoadingOverlay: React.FC = () => {
               viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}
               style={styles.limeSvg}
             >
-              <Path d={PATH_D} fill="#B4EB3B" stroke="#B4EB3B" strokeWidth={8} strokeLinejoin="round" />
+              <Path d={PATH_D} fill="#A3E635" stroke="#A3E635" strokeWidth={8} strokeLinejoin="round" />
             </Svg>
           </Animated.View>
         </View>
@@ -157,7 +157,7 @@ export const GlobalLoadingOverlay: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: '#0F5B3A',
+    backgroundColor: '#0D5C3A',
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 99999,
@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   brandAccent: {
-    color: '#B4EB3B',
+    color: '#A3E635',
     fontFamily: numeralFont,
   },
   textContainer: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#B4EB3B',
+    backgroundColor: '#A3E635',
   },
   subText: {
     marginTop: 6,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 2,
-    backgroundColor: '#B4EB3B',
+    backgroundColor: '#A3E635',
   },
   badgeText: {
     fontSize: 12,

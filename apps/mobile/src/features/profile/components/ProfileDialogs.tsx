@@ -1,4 +1,3 @@
-import React from 'react';
 import { Image, View } from 'react-native';
 import { LogOut } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';

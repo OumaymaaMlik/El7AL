@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { numeralFont } from '../theme/typography';
 import { useThemeStore } from '../store/useThemeStore';

@@ -15,7 +15,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { formatTunisianPhone, toTunisianE164 } from '../utils/phone';
 import { hasErrors, validateIdentity, type RegisterErrors } from '../utils/validateRegister';
 
-export type RegisterRole = 'CLIENT' | 'PROVIDER';
+type RegisterRole = 'CLIENT' | 'PROVIDER';
 export const REGISTER_STEP_COUNT = 3;
 
 export function useRegisterWizard(initialRole: RegisterRole) {
@@ -47,7 +47,6 @@ export function useRegisterWizard(initialRole: RegisterRole) {
   const [licenseNumber, setLicenseNumber] = useState('');
 
   const [otpVisible, setOtpVisible] = useState(false);
-  const [devCode, setDevCode] = useState<string | undefined>(undefined);
 
   const [mapOpen, setMapOpen] = useState(false);
   const [lat, setLat] = useState<number>(DEFAULT_MAP_CENTER.lat);
@@ -135,7 +134,7 @@ export function useRegisterWizard(initialRole: RegisterRole) {
   const performRegister = async () => {
     setOtpVisible(false);
     setLoading(true);
-    showLoading('Inscription en cours', 'Création de votre compte');
+    showLoading(t('loadingRegistering'), t('loadingCreatingAccount'));
     try {
       const phoneNumber = toTunisianE164(phoneDigits);
 
@@ -167,8 +166,7 @@ export function useRegisterWizard(initialRole: RegisterRole) {
           licenseNumber,
         });
         await setSession(token, user, refreshToken);
-        flashToast({ title: t('applicationSentTitle'), message: t('applicationSentMsg'), tone: 'success' });
-        router.replace(homeRouteFor(user.role));
+        router.replace(ROUTES.docsSent);
       }
     } catch (err) {
       setErrors({ submit: getApiErrorMessage(err, t('errRegisterFailed')) });
@@ -196,17 +194,16 @@ export function useRegisterWizard(initialRole: RegisterRole) {
     }
 
     setLoading(true);
-    showLoading('Envoi du code', 'Envoi du code de vérification à votre e-mail');
+    showLoading(t('loadingSendingCode'), t('loadingSendingVerification'));
     try {
       const res = await sendEmailVerification(cleanEmail, fullName.trim());
       if (res.success) {
-        setDevCode(res.code);
         setOtpVisible(true);
       } else {
-        setErrors({ submit: res.message || "Impossible d'envoyer le code de vérification." });
+        setErrors({ submit: res.message || t('errSendVerification') });
       }
     } catch (err) {
-      setErrors({ submit: getApiErrorMessage(err, "Erreur lors de l'envoi du code de vérification.") });
+      setErrors({ submit: getApiErrorMessage(err, t('errSendVerification')) });
     } finally {
       setLoading(false);
       hideLoading();
@@ -235,7 +232,6 @@ export function useRegisterWizard(initialRole: RegisterRole) {
     cinBackUri,
     licenseNumber,
     otpVisible,
-    devCode,
     mapOpen,
     lat,
     lng,

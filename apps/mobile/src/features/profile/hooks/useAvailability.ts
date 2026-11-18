@@ -28,7 +28,7 @@ export function useAvailability() {
         setProviderAvailable(false);
         flashToast({
           title: t('errorTitle'),
-          message: 'Activez la localisation pour recevoir des demandes près de vous.',
+          message: t('errEnableLocationProvider'),
           tone: 'error',
         });
         return;

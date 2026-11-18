@@ -74,6 +74,8 @@ export interface MissionData {
   addressText: string;
   description?: string | null;
   commissionFee: number;
+  /** The amount in TND the artisan declared at the end of the job; the client pays it in cash. */
+  declaredAmount?: number | null;
   startedAt?: string | null;
   completedAt?: string | null;
   createdAt: string;

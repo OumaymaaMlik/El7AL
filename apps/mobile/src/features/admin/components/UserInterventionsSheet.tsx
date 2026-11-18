@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, useWindowDimensions } from 'react-native';
 import { Briefcase, ChevronLeft } from 'lucide-react-native';
 import { BottomSheet } from '../../../shared/ui/BottomSheet';

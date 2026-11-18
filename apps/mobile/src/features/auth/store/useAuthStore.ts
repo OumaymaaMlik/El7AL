@@ -5,8 +5,6 @@ import { resetSocketRooms } from '../../../services/socket/socket.client';
 import { logger } from '../../../shared/utils/logger';
 import { endServerSession } from '../../../services/http/session';
 
-export type { UserRole, UserSession };
-
 interface AuthState {
   token: string | null;
   refreshToken: string | null;

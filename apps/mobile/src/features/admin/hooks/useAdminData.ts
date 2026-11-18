@@ -84,5 +84,3 @@ export function useAdminData(tab: AdminTab, userSearch: string, userRole: UserRo
 
   return { loading, reload, stats, users, missions, categories, topups, disputes, providers };
 }
-
-export type AdminData = ReturnType<typeof useAdminData>;

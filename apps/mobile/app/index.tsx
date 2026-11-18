@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useAuthStore } from '../src/features/auth/store/useAuthStore';
@@ -22,7 +22,7 @@ export default function Index() {
   }, [isLoadingSession, showLoading, hideLoading]);
 
   if (isLoadingSession) {
-    return <View style={{ flex: 1, backgroundColor: '#0F5B3A' }} />;
+    return <View style={{ flex: 1, backgroundColor: '#0D5C3A' }} />;
   }
 
   if (token) {

@@ -9,8 +9,8 @@
  * line is drawn instead. For production traffic, point ROUTING_URL at your own OSRM/Valhalla or a
  * paid routing provider and use a commercial tile provider instead of the OSM community tiles.
  */
-export const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-export const ROUTING_URL = 'https://router.project-osrm.org/route/v1/driving';
+const TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+const ROUTING_URL = 'https://router.project-osrm.org/route/v1/driving';
 
 export function buildLiveMapHtml(): string {
   return `<!DOCTYPE html>
@@ -22,7 +22,7 @@ export function buildLiveMapHtml(): string {
   <style>
     html, body, #map { height: 100%; width: 100%; margin: 0; padding: 0; background: #E9EEEA; }
     .pin { width: 18px; height: 18px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 1px 6px rgba(0,0,0,.45); }
-    .pin.provider { background: #0F5B3A; }
+    .pin.provider { background: #0D5C3A; }
     .pin.provider::after { content: ''; position: absolute; inset: -9px; border-radius: 50%; background: rgba(15,91,58,.22); animation: pulse 1.8s ease-out infinite; z-index: -1; }
     .pin.pickup { background: #A3E635; border-color: #0E1F16; }
     @keyframes pulse { 0% { transform: scale(.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
@@ -57,7 +57,7 @@ export function buildLiveMapHtml(): string {
 
     function drawRoute(from, to) {
       if (straightLine) { map.removeLayer(straightLine); straightLine = null; }
-      straightLine = L.polyline([[from.lat, from.lng], [to.lat, to.lng]], { color: '#0F5B3A', weight: 3, dashArray: '6 8', opacity: 0.7 }).addTo(map);
+      straightLine = L.polyline([[from.lat, from.lng], [to.lat, to.lng]], { color: '#0D5C3A', weight: 3, dashArray: '6 8', opacity: 0.7 }).addTo(map);
 
       var key = from.lat.toFixed(3) + ',' + from.lng.toFixed(3) + '>' + to.lat.toFixed(4) + ',' + to.lng.toFixed(4);
       if (key === lastRouteKey || Date.now() - lastRouteAt < 15000) return;
@@ -68,7 +68,7 @@ export function buildLiveMapHtml(): string {
         if (!route) return;
         var coords = route.geometry.coordinates.map(function (c) { return [c[1], c[0]]; });
         if (routeLine) map.removeLayer(routeLine);
-        routeLine = L.polyline(coords, { color: '#0F5B3A', weight: 5, opacity: 0.9 }).addTo(map);
+        routeLine = L.polyline(coords, { color: '#0D5C3A', weight: 5, opacity: 0.9 }).addTo(map);
         if (straightLine) { map.removeLayer(straightLine); straightLine = null; }
       }).catch(function () {});
     }

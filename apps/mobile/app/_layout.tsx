@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { View } from 'react-native';
+import { useEffect } from 'react';
+import { Platform, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
@@ -21,6 +21,9 @@ import { registerForPushNotificationsAsync } from '../src/features/notifications
 initMonitoring();
 
 const queryClient = new QueryClient();
+
+/** Screens that slide in over the previous one on the web. Welcome is the first screen and does not slide. */
+const SLIDING_ROUTES = new Set(['(auth)/login', '(auth)/register', '(auth)/forgot-password']);
 
 function RootLayout() {
   const { mode, colors, loadSavedTheme } = useThemeStore();
@@ -51,9 +54,18 @@ function RootLayout() {
         <NotificationToast />
         <GlobalLoadingOverlay />
         <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.background },
+          screenOptions={({ route }) => {
+            // On the web a stack hides the screen underneath as soon as a new one opens, which shows a blank page
+            // until the slide ends. A transparent presentation keeps the old page visible, and the container must
+            // be transparent too (SlideScreen paints its own background) or it would cover the old page.
+            const slidesOver = Platform.OS === 'web' && SLIDING_ROUTES.has(route.name);
+            return {
+              headerShown: false,
+              // Phones slide screens in from the right; the web does it in SlideScreen.
+              animation: 'slide_from_right',
+              contentStyle: { backgroundColor: slidesOver ? 'transparent' : colors.background },
+              ...(slidesOver ? { presentation: 'transparentModal' as const } : null),
+            };
           }}
         />
       </QueryClientProvider>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { PRIVACY_POLICY } from '@el7al/shared';
 import { BottomSheet } from '../../../shared/ui/BottomSheet';

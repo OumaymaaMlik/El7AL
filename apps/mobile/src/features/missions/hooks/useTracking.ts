@@ -90,7 +90,7 @@ export function useTracking(paramId?: string) {
       loadRef.current();
       if (!isProvider) {
         flow.setDualOpen(false);
-        flow.setPaymentOpen(true);
+        flow.setRatingOpen(true);
       }
     };
     const onReviewed = () => {
@@ -113,11 +113,11 @@ export function useTracking(paramId?: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mission?.id, searchingMissionId, isProvider]);
 
-  const confirmCancel = async () => {
+  const confirmCancel = async (reason?: string) => {
     if (!targetId) return;
     setCancelling(true);
     try {
-      if (await cancelMission(targetId, "Annulation demandée par l'utilisateur")) {
+      if (await cancelMission(targetId, reason || "Annulation demandée par l'utilisateur")) {
         setCancelOpen(false);
         setMission(null);
         clearActiveMission();
@@ -160,5 +160,3 @@ export function useTracking(paramId?: string) {
     callNumber,
   };
 }
-
-export type TrackingState = ReturnType<typeof useTracking>;

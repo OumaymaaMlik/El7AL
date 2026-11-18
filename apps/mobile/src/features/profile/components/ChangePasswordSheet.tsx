@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ShieldCheck } from 'lucide-react-native';
 import { BottomSheet } from '../../../shared/ui/BottomSheet';

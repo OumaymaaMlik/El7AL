@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Star } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
@@ -46,8 +46,8 @@ export function RatingModal({ visible, onSubmit, onClose, loading = false }: Rat
             >
               <Star
                 size={34}
-                color={active ? colors.star : colors.inputBorder}
-                fill={active ? colors.star : 'transparent'}
+                color={active ? colors.accentText : colors.borderStrong}
+                fill={active ? colors.accentText : 'transparent'}
               />
             </Pressable>
           );

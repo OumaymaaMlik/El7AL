@@ -10,7 +10,7 @@ import { Txt } from '../../../shared/ui/Txt';
 import { space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
-import { CATEGORY_ICONS } from '../../home/components/CategoryGrid';
+import { CATEGORY_ICONS } from '../../home/components/categoryIcons';
 import type { AdminActions } from '../hooks/useAdminActions';
 import type { AdminCategory } from '../schemas/admin.schema';
 import { ListSkeleton } from './AdminTabs';

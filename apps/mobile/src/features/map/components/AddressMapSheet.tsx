@@ -1,4 +1,3 @@
-import React from 'react';
 import { View } from 'react-native';
 import { BottomSheet } from '../../../shared/ui/BottomSheet';
 import { Button } from '../../../shared/ui/Button';
@@ -17,7 +16,7 @@ interface AddressMapSheetProps {
 export function AddressMapSheet({ visible, lat, lng, onClose, onSelect }: AddressMapSheetProps) {
   const { t } = useTranslation();
   return (
-    <BottomSheet visible={visible} onClose={onClose} title="Placer un repère exact">
+    <BottomSheet visible={visible} onClose={onClose} title={t('placeExactPin')}>
       <View style={{ gap: space.md, paddingBottom: space.lg }}>
         <LeafletMap
           lat={lat}

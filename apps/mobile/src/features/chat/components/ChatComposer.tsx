@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Send } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 import { Mirrored } from '../../../shared/ui/Mirrored';
-import { controlHeight, gutter, inputReset, radius, space } from '../../../shared/theme/tokens';
+import { inputReset, space } from '../../../shared/theme/tokens';
 import { useType } from '../../../shared/theme/useType';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
@@ -30,7 +30,7 @@ export function ChatComposer({ onSend, bottomInset = 0 }: Props) {
     <View
       style={[
         styles.composer,
-        { borderTopColor: colors.border, backgroundColor: colors.background, paddingBottom: space.sm + bottomInset },
+        { borderTopColor: colors.border, backgroundColor: colors.surface, paddingBottom: space.sm + bottomInset },
       ]}
     >
       <TextInput
@@ -40,8 +40,8 @@ export function ChatComposer({ onSend, bottomInset = 0 }: Props) {
           styles.input,
           inputReset,
           {
-            backgroundColor: colors.surface,
-            borderColor: focused ? colors.accentText : colors.inputBorder,
+            backgroundColor: colors.background,
+            borderColor: focused ? colors.accentText : colors.border,
             color: colors.text,
           },
         ]}
@@ -62,13 +62,21 @@ export function ChatComposer({ onSend, bottomInset = 0 }: Props) {
         disabled={!canSend}
         style={({ pressed }) => [
           styles.send,
-          { backgroundColor: colors.action },
+          { backgroundColor: colors.hero },
           !canSend && { opacity: 0.45 },
           pressed && { opacity: 0.8 },
         ]}
       >
         <Mirrored>
-          <Send size={20} color={colors.onAction} />
+          <Svg width={18} height={18} viewBox="0 0 24 24">
+            <Path
+              d="M4 12l16-8-6 16-2.5-6.5z"
+              fill={colors.live}
+              stroke={colors.live}
+              strokeWidth={1.5}
+              strokeLinejoin="round"
+            />
+          </Svg>
         </Mirrored>
       </Pressable>
     </View>
@@ -79,23 +87,24 @@ const styles = StyleSheet.create({
   composer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.sm,
-    paddingHorizontal: gutter,
-    paddingTop: space.sm,
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
     borderTopWidth: 1,
   },
   input: {
     flex: 1,
-    height: controlHeight,
+    height: 44,
     borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: 14,
+    borderRadius: 22,
+    paddingHorizontal: 16,
     paddingVertical: 0,
+    fontSize: 15,
   },
   send: {
-    width: controlHeight,
-    height: controlHeight,
-    borderRadius: radius.md,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
   },

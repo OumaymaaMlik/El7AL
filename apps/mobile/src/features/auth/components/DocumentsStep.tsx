@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ShieldCheck } from 'lucide-react-native';
 import { Input } from '../../../shared/ui/Input';
@@ -35,6 +34,13 @@ export function DocumentsStep({ form }: { form: RegisterWizard }) {
         </View>
       </View>
 
+      <View style={[styles.note, { backgroundColor: colors.tint }]}>
+        <ShieldCheck size={18} color={colors.accentText} strokeWidth={2} />
+        <Txt variant="small" color={colors.accentText} style={styles.noteText}>
+          {t('docsPrivacy')}
+        </Txt>
+      </View>
+
       <Input
         label={t('licenseLabel')}
         placeholder="1234567/A"
@@ -48,4 +54,6 @@ export function DocumentsStep({ form }: { form: RegisterWizard }) {
 const styles = StyleSheet.create({
   group: { gap: space.sm },
   row: { flexDirection: 'row', gap: space.md },
+  note: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, padding: 14, borderRadius: 16 },
+  noteText: { flex: 1, lineHeight: 19 },
 });

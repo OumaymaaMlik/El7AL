@@ -33,7 +33,7 @@ export async function emailVerificationRoutes(app: FastifyInstance) {
       return reply.send({
         success: sent,
         message: sent ? `Verification code sent to ${address}` : 'Failed to dispatch verification email',
-        code: process.env.NODE_ENV !== 'production' ? code : undefined,
+        code: process.env.NODE_ENV === 'test' ? code : undefined,
       });
     },
   );

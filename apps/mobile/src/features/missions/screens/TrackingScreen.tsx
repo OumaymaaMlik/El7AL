@@ -1,11 +1,9 @@
-import React from 'react';
 import { noSelect } from '../../../shared/theme/webStyles';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowRight, CheckCircle2, MapPin, Navigation, Play, Square } from 'lucide-react-native';
 import { ChatDrawer } from '../../chat/components/ChatDrawer';
-import { LiveTrackingMap } from '../../map/components/LiveTrackingMap';
 import { Button } from '../../../shared/ui/Button';
 import { EmptyState } from '../../../shared/ui/EmptyState';
 import { InstagramPullToRefresh } from '../../../shared/ui/InstagramPullToRefresh';
@@ -19,14 +17,14 @@ import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { ROUTES } from '../../../navigation/routes';
 import { CancelMissionDialog } from '../components/CancelMissionDialog';
-import { DirectPaymentModal } from '../components/DirectPaymentModal';
+import { ClientRequests } from '../components/ClientRequests';
+import { AmountSheet } from '../components/AmountSheet';
 import { DualCompletionModal } from '../components/DualCompletionModal';
 import { LiveGpsNavigationModal } from '../components/LiveGpsNavigationModal';
+import { MissionLive } from '../components/MissionLive';
+import type { PrimaryAction } from '../components/TrackingActions';
 import { MissionHistoryList } from '../components/MissionHistoryList';
-import { PartyCard } from '../components/PartyCard';
 import { RatingModal } from '../components/RatingModal';
-import { TrackingActions, type PrimaryAction } from '../components/TrackingActions';
-import { TrackingHero } from '../components/TrackingHero';
 import { useTracking } from '../hooks/useTracking';
 import { useMissionStore } from '../store/useMissionStore';
 import { trackingHeadline, trackingStatusLabel } from '../utils/trackingLabels';
@@ -43,6 +41,9 @@ export function TrackingScreen() {
 
   const activeMission = useMissionStore((state) => state.activeMission);
   const pairedProvider = useMissionStore((state) => state.activePairingProvider);
+  const storedAmount = useMissionStore((state) => state.declaredAmount);
+  const declaredRaw = storedAmount ?? mission?.declaredAmount ?? activeMission?.declaredAmount;
+  const declaredAmount = declaredRaw == null ? null : Number(declaredRaw);
   const missionStatus = useMissionStore((state) => state.missionStatus);
   const etaMinutes = useMissionStore((state) => state.etaMinutes);
   const distanceKm = useMissionStore((state) => state.distanceKm);
@@ -75,7 +76,6 @@ export function TrackingScreen() {
       ? { title: t('confirmWorkFinish'), onPress: () => flow.setDualOpen(true), Icon: CheckCircle2, busy: false }
       : null;
 
-  const providerPosition = useMissionStore((state) => state.providerPosition);
   const pickupLat = toNumber(mission?.pickupLat ?? activeMission?.pickupLat);
   const pickupLng = toNumber(mission?.pickupLng ?? activeMission?.pickupLng);
   const pickup = pickupLat !== null && pickupLng !== null ? { lat: pickupLat, lng: pickupLng } : null;
@@ -84,92 +84,41 @@ export function TrackingScreen() {
 
   const history = isProvider ? <MissionHistoryList missions={tracking.history} onCall={tracking.callNumber} /> : null;
 
-  const renderEmpty = () => (
-    <>
-      <Surface>
-        <EmptyState
-          icon={<Navigation size={24} color={colors.accentText} />}
-          title={t('noActiveIntervention')}
-          message={isProvider ? t('noActiveInterventionProvider') : t('noActiveInterventionClient')}
-          action={
-            !isProvider ? (
-              <Button
-                title={t('searchTechnician')}
-                onPress={() => router.push(ROUTES.home)}
-                icon={
-                  <Mirrored>
-                    <ArrowRight size={18} color={colors.onAction} />
-                  </Mirrored>
-                }
-              />
-            ) : undefined
-          }
-        />
-      </Surface>
-      {history}
-    </>
-  );
-
-  const renderMission = () =>
-    mission && (
+  const renderEmpty = () =>
+    !isProvider && tracking.history.length > 0 ? (
+      <ClientRequests missions={tracking.history} />
+    ) : (
       <>
-        <TrackingHero
-          status={status}
-          statusLabel={trackingStatusLabel(status, isProvider, t)}
-          headline={trackingHeadline(status, isProvider, mission, t)}
-          address={mission.addressText}
-        />
-
-        {/* Live map: pickup point, the artisan's position and the road between them. */}
-        <LiveTrackingMap
-          pickup={pickup}
-          provider={providerPosition}
-          onOpenNavigation={isProvider ? () => flow.setGpsOpen(true) : undefined}
-        />
-
-        <PartyCard
-          name={partnerName}
-          avatarUrl={partnerAvatar}
-          isProvider={isProvider}
-          rating={partnerRating}
-          description={mission.description}
-        />
-
-        <TrackingActions
-          primary={primaryAction}
-          onChat={() => tracking.setChatOpen(true)}
-          onCall={() => tracking.callNumber(partnerPhone)}
-          onCancel={() => tracking.setCancelOpen(true)}
-        />
-
+        <Surface>
+          <EmptyState
+            icon={<Navigation size={24} color={colors.accentText} />}
+            title={t('noActiveIntervention')}
+            message={isProvider ? t('noActiveInterventionProvider') : t('noActiveInterventionClient')}
+            action={
+              !isProvider ? (
+                <Button
+                  title={t('searchTechnician')}
+                  onPress={() => router.push(ROUTES.home)}
+                  icon={
+                    <Mirrored>
+                      <ArrowRight size={18} color={colors.onAction} />
+                    </Mirrored>
+                  }
+                />
+              ) : undefined
+            }
+          />
+        </Surface>
         {history}
       </>
     );
 
-  return (
-    <InstagramPullToRefresh
-      refreshing={tracking.refreshing}
-      onRefresh={tracking.refresh}
-      headerComponent={<ScreenHeader title={t('trackingTitle')} subtitle={t('trackingSub')} />}
-      style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + bottomInset + space.xxl }]}
-      showsVerticalScrollIndicator={false}
-    >
-      {tracking.loading ? (
-        <>
-          <Skeleton style={{ height: 230, borderRadius: radius.lg }} />
-          <Skeleton style={{ height: 170, borderRadius: radius.md }} />
-          <Skeleton style={{ height: 96, borderRadius: radius.md }} />
-        </>
-      ) : !mission ? (
-        renderEmpty()
-      ) : (
-        renderMission()
-      )}
-
+  const modals = (
+    <>
       <CancelMissionDialog
         visible={tracking.cancelOpen}
         cancelling={tracking.cancelling}
+        isProvider={isProvider}
         onClose={() => tracking.setCancelOpen(false)}
         onConfirm={tracking.confirmCancel}
       />
@@ -194,11 +143,13 @@ export function TrackingScreen() {
         onConfirm={flow.clientConfirm}
         onClose={() => flow.setDualOpen(false)}
         loading={flow.actionLoading}
+        amount={declaredAmount}
+        providerName={pairedProvider?.fullName}
       />
-      <DirectPaymentModal
-        visible={flow.paymentOpen}
-        onProceed={flow.submitPayment}
-        onClose={() => flow.setPaymentOpen(false)}
+      <AmountSheet
+        visible={flow.amountOpen}
+        onClose={() => flow.setAmountOpen(false)}
+        onSend={flow.sendAmount}
         loading={flow.actionLoading}
       />
       <RatingModal
@@ -207,11 +158,63 @@ export function TrackingScreen() {
         onClose={() => flow.setRatingOpen(false)}
         loading={flow.actionLoading}
       />
+    </>
+  );
+
+  // An active mission fills the screen (header, map, sheet). Loading and the empty state keep the scrolling page.
+  if (!tracking.loading && mission) {
+    return (
+      <View style={styles.live}>
+        <MissionLive
+          status={status}
+          statusLabel={trackingStatusLabel(status, isProvider, t)}
+          headline={trackingHeadline(status, isProvider, mission, t, partnerName)}
+          isProvider={isProvider}
+          partnerName={partnerName}
+          partnerAvatar={partnerAvatar}
+          partnerRating={partnerRating}
+          description={mission.description}
+          address={mission.addressText}
+          pickup={pickup}
+          primary={primaryAction}
+          onChat={() => tracking.setChatOpen(true)}
+          onCall={() => tracking.callNumber(partnerPhone)}
+          onCancel={() => tracking.setCancelOpen(true)}
+          onOpenNavigation={() => flow.setGpsOpen(true)}
+        />
+        {modals}
+      </View>
+    );
+  }
+
+  return (
+    <InstagramPullToRefresh
+      refreshing={tracking.refreshing}
+      onRefresh={tracking.refresh}
+      headerComponent={
+        isProvider ? <ScreenHeader title={t('missionsTitle')} /> : <ScreenHeader title={t('requestsTitle')} />
+      }
+      style={[styles.container, { backgroundColor: colors.background }]}
+      contentContainerStyle={[styles.content, { paddingBottom: tabBarHeight + bottomInset + space.xxl }]}
+      showsVerticalScrollIndicator={false}
+    >
+      {tracking.loading ? (
+        <>
+          <Skeleton style={{ height: 230, borderRadius: radius.lg }} />
+          <Skeleton style={{ height: 170, borderRadius: radius.md }} />
+          <Skeleton style={{ height: 96, borderRadius: radius.md }} />
+        </>
+      ) : (
+        renderEmpty()
+      )}
+
+      {modals}
     </InstagramPullToRefresh>
   );
 }
 
 const styles = StyleSheet.create({
+  live: { flex: 1 },
   container: { flex: 1, ...noSelect },
   content: { paddingHorizontal: gutter, paddingTop: space.xs, gap: space.lg },
 });

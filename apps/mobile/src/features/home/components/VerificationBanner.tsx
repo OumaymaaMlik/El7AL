@@ -1,7 +1,5 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Clock, XCircle } from 'lucide-react-native';
-import { Surface } from '../../../shared/ui/Surface';
+import { AlertCircle, XCircle } from 'lucide-react-native';
 import { Txt } from '../../../shared/ui/Txt';
 import { space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
@@ -20,26 +18,26 @@ export function VerificationBanner() {
 
   if (!isProvider || !status || status === 'ACTIVE') return null;
   const refused = status === 'REJECTED';
-  const Icon = refused ? XCircle : Clock;
-  const tone = refused ? colors.dangerText : colors.text;
+  const Icon = refused ? XCircle : AlertCircle;
+  const tone = refused ? colors.dangerText : colors.warnText;
 
   return (
-    <Surface style={styles.card}>
+    <View style={[styles.card, { backgroundColor: refused ? colors.dangerSoft : colors.warnSoft }]}>
       <View style={styles.row}>
         <Icon size={20} color={tone} />
         <Txt variant="bodyStrong" color={tone} style={styles.flex}>
           {t(refused ? 'approvalRejectedTitle' : 'approvalPendingTitle')}
         </Txt>
       </View>
-      <Txt variant="small" color={colors.textSecondary}>
+      <Txt variant="small" color={colors.textMuted}>
         {t(refused ? 'approvalRejectedBody' : 'approvalPendingBody')}
       </Txt>
-    </Surface>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { padding: space.lg, gap: space.sm },
+  card: { padding: 14, gap: space.sm, borderRadius: 20 },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   flex: { flex: 1 },
 });

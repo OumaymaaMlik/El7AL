@@ -9,7 +9,7 @@ import { acceptMission } from '../api/mission.api';
 import { useMissionStore } from '../store/useMissionStore';
 import type { IncomingOffer } from '../types';
 
-export const OFFER_SECONDS = 45;
+const OFFER_SECONDS = 45;
 
 interface ProfileCategory {
   categoryId?: string;

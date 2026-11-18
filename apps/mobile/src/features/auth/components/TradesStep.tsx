@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Bike, Car, Check, Truck } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
@@ -47,7 +46,7 @@ export function TradesStep({ form }: { form: RegisterWizard }) {
                     },
                   ]}
                 >
-                  {isSelected && <Check size={14} color={colors.action} strokeWidth={2.8} />}
+                  {isSelected && <Check size={14} color={colors.live} strokeWidth={2.8} />}
                   <Txt variant="smallStrong" color={isSelected ? colors.onBrand : colors.textSecondary}>
                     {cat.name}
                   </Txt>

@@ -6,7 +6,7 @@ import { space } from '../theme/tokens';
 import { Txt } from './Txt';
 
 /** Shown in place of a figure that is not available. Never invent a number. */
-export const EMPTY_VALUE = '—';
+const EMPTY_VALUE = '—';
 
 interface StatCellProps {
   label: string;

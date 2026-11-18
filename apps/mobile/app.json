@@ -4,7 +4,7 @@
     "slug": "el7al-connect-pro",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "dark",
+    "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "tn.el7al.connect",
@@ -58,7 +58,7 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#042416"
+          "backgroundColor": "#0D5C3A"
         }
       ],
       "expo-asset",

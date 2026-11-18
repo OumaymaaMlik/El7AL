@@ -3,7 +3,7 @@ import { userRoleSchema } from '../../auth/schemas/auth.schema';
 
 const looseRecord = z.record(z.string(), z.any()).nullish();
 
-export const profileSchema = z
+const profileSchema = z
   .object({
     id: z.string(),
     role: userRoleSchema,

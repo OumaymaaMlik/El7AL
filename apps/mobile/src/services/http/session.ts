@@ -4,7 +4,7 @@ import { API_URL } from '../../config/env';
 /** A plain client with no interceptors: these calls must not trigger a refresh themselves. */
 const bare = axios.create({ baseURL: API_URL, timeout: 8000 });
 
-export interface Tokens {
+interface Tokens {
   token: string;
   refreshToken: string;
 }

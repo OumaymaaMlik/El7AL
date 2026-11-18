@@ -45,7 +45,7 @@ export async function uploadDocument(uri: string, name: string): Promise<string 
 /** Asks the server to email a reset code. The answer is the same whether or not the account exists. */
 export async function requestPasswordReset(identifier: string) {
   const res = await api.post('/auth/password/forgot', { identifier });
-  return z.object({ success: z.boolean(), code: z.string().optional() }).parse(res.data);
+  return z.object({ success: z.boolean() }).parse(res.data);
 }
 
 export async function resetPassword(input: { identifier: string; code: string; newPassword: string }) {

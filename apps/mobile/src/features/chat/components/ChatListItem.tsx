@@ -1,12 +1,9 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { ChevronRight } from 'lucide-react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Avatar } from '../../../shared/ui/Avatar';
-import { Mirrored } from '../../../shared/ui/Mirrored';
+import { FadeUp } from '../../../shared/ui/FadeUp';
 import { Hairline } from '../../../shared/ui/Surface';
 import { Txt } from '../../../shared/ui/Txt';
 import { numeralFont } from '../../../shared/theme/typography';
-import { space } from '../../../shared/theme/tokens';
 import { formatDate } from '../../../shared/utils/format';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
@@ -21,6 +18,7 @@ interface Props {
   onOpen: (mission: Mission) => void;
 }
 
+/** One conversation: the avatar, the name and when, the last line and the unread count. */
 export function ChatListItem({ item, index, onOpen }: Props) {
   const colors = useThemeStore((state) => state.colors);
   const { t, language } = useTranslation();
@@ -34,100 +32,63 @@ export function ChatListItem({ item, index, onOpen }: Props) {
   const lastMsg = item.messages && item.messages.length > 0 ? item.messages[item.messages.length - 1] : null;
   const snippet = lastMsg
     ? lastMsg.senderId === user?.id
-      ? `Vous : ${lastMsg.content}`
+      ? `${t('you')} : ${lastMsg.content}`
       : lastMsg.content
     : item.description || meta;
 
   return (
-    <>
-      {index > 0 && <Hairline />}
+    <FadeUp index={index}>
+      {index > 0 && <Hairline style={styles.hairline} />}
       <Pressable
         accessibilityRole="button"
         onPress={() => onOpen(item)}
-        style={({ pressed }) => [
-          styles.row,
-          hasUnread && [styles.rowUnread, { borderLeftColor: colors.brand }],
-          pressed && { backgroundColor: colors.raised },
-        ]}
+        style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.raised }]}
       >
-        <View>
-          <Avatar uri={contactAvatarOf(item, isProvider)} name={contactName} size={44} />
-          {hasUnread && <View style={[styles.unreadDot, { backgroundColor: colors.brand }]} />}
-        </View>
+        <Avatar
+          uri={contactAvatarOf(item, isProvider)}
+          name={contactName}
+          size={52}
+          tint={{ background: colors.brand, color: colors.live }}
+        />
 
         <View style={styles.flex}>
-          <View style={styles.top}>
-            <Txt
-              variant="bodyStrong"
-              numberOfLines={1}
-              style={[styles.flex, hasUnread && { color: colors.text, fontWeight: '700' }]}
-            >
+          <View style={styles.line}>
+            <Txt variant="bodyStrong" numberOfLines={1} style={[styles.flex, styles.name]}>
               {contactName}
             </Txt>
-            <Txt
-              variant="caption"
-              color={hasUnread ? colors.accentText : colors.textMuted}
-              style={hasUnread ? { fontWeight: '700' } : undefined}
-            >
+            <Txt variant="captionStrong" color={hasUnread ? colors.accentText : colors.textMuted}>
               {formatDate(lastMsg?.createdAt || item.createdAt, language)}
             </Txt>
           </View>
 
-          {Boolean(meta) && (
-            <Txt variant="small" color={colors.textSecondary} numberOfLines={1}>
-              {meta}
-            </Txt>
-          )}
-
-          <View style={styles.snippetRow}>
+          <View style={styles.line}>
             <Txt
               variant={hasUnread ? 'smallStrong' : 'small'}
               color={hasUnread ? colors.text : colors.textMuted}
               numberOfLines={1}
-              style={[styles.flex, hasUnread && { fontWeight: '600' }]}
+              style={styles.flex}
             >
               {snippet}
             </Txt>
             {hasUnread && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Text>
+              <View style={[styles.badge, { backgroundColor: colors.brand }]}>
+                <Txt style={styles.badgeText}>{unreadCount > 99 ? '99+' : unreadCount}</Txt>
               </View>
             )}
           </View>
         </View>
-
-        <Mirrored>
-          <ChevronRight size={18} color={hasUnread ? colors.accentText : colors.textMuted} />
-        </Mirrored>
       </Pressable>
-    </>
+    </FadeUp>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: 14 },
-  rowUnread: { borderLeftWidth: 3.5, paddingLeft: 10.5 },
-  top: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
-  unreadDot: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 2,
-    borderColor: '#000000',
-  },
-  snippetRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: space.sm,
-    marginTop: 2,
-  },
+  flex: { flex: 1, minWidth: 0 },
+  row: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  hairline: { marginStart: 78 },
+  line: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  name: { fontSize: 16, lineHeight: 21 },
   badge: {
-    backgroundColor: '#DC2626',
     minWidth: 20,
     height: 20,
     borderRadius: 10,
@@ -135,5 +96,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  badgeText: { color: '#FFFFFF', fontSize: 11, fontFamily: numeralFont, fontWeight: '700', lineHeight: 14 },
+  badgeText: { color: '#FFFFFF', fontSize: 11, fontFamily: numeralFont, lineHeight: 14 },
 });

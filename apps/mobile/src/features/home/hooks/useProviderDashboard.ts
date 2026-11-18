@@ -5,7 +5,7 @@ import { fetchProfile, useAvailability } from '../../profile';
 import { logger } from '../../../shared/utils/logger';
 import { toNumber } from '../../../shared/utils/format';
 import type { Mission } from '../../missions/schemas/mission.schema';
-import type { ArtisanStatsData } from '../components/ArtisanStats';
+import type { ArtisanStatsData } from '../components/ArtisanHome';
 
 /** Artisan-side data for the home screen: availability and the statistics ledger. */
 export function useProviderDashboard(history: Mission[] | null, completedCount: number | null) {
@@ -36,5 +36,5 @@ export function useProviderDashboard(history: Mission[] | null, completedCount: 
     walletBalance: providerProfile ? toNumber(providerProfile.walletBalance) : null,
   };
 
-  return { load, isProviderAvailable, toggleAvailability, stats, completedMissions };
+  return { load, isProviderAvailable, toggleAvailability, stats, completedMissions, providerProfile };
 }

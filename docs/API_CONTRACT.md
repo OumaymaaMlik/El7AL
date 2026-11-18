@@ -44,7 +44,7 @@ review ─────────────────►  mission:reviewed 
 | **Uploads** | `POST /uploads/document` · `/uploads/avatar` · `/uploads/receipt` (multipart `file`) → `{ url }` |
 | **Categories** | `GET /categories` (public) |
 | **Geo** | `PUT /geo/provider/availability {isAvailable,currentLat?,currentLng?}` · `PUT /geo/provider/location {lat,lng}` · `GET /geo/providers/:id/profile` (signed-in users, no e-mail or phone) · `PUT /geo/provider/settings` |
-| **Missions** | `GET /missions/candidates?categoryId&pickupLat&pickupLng&radiusKm` · `POST /missions/request {categoryId,pickupLat,pickupLng,addressText,description?,radiusKm?,selectedProviderIds?}` · `POST /missions/:id/relaunch` · `POST /missions/:id/accept` · `…/start-route` · `…/arrived` · `…/start-work` · `…/dual-confirm` · `…/review {rating 1-5,comment?,amount?}` · `…/cancel {reason}` · `…/read` · `GET /missions/history?limit&cursor` → `{data, meta:{completedCount}}` (each mission has `unreadCount`, last 20 `messages`) · `GET /missions/:id` (participants/admin only) |
+| **Missions** | `GET /missions/candidates?categoryId&pickupLat&pickupLng&radiusKm` · `POST /missions/request {categoryId,pickupLat,pickupLng,addressText,description?,radiusKm?,selectedProviderIds?}` · `POST /missions/:id/relaunch` · `POST /missions/:id/accept` · `…/start-route` · `…/arrived` · `…/start-work` · `…/dual-confirm {amount?}` (artisan: the amount in TND owed in cash, 0 < amount <= 100000, sent when the work is finished; client: no body) · `…/review {rating 1-5,comment?,amount?}` · `…/cancel {reason}` · `…/read` · `GET /missions/history?limit&cursor` → `{data, meta:{completedCount}}` (each mission has `unreadCount`, last 20 `messages`) · `GET /missions/:id` (participants/admin only) |
 | **Disputes** | `POST /disputes {missionId,reason}` |
 | **Wallet** | `POST /wallet/topup` · `GET /wallet/transactions` |
 | **Admin** (ADMIN only) | `/admin/stats, /users, /users/:id (DELETE), /users/:id/status, /users/:id/missions, /providers/pending, /providers/:id/verify, /missions, /categories (CRUD), /topups/pending, /topups/:id/approve|reject, /disputes` |
@@ -66,7 +66,7 @@ Connect with `auth: { token }`; the server puts you in `user_<id>` (and `provide
 | `mission:accepted` | `{missionId,clientUserId,providerUserId,clientName,provider:{id,fullName,phoneNumber,avatarUrl,ratingAverage}}` |
 | `mission:taken` | `{missionId}` (to the other artisans, not to the one who accepted) |
 | `mission:offer_withdrawn` | `{missionId}` (to artisans: the client cancelled a request nobody had accepted yet; the offer just disappears) |
-| `mission:status_update` | `{missionId,status,message,providerName,chatMessage?, etaMinutes?,distanceKm?,startedAt?,providerConfirmed?,clientConfirmed?}` |
+| `mission:status_update` | `{missionId,status,message,providerName,chatMessage?, etaMinutes?,distanceKm?,startedAt?,providerConfirmed?,clientConfirmed?,declaredAmount?}` |
 | `mission:completed` | `{missionId,status,completedAt,message,chatMessage?}` |
 | `mission:cancelled` | `{missionId,reason,wasAccepted,cancelledBy:'CLIENT'\|'PROVIDER'}` (to the two participants only) |
 | `mission:reviewed` | `{missionId,rating,comment,clientName,ratingAverage,totalRatings,amount}` (`comment` is exactly what the client wrote, `""` if nothing) |

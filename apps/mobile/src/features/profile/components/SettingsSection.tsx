@@ -1,60 +1,29 @@
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
-import { ChevronRight, Globe, Moon } from 'lucide-react-native';
-import { languageLabel } from '../../../shared/ui/LanguageToggle';
-import { Mirrored } from '../../../shared/ui/Mirrored';
-import { SectionHeader } from '../../../shared/ui/SectionHeader';
+import { StyleSheet } from 'react-native';
+import { Globe, Moon } from 'lucide-react-native';
+import { LanguageSegments } from '../../../shared/ui/LanguageToggle';
 import { Hairline, Surface } from '../../../shared/ui/Surface';
 import { Toggle } from '../../../shared/ui/Toggle';
-import { Txt } from '../../../shared/ui/Txt';
-import { controlHeight, space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
+import { SettingRow } from './SettingRow';
 
-/** Language and theme settings. */
-export function SettingsSection({ onOpenLanguage }: { onOpenLanguage: () => void }) {
-  const { colors, mode, toggleTheme } = useThemeStore();
-  const { t, language } = useTranslation();
+/** Language and theme settings, as one card of rows. */
+export function SettingsSection() {
+  const { mode, toggleTheme } = useThemeStore();
+  const { t } = useTranslation();
   return (
-    <View>
-      <SectionHeader title={t('settings')} />
-      <Surface>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenLanguage}
-          style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.raised }]}
-        >
-          <Globe size={18} color={colors.textMuted} />
-          <Txt variant="bodyMedium" style={styles.flex}>
-            {t('languageLabel')}
-          </Txt>
-          <Txt variant="small" color={colors.textSecondary}>
-            {languageLabel(language)}
-          </Txt>
-          <Mirrored>
-            <ChevronRight size={18} color={colors.textMuted} />
-          </Mirrored>
-        </Pressable>
-        <Hairline />
-        <View style={styles.row}>
-          <Moon size={18} color={colors.textMuted} />
-          <Txt variant="bodyMedium" style={styles.flex}>
-            {t('darkTheme')}
-          </Txt>
-          <Toggle accessibilityLabel={t('darkTheme')} value={mode === 'dark'} onValueChange={toggleTheme} />
-        </View>
-      </Surface>
-    </View>
+    <Surface>
+      <SettingRow Icon={Globe} label={t('languageLabel')} right={<LanguageSegments />} />
+      <Hairline style={styles.sep} />
+      <SettingRow
+        Icon={Moon}
+        label={t('darkTheme')}
+        right={<Toggle accessibilityLabel={t('darkTheme')} value={mode === 'dark'} onValueChange={toggleTheme} />}
+      />
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  row: {
-    minHeight: controlHeight + 4,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.md,
-    paddingHorizontal: space.lg,
-  },
+  sep: { marginStart: 64 },
 });

@@ -59,8 +59,9 @@ export async function startWork(missionId: string) {
   await api.post(`/missions/${missionId}/start-work`);
 }
 
-export async function dualConfirm(missionId: string) {
-  await api.post(`/missions/${missionId}/dual-confirm`);
+/** The artisan passes the amount (TND) they declare; the client confirms with no body. */
+export async function dualConfirm(missionId: string, amount?: number) {
+  await api.post(`/missions/${missionId}/dual-confirm`, amount === undefined ? undefined : { amount });
 }
 
 export async function submitReview(missionId: string, rating: number, comment: string, amount: string) {

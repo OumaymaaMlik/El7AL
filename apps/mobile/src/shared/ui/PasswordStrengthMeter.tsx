@@ -1,14 +1,21 @@
-import React from 'react';
 import { View } from 'react-native';
 import { Txt } from './Txt';
 import { calculatePasswordStrength } from '../utils/password';
 import { useThemeStore } from '../store/useThemeStore';
+import { useTranslation } from '../store/useLanguageStore';
 
 const STRENGTH_COLORS = ['#f43f5e', '#f59e0b', '#eab308', '#22c55e', '#16a34a'];
-const STRENGTH_LABELS = ['Très faible', 'Faible', 'Moyen', 'Fort', 'Très fort'];
+const STRENGTH_KEYS = [
+  'strengthVeryWeak',
+  'strengthWeak',
+  'strengthMedium',
+  'strengthStrong',
+  'strengthVeryStrong',
+] as const;
 
 export function PasswordStrengthMeter({ password }: { password: string }) {
   const colors = useThemeStore((state) => state.colors);
+  const { t } = useTranslation();
   if (!password) return null;
   const score = calculatePasswordStrength(password);
   return (
@@ -26,7 +33,7 @@ export function PasswordStrengthMeter({ password }: { password: string }) {
         ))}
       </View>
       <Txt variant="small" style={{ color: STRENGTH_COLORS[score] }}>
-        {STRENGTH_LABELS[score]}
+        {t(STRENGTH_KEYS[score])}
       </Txt>
     </View>
   );

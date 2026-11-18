@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ChevronDown, ChevronUp, MapPin, Phone } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { SectionHeader } from '../../../shared/ui/SectionHeader';
 import { StatusBadge } from '../../../shared/ui/StatusBadge';
-import { Hairline, Surface } from '../../../shared/ui/Surface';
+import { TradeTile } from '../../home/components/TradeTile';
 import { Txt } from '../../../shared/ui/Txt';
 import { controlHeight, space } from '../../../shared/theme/tokens';
 import { formatDate, missionBadge } from '../../../shared/utils/format';
@@ -26,23 +26,26 @@ export function MissionHistoryList({ missions, onCall }: Props) {
   return (
     <View>
       <SectionHeader title={t('historyTitle')} meta={missions.length > 0 ? String(missions.length) : undefined} />
-      <Surface>
+      <View style={styles.list}>
         {missions.length === 0 ? (
-          <View style={styles.padded}>
-            <Txt variant="small" color={colors.textMuted}>
+          <View style={[styles.padded, { borderColor: colors.border }, styles.emptyBox]}>
+            <Txt variant="small" color={colors.textMuted} style={styles.center}>
               {t('emptyHistory')}
             </Txt>
           </View>
         ) : (
-          missions.map((item, index) => {
+          missions.map((item) => {
             const expanded = expandedId === item.id;
             const badge = missionBadge(item.status, t);
             const clientPhone: string | undefined = item.client?.user?.phoneNumber ?? undefined;
+            const clientName = item.client?.user?.fullName || t('client');
             const Chevron = expanded ? ChevronUp : ChevronDown;
 
             return (
-              <React.Fragment key={item.id}>
-                {index > 0 && <Hairline />}
+              <View
+                key={item.id}
+                style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.divider }]}
+              >
                 <Pressable
                   accessibilityRole="button"
                   accessibilityState={{ expanded }}
@@ -50,18 +53,14 @@ export function MissionHistoryList({ missions, onCall }: Props) {
                   onPress={() => setExpandedId((prev) => (prev === item.id ? null : item.id))}
                   style={({ pressed }) => [styles.row, pressed && { backgroundColor: colors.raised }]}
                 >
+                  <TradeTile name={item.category?.name} size={42} />
                   <View style={styles.flex}>
                     <Txt variant="bodyStrong" numberOfLines={1}>
-                      {item.category?.name || t('historyShort')}
+                      {item.description || item.category?.name || t('historyShort')}
                     </Txt>
-                    {Boolean(item.addressText) && (
-                      <View style={styles.inline}>
-                        <MapPin size={12} color={colors.textMuted} />
-                        <Txt variant="small" color={colors.textSecondary} numberOfLines={1} style={styles.shrink}>
-                          {item.addressText}
-                        </Txt>
-                      </View>
-                    )}
+                    <Txt variant="caption" color={colors.textMuted} numberOfLines={1}>
+                      {[clientName, formatDate(item.createdAt, language)].join(' · ')}
+                    </Txt>
                   </View>
                   <StatusBadge label={badge.label} tone={badge.tone} />
                   <Chevron size={18} color={colors.textMuted} />
@@ -69,9 +68,15 @@ export function MissionHistoryList({ missions, onCall }: Props) {
 
                 {expanded && (
                   <View style={[styles.details, { backgroundColor: colors.background }]}>
-                    {item.client?.user && (
-                      <DetailLine label={t('clientLabel')} value={item.client.user.fullName || t('client')} />
+                    {Boolean(item.addressText) && (
+                      <View style={styles.inline}>
+                        <MapPin size={12} color={colors.textMuted} />
+                        <Txt variant="small" color={colors.textSecondary} numberOfLines={2} style={styles.shrink}>
+                          {item.addressText}
+                        </Txt>
+                      </View>
                     )}
+                    {item.client?.user && <DetailLine label={t('clientLabel')} value={clientName} />}
                     {Boolean(item.description) && <DetailLine label={t('needLabel')} value={item.description!} />}
                     {item.review && (
                       <DetailLine
@@ -81,7 +86,6 @@ export function MissionHistoryList({ missions, onCall }: Props) {
                           .join(' · ')}
                       />
                     )}
-                    <DetailLine label={t('dateLabel')} value={formatDate(item.createdAt, language)} />
                     {Boolean(clientPhone) && (
                       <Button
                         title={`${t('callClientBtn')} (${clientPhone})`}
@@ -94,11 +98,11 @@ export function MissionHistoryList({ missions, onCall }: Props) {
                     )}
                   </View>
                 )}
-              </React.Fragment>
+              </View>
             );
           })
         )}
-      </Surface>
+      </View>
     </View>
   );
 }
@@ -118,6 +122,10 @@ function DetailLine({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
+  list: { gap: 10 },
+  card: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  emptyBox: { borderWidth: 1.5, borderStyle: 'dashed', borderRadius: 20 },
+  center: { textAlign: 'center' },
   flex: { flex: 1 },
   shrink: { flexShrink: 1 },
   padded: { padding: space.lg, gap: space.xs },

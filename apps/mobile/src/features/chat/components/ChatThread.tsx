@@ -1,5 +1,5 @@
-import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
+import { FadeUp } from '../../../shared/ui/FadeUp';
 import { Skeleton } from '../../../shared/ui/Skeleton';
 import { Txt } from '../../../shared/ui/Txt';
 import { gutter, radius, space } from '../../../shared/theme/tokens';
@@ -49,15 +49,14 @@ export function ChatThread({ missionId, partnerName, partnerAvatar, bottomInset 
             {t('openChatInfo')}
           </Txt>
         ) : (
-          thread.messages.map((msg, idx) => (
-            <MessageBubble
-              key={msg.id || idx}
-              message={msg}
-              isMine={msg.senderId === thread.userId}
-              partnerName={thread.partner.name || partnerName}
-              partnerAvatar={thread.partner.avatar || partnerAvatar}
-            />
-          ))
+          thread.messages.map((msg, idx) => {
+            const mine = msg.senderId === thread.userId;
+            return (
+              <FadeUp key={msg.id || idx} style={{ alignSelf: mine ? 'flex-end' : 'flex-start', maxWidth: '100%' }}>
+                <MessageBubble message={msg} isMine={mine} />
+              </FadeUp>
+            );
+          })
         )}
       </ScrollView>
 

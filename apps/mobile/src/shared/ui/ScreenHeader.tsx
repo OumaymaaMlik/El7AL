@@ -1,7 +1,6 @@
 import React from 'react';
 import { Mirrored } from './Mirrored';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChevronLeft } from 'lucide-react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { useTranslation } from '../store/useLanguageStore';
@@ -9,6 +8,7 @@ import { gutter, space } from '../theme/tokens';
 import { IconButton } from './IconButton';
 import { NotificationBellButton } from '../../features/notifications/components/NotificationBellButton';
 import { Txt } from './Txt';
+import { useTopPad } from '../theme/useTopPad';
 
 interface ScreenHeaderProps {
   title: string;
@@ -26,10 +26,10 @@ interface ScreenHeaderProps {
 export function ScreenHeader({ title, subtitle, onBack, trailing }: ScreenHeaderProps) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
-  const insets = useSafeAreaInsets();
+  const topPad = useTopPad();
 
   return (
-    <View style={[styles.header, { paddingTop: insets.top + space.sm }]}>
+    <View style={[styles.header, { paddingTop: topPad }]}>
       {onBack && (
         <IconButton accessibilityLabel={t('back')} onPress={onBack}>
           <Mirrored>

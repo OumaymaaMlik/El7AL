@@ -37,7 +37,7 @@ export const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#A3E635',
+    borderColor: '#2BB673',
     overflow: 'hidden',
     backgroundColor: '#16291E',
     justifyContent: 'center',

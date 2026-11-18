@@ -83,6 +83,18 @@ export default tseslint.config(
     rules: { '@typescript-eslint/no-require-imports': 'off' }, // Babel and Metro configs are CommonJS
   },
 
+  // Clean-code limits for the mobile app, as debts: a function that is long or tangled is counted, and the number
+  // in `npm run lint` (--max-warnings) may only go down. Split a big function instead of raising the limit.
+  {
+    files: ['apps/mobile/**/*.{ts,tsx}'],
+    rules: {
+      'max-lines-per-function': ['warn', { max: 60, skipBlankLines: true, skipComments: true }],
+      complexity: ['warn', 12],
+      'max-params': ['warn', 5],
+      'max-depth': ['warn', 4],
+    },
+  },
+
   // Layering: the web app and the shared UI must not reach into the backend, and nobody imports another app.
   {
     files: ['apps/web/**/*.{ts,tsx}', 'apps/mobile/**/*.{ts,tsx}'],

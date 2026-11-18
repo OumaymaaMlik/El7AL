@@ -8,7 +8,7 @@ const coordinate = z
   .optional();
 
 /** A chat message as the server sends it (also used by the chat feature). */
-export const chatMessageSchema = z
+const chatMessageSchema = z
   .object({
     id: z.string(),
     senderId: z.string(),
@@ -43,6 +43,8 @@ export const missionSchema = z
     messages: z.array(chatMessageSchema).nullish(),
     /** Total unread messages from the other party (not limited to the messages sent along). */
     unreadCount: z.number().nullish(),
+    /** What the artisan declared at the end of the job (TND). Prisma sends decimals as strings. */
+    declaredAmount: z.union([z.number(), z.string()]).nullish(),
     createdAt: z.string().nullish(),
     startedAt: z.string().nullish(),
     completedAt: z.string().nullish(),

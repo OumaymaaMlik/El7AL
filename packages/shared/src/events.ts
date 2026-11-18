@@ -64,6 +64,8 @@ export interface StatusUpdatePayload {
   startedAt?: string | Date | null;
   providerConfirmed?: boolean;
   clientConfirmed?: boolean;
+  /** DUAL_CONFIRM: the amount in TND the artisan declared, for the client to confirm in cash. */
+  declaredAmount?: number;
   chatMessage?: ChatMessagePayload;
 }
 

@@ -1,11 +1,11 @@
-import React from 'react';
 import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { FileText, ShieldCheck } from 'lucide-react-native';
+import { Avatar } from '../../../shared/ui/Avatar';
 import { Button } from '../../../shared/ui/Button';
 import { EmptyState } from '../../../shared/ui/EmptyState';
-import { Hairline, Surface } from '../../../shared/ui/Surface';
+import { Surface } from '../../../shared/ui/Surface';
 import { Txt } from '../../../shared/ui/Txt';
-import { radius, space } from '../../../shared/theme/tokens';
+import { space } from '../../../shared/theme/tokens';
 import { formatDate } from '../../../shared/utils/format';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
@@ -53,23 +53,20 @@ export function VerificationsTab({
         ].filter(Boolean) as string[];
 
         return (
-          <Surface key={p.id}>
-            <View style={styles.block}>
-              <Txt variant="bodyStrong">{p.user.fullName}</Txt>
-              <Txt variant="small" color={trades ? colors.textSecondary : colors.textMuted}>
-                {trades || t('noServiceListed')}
-              </Txt>
-              {facts.map((fact) => (
-                <Txt key={fact} variant="small" color={colors.textMuted}>
-                  {fact}
+          <Surface key={p.id} style={styles.card}>
+            <View style={styles.head}>
+              <Avatar name={p.user.fullName} size={44} tint={{ background: colors.tint, color: colors.accentText }} />
+              <View style={styles.flex}>
+                <Txt variant="bodyStrong" numberOfLines={1}>
+                  {p.user.fullName}
                 </Txt>
-              ))}
+                <Txt variant="small" color={trades ? colors.textSecondary : colors.textMuted} numberOfLines={1}>
+                  {trades || t('noServiceListed')}
+                </Txt>
+              </View>
             </View>
-            <Hairline />
-            <View style={styles.block}>
-              <Txt variant="overline" color={colors.textMuted}>
-                {t('idDocuments')}
-              </Txt>
+
+            <View style={styles.docs}>
               {documents.length === 0 ? (
                 <Txt variant="small" color={colors.textMuted}>
                   {t('noDocuments')}
@@ -81,30 +78,30 @@ export function VerificationsTab({
                     accessibilityRole="link"
                     accessibilityLabel={`${t('openDocument')} ${index + 1}`}
                     onPress={() => void Linking.openURL(url)}
+                    style={[styles.doc, { backgroundColor: colors.tint }]}
                   >
                     {isImage(url) ? (
-                      <Image
-                        source={{ uri: url }}
-                        style={[styles.image, { borderColor: colors.border }]}
-                        resizeMode="contain"
-                      />
+                      <Image source={{ uri: url }} style={styles.docImage} resizeMode="cover" />
                     ) : (
-                      <View style={styles.fileRow}>
-                        <FileText size={16} color={colors.brand} />
-                        <Txt variant="smallStrong" color={colors.brand}>
-                          {t('openDocument')} {index + 1}
-                        </Txt>
-                      </View>
+                      <FileText size={22} color={colors.brand} />
                     )}
                   </Pressable>
                 ))
               )}
             </View>
-            <Hairline />
+
+            <View style={styles.facts}>
+              {facts.map((fact) => (
+                <Txt key={fact} variant="small" color={colors.textMuted}>
+                  {fact}
+                </Txt>
+              ))}
+            </View>
+
             <View style={styles.actions}>
               <Button
                 title={t('refuseArtisan')}
-                variant="outline"
+                variant="destructive"
                 onPress={() => actions.setProviderToRefuse(p)}
                 style={styles.flex}
               />
@@ -112,7 +109,7 @@ export function VerificationsTab({
                 title={t('approve')}
                 variant="primary"
                 onPress={() => void actions.decideProvider(p, true)}
-                style={styles.flex}
+                style={styles.flexWide}
               />
             </View>
           </Surface>
@@ -123,10 +120,14 @@ export function VerificationsTab({
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
+  flex: { flex: 1, minWidth: 0 },
+  flexWide: { flex: 1.6 },
   list: { gap: space.md },
-  block: { padding: space.lg, gap: space.sm },
-  image: { width: '100%', height: 180, borderRadius: radius.md, borderWidth: 1 },
-  fileRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, minHeight: 44 },
-  actions: { flexDirection: 'row', gap: space.md, padding: space.md },
+  card: { padding: 16, gap: 14 },
+  head: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  docs: { flexDirection: 'row', gap: 8 },
+  doc: { flex: 1, height: 84, borderRadius: 8, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  docImage: { width: '100%', height: '100%' },
+  facts: { gap: 2 },
+  actions: { flexDirection: 'row', gap: 10 },
 });

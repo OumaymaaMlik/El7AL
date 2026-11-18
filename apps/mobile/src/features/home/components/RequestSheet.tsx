@@ -1,14 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { Category } from '../../categories';
-import { Pressable, ScrollView, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
-import { AlertTriangle, MapPin, Search } from 'lucide-react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { AlertTriangle, ArrowRight, ChevronLeft, Clock, MapPin } from 'lucide-react-native';
+import { Mirrored } from '../../../shared/ui/Mirrored';
+import { SlideInPage } from '../../../shared/ui/SlideInPage';
+import { Txt } from '../../../shared/ui/Txt';
+import { ToolIcon } from '../../../shared/ui/art/ToolIcon';
+import { toolForCategory } from '../../../shared/ui/art/toolArt';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { useType } from '../../../shared/theme/useType';
-import { controlHeight, hitTarget, inputReset, radius, space } from '../../../shared/theme/tokens';
-import { BottomSheet } from '../../../shared/ui/BottomSheet';
-import { Button } from '../../../shared/ui/Button';
-import { Txt } from '../../../shared/ui/Txt';
+import { inputReset } from '../../../shared/theme/tokens';
+import { styles } from './RequestSheet.styles';
+import { numeralFont } from '../../../shared/theme/typography';
+import { useTopPad } from '../../../shared/theme/useTopPad';
 
 export interface RequestFormErrors {
   service?: string;
@@ -31,10 +37,12 @@ interface RequestSheetProps {
   errors: RequestFormErrors;
 }
 
+const MAX = 300;
+
 /**
- * The request form. The service is chosen (or confirmed) here, so the client is
- * never sent back to the home screen to pick one, and every error is shown next
- * to the field it belongs to.
+ * "Décrivez le problème": the full page that follows the slide on the home screen. The trade chip at the top,
+ * the problem in a framed box, the address and the arrival in one card, and the launch button. The trade can still
+ * be changed here from the chips when none was chosen.
  */
 export function RequestSheet({
   visible,
@@ -53,188 +61,181 @@ export function RequestSheet({
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
   const type = useType();
-  const { height } = useWindowDimensions();
-  const [focused, setFocused] = useState<'problem' | 'address' | null>(null);
+  const insets = useSafeAreaInsets();
+  const topPad = useTopPad();
+  const [editingAddress, setEditingAddress] = useState(false);
 
-  const fieldBorder = (name: 'problem' | 'address', hasError?: boolean) =>
-    hasError ? colors.danger : focused === name ? colors.accentText : colors.inputBorder;
+  const tool = toolForCategory(selectedCategory?.name, selectedCategory?.icon);
 
   return (
-    <BottomSheet
-      visible={visible}
-      onClose={onClose}
-      title={selectedCategory ? selectedCategory.name : t('problemDetails')}
-      subtitle={t('describeBreakdown')}
-    >
-      <ScrollView
-        style={{ maxHeight: height * 0.62 }}
-        contentContainerStyle={styles.form}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SlideInPage visible={visible} onClose={onClose}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={[styles.screen, { backgroundColor: colors.background, paddingTop: topPad }]}
       >
-        {/* Service */}
-        <View style={styles.field}>
-          <Txt variant="captionStrong" color={colors.textSecondary}>
-            {t('fieldService')}
-          </Txt>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-            contentContainerStyle={styles.chips}
+        <View style={styles.nav}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('back')}
+            onPress={onClose}
+            style={({ pressed }) => [
+              styles.round,
+              { backgroundColor: colors.surface, borderColor: colors.border },
+              pressed && { opacity: 0.7 },
+            ]}
           >
-            {categories.map((cat) => {
-              const selected = selectedCategory?.id === cat.id;
-              return (
+            <Mirrored>
+              <ChevronLeft size={20} color={colors.text} />
+            </Mirrored>
+          </Pressable>
+
+          {selectedCategory && (
+            <View style={[styles.tradeChip, { backgroundColor: colors.hero }]}>
+              {tool && <ToolIcon tool={tool} palette="dark" width={18} height={28} />}
+              <Txt variant="smallStrong" color={colors.onBrand}>
+                {selectedCategory.name}
+              </Txt>
+            </View>
+          )}
+          <View style={styles.round} />
+        </View>
+
+        <ScrollView
+          style={styles.flex}
+          contentContainerStyle={styles.body}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <Txt variant="title" style={[styles.title, { fontFamily: numeralFont }]} accessibilityRole="header">
+            {t('describeProblemTitle').replace(' ', '\n')}
+          </Txt>
+
+          {!selectedCategory && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+              {categories.map((cat) => (
                 <Pressable
                   key={cat.id}
                   accessibilityRole="radio"
-                  accessibilityState={{ selected }}
                   onPress={() => onSelectCategory(cat)}
                   style={[
                     styles.chip,
-                    {
-                      backgroundColor: selected ? colors.brand : 'transparent',
-                      borderColor: selected ? colors.brand : errors.service ? colors.danger : colors.inputBorder,
-                    },
+                    { borderColor: errors.service ? colors.danger : colors.border, backgroundColor: colors.surface },
                   ]}
                 >
-                  <Txt variant="smallStrong" color={selected ? colors.onBrand : colors.textSecondary}>
+                  <Txt variant="smallStrong" color={colors.textMuted}>
                     {cat.name}
                   </Txt>
                 </Pressable>
-              );
-            })}
-          </ScrollView>
-          {Boolean(errors.service) && <FieldError message={errors.service!} />}
-        </View>
+              ))}
+            </ScrollView>
+          )}
 
-        {/* Problem */}
-        <View style={styles.field}>
-          <Txt variant="captionStrong" color={colors.textSecondary}>
-            {t('fieldProblem')}
-          </Txt>
-          <TextInput
-            accessibilityLabel={t('fieldProblem')}
-            style={[
-              type.body,
-              styles.textArea,
-              inputReset,
-              {
-                backgroundColor: colors.background,
-                borderColor: fieldBorder('problem', Boolean(errors.problem)),
-                color: colors.text,
-              },
-            ]}
-            placeholder={t('needPlaceholder')}
-            placeholderTextColor={colors.textMuted}
-            multiline
-            value={needText}
-            onChangeText={onChangeNeed}
-            onFocus={() => setFocused('problem')}
-            onBlur={() => setFocused(null)}
-          />
-          {Boolean(errors.problem) && <FieldError message={errors.problem!} />}
-        </View>
-
-        {/* Address */}
-        <View style={styles.field}>
-          <Txt variant="captionStrong" color={colors.textSecondary}>
-            {t('fieldAddress')}
-          </Txt>
-          <View style={[styles.inputRow, { backgroundColor: colors.background, borderColor: fieldBorder('address') }]}>
-            <MapPin size={18} color={colors.textMuted} />
+          <View>
             <TextInput
-              accessibilityLabel={t('fieldAddress')}
-              style={[type.body, styles.input, inputReset, { color: colors.text }]}
-              value={locationText}
+              accessibilityLabel={t('fieldProblem')}
+              style={[
+                type.body,
+                styles.textArea,
+                inputReset,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: errors.problem ? colors.danger : colors.brand,
+                  color: colors.text,
+                },
+              ]}
+              placeholder={t('needPlaceholder')}
               placeholderTextColor={colors.textMuted}
-              onChangeText={onChangeLocation}
-              onFocus={() => setFocused('address')}
-              onBlur={() => setFocused(null)}
+              multiline
+              maxLength={MAX}
+              value={needText}
+              onChangeText={onChangeNeed}
             />
-          </View>
-        </View>
-
-        {Boolean(errors.submit) && (
-          <View accessibilityRole="alert" style={[styles.banner, { backgroundColor: colors.dangerSoft }]}>
-            <AlertTriangle size={16} color={colors.dangerText} />
-            <Txt variant="small" color={colors.dangerText} style={styles.bannerText}>
-              {errors.submit}
+            <Txt variant="caption" color={colors.textMuted} style={styles.counter}>
+              {needText.length} / {MAX}
             </Txt>
           </View>
-        )}
+          {Boolean(errors.problem) && (
+            <Txt variant="caption" color={colors.dangerText} accessibilityRole="alert">
+              {errors.problem}
+            </Txt>
+          )}
 
-        <Button
-          title={t('searchTechnician')}
-          onPress={onSubmit}
-          loading={submitting}
-          iconPosition="left"
-          icon={<Search size={18} color={colors.onAction} />}
-        />
-      </ScrollView>
-    </BottomSheet>
+          <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Pressable accessibilityRole="button" onPress={() => setEditingAddress(true)} style={styles.cardRow}>
+              <View style={[styles.rowIcon, { backgroundColor: colors.tint }]}>
+                <MapPin size={18} color={colors.accentText} />
+              </View>
+              <View style={styles.flex}>
+                <Txt variant="caption" color={colors.textMuted}>
+                  {t('fieldAddress')}
+                </Txt>
+                {editingAddress ? (
+                  <TextInput
+                    autoFocus
+                    accessibilityLabel={t('fieldAddress')}
+                    style={[type.bodyStrong, styles.addressInput, inputReset, { color: colors.text }]}
+                    value={locationText}
+                    onChangeText={onChangeLocation}
+                    onBlur={() => setEditingAddress(false)}
+                    onSubmitEditing={() => setEditingAddress(false)}
+                    returnKeyType="done"
+                  />
+                ) : (
+                  <Txt variant="bodyStrong" numberOfLines={2} style={styles.value}>
+                    {locationText || '—'}
+                  </Txt>
+                )}
+              </View>
+            </Pressable>
+
+            <View style={[styles.sep, { backgroundColor: colors.border }]} />
+
+            <View style={styles.cardRow}>
+              <View style={[styles.rowIcon, { backgroundColor: colors.tint }]}>
+                <Clock size={18} color={colors.accentText} />
+              </View>
+              <View style={styles.flex}>
+                <Txt variant="caption" color={colors.textMuted}>
+                  {t('arrival')}
+                </Txt>
+                <Txt variant="bodyStrong" style={styles.value}>
+                  {t('asap')}
+                </Txt>
+              </View>
+            </View>
+          </View>
+
+          {Boolean(errors.submit) && (
+            <View accessibilityRole="alert" style={[styles.banner, { backgroundColor: colors.dangerSoft }]}>
+              <AlertTriangle size={16} color={colors.dangerText} />
+              <Txt variant="small" color={colors.dangerText} style={styles.flex}>
+                {errors.submit}
+              </Txt>
+            </View>
+          )}
+        </ScrollView>
+
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 10 }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ busy: submitting }}
+            disabled={submitting}
+            onPress={onSubmit}
+            style={({ pressed }) => [
+              styles.launch,
+              { backgroundColor: colors.brand, opacity: submitting ? 0.7 : 1 },
+              pressed && { transform: [{ scale: 0.98 }] },
+            ]}
+          >
+            <Txt variant="button" color="#fff">
+              {t('launchIntervention')}
+            </Txt>
+            <Mirrored>
+              <ArrowRight size={18} color={colors.live} strokeWidth={2.6} />
+            </Mirrored>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    </SlideInPage>
   );
 }
-
-function FieldError({ message }: { message: string }) {
-  const colors = useThemeStore((state) => state.colors);
-  return (
-    <Txt variant="caption" color={colors.dangerText} accessibilityRole="alert">
-      {message}
-    </Txt>
-  );
-}
-
-const styles = StyleSheet.create({
-  form: {
-    gap: space.lg,
-    paddingBottom: space.xs,
-  },
-  field: {
-    gap: space.sm,
-  },
-  chips: {
-    gap: space.sm,
-  },
-  chip: {
-    minHeight: hitTarget,
-    justifyContent: 'center',
-    paddingHorizontal: 14,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-  },
-  textArea: {
-    minHeight: 96,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: 14,
-    paddingTop: space.md,
-    paddingBottom: space.md,
-    textAlignVertical: 'top',
-  },
-  inputRow: {
-    height: controlHeight,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    borderWidth: 1,
-    borderRadius: radius.md,
-    paddingHorizontal: 14,
-  },
-  input: {
-    flex: 1,
-    height: '100%',
-    paddingVertical: 0,
-  },
-  banner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: space.sm,
-    padding: space.md,
-    borderRadius: radius.sm,
-  },
-  bannerText: {
-    flex: 1,
-  },
-});

@@ -1,17 +1,17 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, View, StyleProp, ViewStyle } from 'react-native';
-import { Globe } from 'lucide-react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useLanguageStore, useTranslation } from '../store/useLanguageStore';
 import { useNotificationStore } from '../../features/notifications/store/useNotificationStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { Language } from '../i18n/translations';
-import { controlHeight, hitTarget, radius, space } from '../theme/tokens';
+import { controlHeight, space } from '../theme/tokens';
 import { BottomSheet } from './BottomSheet';
+import { SegmentedControl } from './SegmentedControl';
 import { Surface, Hairline } from './Surface';
 import { Txt } from './Txt';
 
 /** Each language is named in its own language, so it can be found by anyone. */
-export const LANGUAGES: { id: Language; label: string }[] = [
+const LANGUAGES: { id: Language; label: string }[] = [
   { id: 'fr', label: 'Français' },
   { id: 'ar', label: 'العربية' },
   { id: 'en', label: 'English' },
@@ -71,55 +71,33 @@ export function LanguagePickerSheet({ visible, onClose }: LanguagePickerSheetPro
   );
 }
 
-interface LanguageToggleProps {
-  style?: StyleProp<ViewStyle>;
-}
-
-/** A compact language button for screens shown before sign-in. */
-export function LanguageToggle({ style }: LanguageToggleProps) {
-  const [open, setOpen] = useState(false);
-  const language = useLanguageStore((state) => state.language);
-  const colors = useThemeStore((state) => state.colors);
+/** The language as three equal segments (FR, EN, عربي): one choice among a few, so a segmented control, not a switch. */
+export function LanguageSegments() {
+  const { language, setLanguage } = useLanguageStore();
+  const flashToast = useNotificationStore((state) => state.flashToast);
   const { t } = useTranslation();
-
-  const foreground = colors.text;
-
+  const options: { key: Language; label: string }[] = [
+    { key: 'fr', label: 'FR' },
+    { key: 'en', label: 'EN' },
+    { key: 'ar', label: 'عربي' },
+  ];
   return (
-    <>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${t('languageLabel')}: ${languageLabel(language)}`}
-        onPress={() => setOpen(true)}
-        style={({ pressed }) => [
-          styles.button,
-          { borderColor: colors.border, backgroundColor: colors.surface },
-          pressed && { opacity: 0.7 },
-          style,
-        ]}
-      >
-        <Globe size={16} color={foreground} />
-        <Txt variant="smallStrong" color={foreground}>
-          {languageLabel(language)}
-        </Txt>
-      </Pressable>
-
-      <LanguagePickerSheet visible={open} onClose={() => setOpen(false)} />
-    </>
+    <SegmentedControl
+      style={styles.segments}
+      options={options}
+      value={language}
+      onChange={(lang) => {
+        setLanguage(lang);
+        if (useLanguageStore.getState().needsRestart) flashToast({ title: t('restartForDirection') });
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
+  segments: { width: 186 },
   flex: {
     flex: 1,
-  },
-  button: {
-    minHeight: hitTarget,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: space.md,
-    borderRadius: radius.full,
-    borderWidth: 1,
   },
   row: {
     minHeight: controlHeight + 4,

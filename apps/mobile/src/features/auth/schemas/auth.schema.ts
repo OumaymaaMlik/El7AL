@@ -29,13 +29,10 @@ export const authSuccessSchema = z.object({
   refreshToken: z.string().min(1).optional(),
   user: userSessionSchema,
 });
-export type AuthSuccess = z.infer<typeof authSuccessSchema>;
 
 export const sendCodeResponseSchema = z.object({
   success: z.boolean(),
   message: z.string().optional(),
-  /** Only present when the backend runs in development mode. */
-  code: z.string().optional(),
 });
 
 export const uploadResponseSchema = z.object({ url: z.string().optional() }).passthrough();

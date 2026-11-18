@@ -35,7 +35,7 @@ export function NotificationToast() {
   // Tone colors for smaller one-line toast
   const isError = tone === 'error';
   const isSuccess = tone === 'success';
-  const iconColor = isError ? '#EF4444' : isSuccess ? '#A3E635' : '#60A5FA';
+  const iconColor = isError ? '#EF4444' : isSuccess ? '#2BB673' : '#60A5FA';
   const ToastIcon = isError ? AlertTriangle : isSuccess ? CheckCircle2 : ICON_MAP[activeToast.type] || Bell;
 
   const senderName = activeToast.senderName || activeToast.title || t('notifNewMessage');

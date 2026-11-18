@@ -108,11 +108,11 @@ export function useServiceRequest(locateOnMount = true) {
     const here = coords ?? (await locate());
     if (!here) {
       setSubmitting(false);
-      setFormErrors({ submit: 'Activez la localisation pour trouver un artisan près de vous.' });
+      setFormErrors({ submit: t('errEnableLocation') });
       return;
     }
     setFormErrors({});
-    showLoading("Recherche d'un artisan", 'Localisation des artisans à proximité');
+    showLoading(t('loadingSearchArtisan'), t('loadingLocating'));
     try {
       const result = await requestMission({
         categoryId: selectedCategory.id,
@@ -156,5 +156,3 @@ export function useServiceRequest(locateOnMount = true) {
     notifyWhenAvailable,
   };
 }
-
-export type ServiceRequest = ReturnType<typeof useServiceRequest>;

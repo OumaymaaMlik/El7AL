@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Animated, Platform, Pressable, StyleSheet, Switch } from 'react-native';
 import { useThemeStore } from '../store/useThemeStore';
 import { useIsRTL } from '../store/useLanguageStore';
@@ -31,7 +31,7 @@ export function Toggle({ value, onValueChange, accessibilityLabel, onBrand = fal
   }, [value, progress]);
 
   const offTrack = onBrand ? 'rgba(255, 255, 255, 0.3)' : colors.borderStrong;
-  const onTrack = onBrand ? colors.action : colors.brand;
+  const onTrack = onBrand ? colors.live : colors.brand;
 
   if (Platform.OS !== 'web') {
     return (

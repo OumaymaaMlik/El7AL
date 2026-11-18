@@ -57,3 +57,24 @@ export const fontSize = {
   title: 34,
   display: 44,
 } as const;
+
+/**
+ * Layout rules every screen follows (see DESIGN_SYSTEM.md, "Spacing rules").
+ * Headers never touch the top edge: the status bar (or at least `minTop` on the web) plus `headerTop`.
+ */
+export const layout = {
+  /** Side margin of every page and header. */
+  gutter: 20,
+  /** Smallest space above a header when the device reports no status-bar inset (the web). */
+  minTop: 16,
+  /** Space between the status bar and the first row of a header. */
+  headerTop: 12,
+  /** Space under the last row of a green header. */
+  headerBottom: 24,
+  /** Gap between the rows of a header or a card. */
+  rowGap: 16,
+  /** Padding inside a stat tile or a small card. */
+  tilePad: 16,
+  /** Radius of an icon tile inside a card: the card radius (24) minus its padding (14). */
+  tileRadius: 10,
+} as const;

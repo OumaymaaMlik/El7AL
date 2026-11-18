@@ -26,7 +26,7 @@ async function advance(
   actor: 'PROVIDER' | 'CLIENT',
   from: MissionStatus[],
   to: MissionStatus,
-  extra: { startedAt?: Date; completedAt?: Date } = {},
+  extra: { startedAt?: Date; completedAt?: Date; declaredAmount?: number } = {},
   /** Runs in the same transaction as the status change, so both happen or neither does. */
   after?: (tx: Prisma.TransactionClient, mission: MissionWithUsers) => Promise<void>,
 ): Promise<{ mission: MissionWithUsers; changed: boolean }> {
@@ -146,18 +146,37 @@ export async function startWorkMission(missionId: string, providerUserId: string
   return { success: true, status: MissionStatus.IN_PROGRESS, startedAt: mission.startedAt };
 }
 
+/** The most an artisan can declare for one job, in TND: a guard against a slipped finger, not a price list. */
+export const MAX_DECLARED_AMOUNT_TND = 100000;
+
+/**
+ * The amount the artisan declares when the work is finished. Cash only, so a plain positive number of TND
+ * (a comma is accepted as the decimal mark). Absent is allowed so older clients keep working; present but
+ * invalid is refused.
+ */
+export function parseDeclaredAmount(raw: unknown): number | undefined {
+  if (raw === undefined || raw === null || raw === '') return undefined;
+  const value = typeof raw === 'number' ? raw : Number(String(raw).trim().replace(',', '.'));
+  if (!Number.isFinite(value) || value <= 0 || value > MAX_DECLARED_AMOUNT_TND) {
+    throw new Error(`Le montant doit être un nombre positif, au plus ${MAX_DECLARED_AMOUNT_TND} TND.`);
+  }
+  return Math.round(value * 1000) / 1000;
+}
+
 /**
  * The two-sided completion: the artisan declares the work finished (-> DUAL_CONFIRM), then the
  * client confirms (-> COMPLETED). `role` is the caller's account role; it only picks which side acts.
  */
-export async function dualConfirmMission(missionId: string, userId: string, role: string) {
+export async function dualConfirmMission(missionId: string, userId: string, role: string, amount?: unknown) {
   if (role === 'PROVIDER') {
+    const declaredAmount = parseDeclaredAmount(amount);
     const { mission, changed } = await advance(
       missionId,
       userId,
       'PROVIDER',
       [MissionStatus.IN_PROGRESS],
       MissionStatus.DUAL_CONFIRM,
+      declaredAmount === undefined ? {} : { declaredAmount },
     );
     if (changed) {
       await announce(
@@ -167,12 +186,13 @@ export async function dualConfirmMission(missionId: string, userId: string, role
           status: 'DUAL_CONFIRM',
           providerConfirmed: true,
           clientConfirmed: false,
+          declaredAmount: mission.declaredAmount === null ? undefined : Number(mission.declaredAmount),
           message: "L'artisan a indiqué la fin des travaux. Confirmez-vous ?",
         },
         { senderId: userId, content: "Travaux terminés par l'artisan" },
       );
     }
-    return { success: true, status: 'DUAL_CONFIRM', providerConfirmed: true };
+    return { success: true, status: 'DUAL_CONFIRM', providerConfirmed: true, declaredAmount };
   }
 
   // The fixed commission is taken from the artisan's balance in the same transaction that completes the mission.

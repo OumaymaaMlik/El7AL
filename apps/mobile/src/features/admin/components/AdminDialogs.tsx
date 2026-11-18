@@ -1,4 +1,3 @@
-import React from 'react';
 import { LogOut, ShieldX, Trash2 } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';
 import { Dialog, DialogActions } from '../../../shared/ui/Dialog';

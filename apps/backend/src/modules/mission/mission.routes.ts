@@ -7,6 +7,7 @@ import { submitMissionReview } from './mission.review.js';
 import { markMessagesRead } from './mission.chat.js';
 import { authenticate, currentUser } from '../../utils/authGuards.js';
 import { respond } from '../../utils/respond.js';
+import { REQUEST_BODY } from './mission.schemas.js';
 
 const ID_PARAMS = { type: 'object', properties: { id: { type: 'string' } } } as const;
 const SECURED = [{ bearerAuth: [] }];
@@ -57,19 +58,7 @@ export async function missionRoutes(app: FastifyInstance) {
         tags: ['Missions'],
         summary: 'Client creates a new service request and broadcasts to nearby providers',
         security: SECURED,
-        body: {
-          type: 'object',
-          required: ['categoryId', 'pickupLat', 'pickupLng', 'addressText'],
-          properties: {
-            categoryId: { type: 'string', examples: ['cat-id-plumbing'] },
-            pickupLat: { type: 'number', minimum: -90, maximum: 90, examples: [36.8065] },
-            pickupLng: { type: 'number', minimum: -180, maximum: 180, examples: [10.1815] },
-            addressText: { type: 'string', minLength: 2, maxLength: 300, examples: ['Tunis, Avenue Habib Bourguiba'] },
-            description: { type: 'string', maxLength: 1000, examples: ["Fuite d'eau sous l'évier de la cuisine"] },
-            radiusKm: { type: 'number', minimum: 1, maximum: 100, examples: [15] },
-            selectedProviderIds: { type: 'array', items: { type: 'string' }, maxItems: 20 },
-          },
-        },
+        body: REQUEST_BODY,
       },
       onRequest: [authenticate],
     },
@@ -131,15 +120,20 @@ export async function missionRoutes(app: FastifyInstance) {
     {
       schema: {
         tags: ['Missions'],
-        summary: 'Completion confirmation (artisan, then client)',
+        summary: 'Completion confirmation (artisan declares the amount, then client confirms)',
         security: SECURED,
         params: ID_PARAMS,
+        body: {
+          type: ['object', 'null'],
+          properties: { amount: { type: ['number', 'string'] } },
+        },
       },
       onRequest: [authenticate],
     },
     async (request, reply) => {
       const user = currentUser(request);
-      return respond(reply, () => dualConfirmMission(missionId(request), user.userId, user.role));
+      const body = (request.body ?? {}) as { amount?: number | string };
+      return respond(reply, () => dualConfirmMission(missionId(request), user.userId, user.role, body.amount));
     },
   );
 

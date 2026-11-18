@@ -24,7 +24,7 @@ export interface SingleNotification extends NotificationItem {
 
 export type DisplayNotification = GroupedChatNotification | SingleNotification;
 
-export interface NotificationSectionData {
+interface NotificationSectionData {
   key: string;
   title: string;
   items: DisplayNotification[];

@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { noSelect } from '../../../shared/theme/webStyles';
 import { StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HistoryModal } from '../../history/components/HistoryModal';
 import { InstagramPullToRefresh } from '../../../shared/ui/InstagramPullToRefresh';
-import { LanguagePickerSheet } from '../../../shared/ui/LanguageToggle';
 import { ScreenHeader } from '../../../shared/ui/ScreenHeader';
 import { Skeleton } from '../../../shared/ui/Skeleton';
 import { gutter, radius, space, tabBarHeight } from '../../../shared/theme/tokens';
+import { formatAmount, toNumber } from '../../../shared/utils/format';
 import { useLoadingStore } from '../../../shared/store/useLoadingStore';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
@@ -16,8 +16,6 @@ import { ROUTES } from '../../../navigation/routes';
 import { OtpVerificationSheet, useAuthStore } from '../../auth';
 import { AddressMapSheet } from '../../map/components/AddressMapSheet';
 import { AccountSection } from '../components/AccountSection';
-import { AvailabilityCard } from '../components/AvailabilityCard';
-import { BalanceCard } from '../components/BalanceCard';
 import { ChangePasswordSheet } from '../components/ChangePasswordSheet';
 import { DeleteAccountSheet } from '../components/DeleteAccountSheet';
 import { PrivacyPolicySheet } from '../components/PrivacyPolicySheet';
@@ -49,7 +47,6 @@ export function ProfileScreen() {
   const { activeUser, isProviderUser, isAdminUser } = data;
 
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -57,7 +54,7 @@ export function ProfileScreen() {
 
   const handleLogout = async () => {
     setLogoutOpen(false);
-    showLoading('Déconnexion en cours', 'À bientôt sur El 7al');
+    showLoading(t('loadingLoggingOut'), t('loadingSeeYou'));
     try {
       await logout();
       router.replace(ROUTES.welcome);
@@ -67,6 +64,11 @@ export function ProfileScreen() {
   };
 
   const bottomInset = Math.max(insets.bottom, 10);
+  const rating = toNumber(data.profile?.providerProfile?.ratingAverage);
+  const providerStats: [string, string][] = [
+    [rating ? rating.toFixed(1).replace('.', ',') : '—', t('statRating')],
+    [formatAmount(data.balance), t('statBalance')],
+  ];
   const roleLabel = isProviderUser ? t('provider') : isAdminUser ? t('adminMode') : t('client');
 
   return (
@@ -97,13 +99,8 @@ export function ProfileScreen() {
               if (edit.avatarUrl && !edit.avatarFailed) setAvatarZoomOpen(true);
             }}
             onEdit={() => edit.setEditOpen(true)}
+            stats={isProviderUser ? providerStats : undefined}
           />
-
-          {isProviderUser && <BalanceCard amount={data.balance} />}
-
-          {(data.profile?.role === 'PROVIDER' || data.profile?.providerProfile) && (
-            <AvailabilityCard available={data.isProviderAvailable} onChange={data.toggleAvailability} />
-          )}
 
           <AccountSection
             fullName={activeUser?.fullName}
@@ -115,9 +112,11 @@ export function ProfileScreen() {
             verified={data.isVerified}
           />
 
-          <SettingsSection onOpenLanguage={() => setLanguageOpen(true)} />
+          <SettingsSection />
 
           <ProfileActions
+            onPay={isProviderUser ? () => router.push(ROUTES.pay) : undefined}
+            due={Math.max(0, -data.balance)}
             isAdmin={isAdminUser}
             onOpenHistory={() => setHistoryOpen(true)}
             onOpenAdmin={() => router.push(ROUTES.adminDashboard)}
@@ -133,7 +132,6 @@ export function ProfileScreen() {
         onClose={() => setHistoryOpen(false)}
         userRole={activeRole === 'PROVIDER' || isProviderUser ? 'PROVIDER' : 'CLIENT'}
       />
-      <LanguagePickerSheet visible={languageOpen} onClose={() => setLanguageOpen(false)} />
       <PrivacyPolicySheet visible={privacyOpen} onClose={() => setPrivacyOpen(false)} />
       <DeleteAccountSheet visible={deleteOpen} onClose={() => setDeleteOpen(false)} onDeleted={handleLogout} />
       <LogoutDialog visible={logoutOpen} onClose={() => setLogoutOpen(false)} onConfirm={handleLogout} />
@@ -168,5 +166,5 @@ export function ProfileScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, ...noSelect },
-  content: { paddingHorizontal: gutter, paddingTop: space.xs, gap: space.xxl },
+  content: { paddingHorizontal: gutter, paddingTop: space.xs, gap: space.lg },
 });

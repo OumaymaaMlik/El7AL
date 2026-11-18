@@ -13,7 +13,7 @@ import type { AdminMission } from '../schemas/admin.schema';
 import { commissionOf } from '../utils/adminLabels';
 
 /** One mission in a list; tapping opens its details. */
-export function MissionRow({ mission, onPress }: { mission: AdminMission; onPress: (m: AdminMission) => void }) {
+function MissionRow({ mission, onPress }: { mission: AdminMission; onPress: (m: AdminMission) => void }) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
   const badge = missionBadge(mission.status, t);

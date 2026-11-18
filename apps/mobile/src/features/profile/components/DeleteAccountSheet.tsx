@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BottomSheet } from '../../../shared/ui/BottomSheet';
 import { Button } from '../../../shared/ui/Button';

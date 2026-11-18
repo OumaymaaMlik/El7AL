@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LogOut } from 'lucide-react-native';
 import { IconButton } from '../../../shared/ui/IconButton';
 import { Mirrored } from '../../../shared/ui/Mirrored';
+import { Txt } from '../../../shared/ui/Txt';
 import { ScreenHeader } from '../../../shared/ui/ScreenHeader';
 import { gutter, space } from '../../../shared/theme/tokens';
 import { useLoadingStore } from '../../../shared/store/useLoadingStore';
@@ -78,7 +79,7 @@ export function AdminDashboardScreen() {
   }, [user, router]);
 
   const handleLogout = async () => {
-    showLoading('Déconnexion en cours', 'À bientôt sur El 7al');
+    showLoading(t('loadingLoggingOut'), t('loadingSeeYou'));
     try {
       await logout();
       router.replace(ROUTES.login);
@@ -93,11 +94,18 @@ export function AdminDashboardScreen() {
         title={t('adminPortalTitle')}
         subtitle={t('adminPanelSub')}
         trailing={
-          <IconButton accessibilityLabel={t('logoutAdmin')} onPress={() => setLogoutOpen(true)}>
-            <Mirrored>
-              <LogOut size={18} color={colors.dangerText} />
-            </Mirrored>
-          </IconButton>
+          <View style={styles.headTrail}>
+            <View style={[styles.badge, { backgroundColor: colors.pill }]}>
+              <Txt variant="captionStrong" color={colors.onPill}>
+                {t('adminBadge')}
+              </Txt>
+            </View>
+            <IconButton accessibilityLabel={t('logoutAdmin')} onPress={() => setLogoutOpen(true)}>
+              <Mirrored>
+                <LogOut size={18} color={colors.dangerText} />
+              </Mirrored>
+            </IconButton>
+          </View>
         }
       />
 
@@ -109,7 +117,7 @@ export function AdminDashboardScreen() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {tab === 'ANALYTICS' && <AnalyticsTab stats={data.stats} loading={data.loading} />}
+        {tab === 'ANALYTICS' && <AnalyticsTab stats={data.stats} loading={data.loading} onOpenTab={setTab} />}
         {tab === 'VERIFICATIONS' && (
           <VerificationsTab providers={data.providers} loading={data.loading} actions={actions} />
         )}
@@ -153,6 +161,8 @@ export function AdminDashboardScreen() {
 }
 
 const styles = StyleSheet.create({
+  headTrail: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  badge: { height: 30, paddingHorizontal: 12, borderRadius: 15, justifyContent: 'center' },
   container: { flex: 1 },
   flex: { flex: 1 },
   content: { paddingHorizontal: gutter, paddingTop: space.xs, gap: space.lg },

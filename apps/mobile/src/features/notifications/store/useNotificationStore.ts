@@ -4,7 +4,7 @@ import type { ReviewData } from '../../missions/types';
 export type NotificationType = 'CHAT' | 'OFFER' | 'ACCEPT' | 'CANCEL' | 'COMPLETED' | 'SYSTEM';
 
 /** Visual tone of a toast. Notifications from the server are always 'info'. */
-export type ToastTone = 'info' | 'success' | 'error';
+type ToastTone = 'info' | 'success' | 'error';
 
 /** What a notification carries so tapping it can open the right screen. */
 export interface NotificationMetadata {

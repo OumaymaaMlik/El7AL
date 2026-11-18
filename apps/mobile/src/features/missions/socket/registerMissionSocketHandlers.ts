@@ -65,6 +65,7 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
     if (data.startedAt) update.startedAt = new Date(data.startedAt).toISOString();
     if (data.providerConfirmed !== undefined) update.providerConfirmed = data.providerConfirmed;
     if (data.clientConfirmed !== undefined) update.clientConfirmed = data.clientConfirmed;
+    if (data.declaredAmount !== undefined) update.declaredAmount = data.declaredAmount;
     mission().updateMissionState(update);
   };
 

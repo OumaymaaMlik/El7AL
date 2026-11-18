@@ -1,4 +1,3 @@
-import React from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AlertTriangle, Briefcase, Layers, ShieldCheck, TrendingUp, Users, Wallet } from 'lucide-react-native';
 import type { LucideIcon } from 'lucide-react-native';
@@ -56,8 +55,13 @@ export function AdminTabBar({ active, onChange, counts = {} }: Props) {
             >
               <Icon size={16} color={color} />
               <Txt variant="smallStrong" color={color}>
-                {counts[key] ? `${label} (${counts[key]})` : label}
+                {label}
               </Txt>
+              {Boolean(counts[key]) && (
+                <View style={[styles.count, { backgroundColor: isActive ? colors.live : colors.brand }]}>
+                  <Txt style={[styles.countText, { color: isActive ? colors.onLive : '#FFFFFF' }]}>{counts[key]}</Txt>
+                </View>
+              )}
             </Pressable>
           );
         })}
@@ -74,7 +78,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: space.sm,
     paddingHorizontal: space.lg,
-    borderRadius: radius.md,
+    borderRadius: radius.full,
     borderWidth: 1,
   },
+  count: {
+    minWidth: 20,
+    height: 20,
+    paddingHorizontal: 6,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countText: { fontSize: 11, lineHeight: 14, fontWeight: '700' },
 });

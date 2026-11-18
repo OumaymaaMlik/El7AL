@@ -94,7 +94,7 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
     setOtpVisible(false);
     setSaving(true);
     setError(undefined);
-    showLoading('Mise à jour du profil', 'Enregistrement de vos modifications');
+    showLoading(t('loadingUpdatingProfile'), t('loadingSavingChanges'));
     try {
       const input: UpdateProfileInput = {
         fullName,

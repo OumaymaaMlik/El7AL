@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Wrench } from 'lucide-react-native';
 import { CATEGORY_ICONS as ICON_CHOICES } from '@el7al/shared';
@@ -9,7 +9,7 @@ import { Txt } from '../../../shared/ui/Txt';
 import { hitTarget, radius, space } from '../../../shared/theme/tokens';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
-import { CATEGORY_ICONS } from '../../home/components/CategoryGrid';
+import { CATEGORY_ICONS } from '../../home/components/categoryIcons';
 import type { CategoryDraft } from '../hooks/useAdminActions';
 import type { AdminCategory } from '../schemas/admin.schema';
 

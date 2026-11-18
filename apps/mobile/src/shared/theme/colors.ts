@@ -8,14 +8,15 @@
  * Rules of use:
  *  - `brand` is the deep-green surface of hero panels and primary buttons (same in both themes).
  *  - `accentText` is brand green as TEXT or an icon: brand green in light mode, mint in dark mode.
- *  - `action` (lime) is a FILL for live status and the logo in dark mode. It is never text on a light background.
+ *  - `action` (green #2BB673) is the FILL of every primary action: buttons, slide bars, send.
+ *  - `live` (lime) marks what is happening now (online, en route, minutes). A fill, only on dark or brand surfaces, never text on a light background.
  *  - `pill` / `onPill` is the inverted button (near-black in light mode, near-white in dark mode).
  *  - Every text/background pair below passes WCAG AA (4.5:1) for body text.
  */
 export const DarkColors = {
   // Surfaces
-  background: '#0B120F',
-  adminBackground: '#0B120F',
+  background: '#06281B',
+  adminBackground: '#06281B',
   surface: '#131D18',
   raised: '#1C2A23',
   soft: '#18241E',
@@ -38,8 +39,10 @@ export const DarkColors = {
   textMuted: '#A3B0A2',
 
   // Brand surface (same in both themes)
-  brand: '#0F5C3A',
-  brandInset: '#0B4A2E',
+  brand: '#0D5C3A',
+  brandInset: '#093F2A',
+  /** Fill of the hero panel and headers: the brand green on a dark page, night green on the light page. */
+  hero: '#0D5C3A',
   onBrand: '#FFFFFF',
   onBrandMuted: '#D5E7DB',
   onBrandFaint: '#B9D4C6',
@@ -51,8 +54,12 @@ export const DarkColors = {
   logo: '#A3E635',
 
   // Primary action / live status
-  action: '#A3E635',
-  onAction: '#052E16',
+  action: '#2BB673',
+  onAction: '#04170F',
+
+  // Live status (online, en route, minutes). A fill on dark surfaces only.
+  live: '#A3E635',
+  onLive: '#12260A',
 
   // Inverted button
   pill: '#EEF3EC',
@@ -63,6 +70,9 @@ export const DarkColors = {
   danger: '#EF4444',
   dangerText: '#F28B8B',
   dangerSoft: 'rgba(239, 68, 68, 0.16)',
+  /** A soft warning surface and its text (paused account, check pending). */
+  warnSoft: 'rgba(242, 181, 68, 0.16)',
+  warnText: '#F2B544',
   /** Fill of destructive buttons (white text on it passes AA in both themes). */
   dangerFill: '#B4232A',
 
@@ -72,13 +82,13 @@ export const DarkColors = {
   cardBorder: '#2B3B33',
   muted: '#1C2A23',
   mutedForeground: '#A3B0A2',
-  primary: '#0F5C3A',
+  primary: '#0D5C3A',
   primaryForeground: '#FFFFFF',
   secondary: '#1C2A23',
   secondaryForeground: '#EEF3EC',
-  accent: '#A3E635',
+  accent: '#2BB673',
   accentStrong: '#86D9A6',
-  accentForeground: '#052E16',
+  accentForeground: '#04170F',
   destructive: '#EF4444',
   destructiveForeground: '#FFFFFF',
   warning: '#F2B544',
@@ -86,54 +96,59 @@ export const DarkColors = {
   info: '#60A5FA',
   inputBg: '#131D18',
   inputBorder: '#3A4C42',
-  inputFocusBorder: '#A3E635',
+  inputFocusBorder: '#2BB673',
   glassBg: '#131D18',
 };
 
 export const LightColors: typeof DarkColors = {
   // Surfaces
   background: '#F2F4EE',
-  adminBackground: '#E9EDE6',
+  adminBackground: '#E8EEE1',
   surface: '#FFFFFF',
-  raised: '#E4EADF',
-  soft: '#EEF2EA',
+  raised: '#E8EEE1',
+  soft: '#ECF0E7',
   softer: '#F7F9F4',
-  tint: '#E4EADF',
-  chip: '#D7EEDF',
-  selected: '#F1F8E6',
+  tint: '#E8EEE1',
+  chip: '#DCEBE0',
+  selected: '#E9F6EE',
 
   // Lines
-  divider: '#E1E6DC',
-  border: '#DCE2D6',
-  borderStrong: '#CBD3C5',
+  divider: '#DAE1D3',
+  border: '#DAE1D3',
+  borderStrong: '#C4CFBE',
   overlay: 'rgba(16, 20, 15, 0.5)',
   shadow: 'rgba(16, 20, 15, 0.12)',
 
   // Text
-  text: '#10140F',
-  textStrong: '#2A3328',
-  textSecondary: '#3B463A',
-  textMuted: '#556052',
+  text: '#0E2A1F',
+  textStrong: '#1B2F25',
+  textSecondary: '#33473B',
+  textMuted: '#5E7066',
 
   // Brand surface
-  brand: '#0F5C3A',
-  brandInset: '#0B4A2E',
+  brand: '#0D5C3A',
+  brandInset: '#093F2A',
+  hero: '#0D5C3A',
   onBrand: '#FFFFFF',
   onBrandMuted: '#D5E7DB',
   onBrandFaint: '#B9D4C6',
   onBrandLine: 'rgba(255, 255, 255, 0.18)',
 
   // Brand as text, icons and the logo
-  accentText: '#0F5C3A',
+  accentText: '#0D5C3A',
   positive: '#08744E',
-  logo: '#0F5C3A',
+  logo: '#0D5C3A',
 
   // Primary action / live status
-  action: '#A3E635',
-  onAction: '#052E16',
+  action: '#2BB673',
+  onAction: '#04170F',
+
+  // Live status. On a light surface use it only inside a dark or brand container.
+  live: '#A3E635',
+  onLive: '#12260A',
 
   // Inverted button
-  pill: '#10140F',
+  pill: '#0E2A1F',
   onPill: '#FFFFFF',
 
   // Status
@@ -142,53 +157,31 @@ export const LightColors: typeof DarkColors = {
   dangerText: '#B4232A',
   dangerSoft: 'rgba(220, 38, 38, 0.1)',
   dangerFill: '#B4232A',
+  warnSoft: '#FDF0C8',
+  warnText: '#8A4B05',
 
   // Legacy names (screens not yet migrated)
-  surfaceBorder: '#DCE2D6',
+  surfaceBorder: '#DAE1D3',
   card: '#FFFFFF',
-  cardBorder: '#DCE2D6',
-  muted: '#E4EADF',
-  mutedForeground: '#556052',
-  primary: '#0F5C3A',
+  cardBorder: '#DAE1D3',
+  muted: '#E8EEE1',
+  mutedForeground: '#5E7066',
+  primary: '#0D5C3A',
   primaryForeground: '#FFFFFF',
-  secondary: '#E4EADF',
-  secondaryForeground: '#10140F',
-  accent: '#A3E635',
-  accentStrong: '#0F5C3A',
-  accentForeground: '#052E16',
+  secondary: '#E8EEE1',
+  secondaryForeground: '#0E2A1F',
+  accent: '#2BB673',
+  accentStrong: '#0D5C3A',
+  accentForeground: '#04170F',
   destructive: '#DC2626',
   destructiveForeground: '#FFFFFF',
   warning: '#B45309',
   warningForeground: '#FFFFFF',
   info: '#2563EB',
   inputBg: '#FFFFFF',
-  inputBorder: '#B8C4BB',
-  inputFocusBorder: '#0F5C3A',
+  inputBorder: '#C4CFBE',
+  inputFocusBorder: '#0D5C3A',
   glassBg: '#FFFFFF',
 };
 
-export type ThemeColors = typeof DarkColors;
-
 export const Colors = DarkColors;
-
-/**
- * Elevation. The interface is flat by default: surfaces are separated by a 1px border,
- * not by shadows. `soft` is kept for floating elements (sheets, the floating action).
- * `glow` is kept for backwards compatibility and is intentionally neutral.
- */
-export const Shadows = {
-  soft: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.18,
-    shadowRadius: 14,
-    elevation: 6,
-  },
-  glow: {
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0,
-    shadowRadius: 0,
-    elevation: 0,
-  },
-};

@@ -1,4 +1,3 @@
-import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Star, CheckCircle2 } from 'lucide-react-native';
 import { Button } from '../../../shared/ui/Button';

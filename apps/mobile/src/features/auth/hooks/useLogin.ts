@@ -40,7 +40,7 @@ export function useLogin() {
 
     setErrors({});
     setLoading(true);
-    showLoading('Connexion en cours', 'Préparation de votre espace');
+    showLoading(t('loadingSigningIn'), t('loadingPreparing'));
     try {
       const { token, refreshToken, user } = await login({ identifier: identifier.trim(), password });
       await setSession(token, user, refreshToken);

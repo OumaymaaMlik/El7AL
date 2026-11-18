@@ -25,4 +25,7 @@ function resolveApiUrl(): string {
 }
 
 export const API_URL = resolveApiUrl();
+/** El 7al's bank account for artisan transfers. Set EXPO_PUBLIC_EL7AL_RIB; the row is hidden when it is not set. */
+export const EL7AL_RIB = process.env.EXPO_PUBLIC_EL7AL_RIB?.trim() || null;
+
 export const SOCKET_URL = API_URL.replace(/\/api\/v1$/, '');

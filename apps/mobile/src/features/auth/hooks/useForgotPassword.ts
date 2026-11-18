@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
+import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { useLoadingStore } from '../../../shared/store/useLoadingStore';
 import { getApiErrorMessage } from '../../../shared/utils/apiError';
 import { calculatePasswordStrength } from '../../../shared/utils/password';
@@ -7,21 +8,32 @@ import { ROUTES } from '../../../navigation/routes';
 import { useNotificationStore } from '../../notifications';
 import { requestPasswordReset, resetPassword } from '../api/auth.api';
 
-/** Two steps: ask for an emailed code, then set a new password with it. */
+/** The server issues six-digit codes. */
+export const CODE_LENGTH = 6;
+
+/** Three steps: ask for an emailed code, type it, then set a new password with it. */
 export function useForgotPassword() {
   const router = useRouter();
+  const { t } = useTranslation();
   const flashToast = useNotificationStore((state) => state.flashToast);
   const showLoading = useLoadingStore((state) => state.showLoading);
   const hideLoading = useLoadingStore((state) => state.hideLoading);
 
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [codeShake, setCodeShake] = useState(0);
   const [identifier, setIdentifier] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const run = async (title: string, subtitle: string, action: () => Promise<void>, fallback: string) => {
+  const run = async (
+    title: string,
+    subtitle: string,
+    action: () => Promise<void>,
+    fallback: string,
+    onFail?: () => void,
+  ) => {
     setLoading(true);
     setError(undefined);
     showLoading(title, subtitle);
@@ -29,6 +41,7 @@ export function useForgotPassword() {
       await action();
     } catch (e) {
       setError(getApiErrorMessage(e, fallback));
+      onFail?.();
     } finally {
       setLoading(false);
       hideLoading();
@@ -38,35 +51,49 @@ export function useForgotPassword() {
   const sendCode = () => {
     if (!identifier.trim()) return;
     return run(
-      'Envoi du code',
-      'Vérifiez votre boîte e-mail',
+      t('loadingSendingCode'),
+      t('loadingCheckInbox'),
       async () => {
-        const res = await requestPasswordReset(identifier.trim());
-        // In development the server returns the code so the flow can be tried without a mailbox.
-        if (__DEV__ && res.code) setCode(res.code);
+        await requestPasswordReset(identifier.trim());
         setStep(2);
       },
-      "Impossible d'envoyer le code. Réessayez.",
+      t('errSendCode'),
     );
   };
 
   const passwordStrong = calculatePasswordStrength(newPassword) >= 2;
   const canReset = code.trim().length >= 4 && passwordStrong;
 
+  /** Step 2 to 3: the code is checked by the server together with the new password, so this only needs all the digits. */
+  const continueWithCode = () => {
+    if (code.trim().length < CODE_LENGTH) {
+      setCodeShake((n) => n + 1);
+      return false;
+    }
+    setError(undefined);
+    setStep(3);
+    return true;
+  };
+
   const submitReset = () => {
     if (!canReset) {
-      setError('Entrez le code reçu et un mot de passe plus solide.');
+      setError(t('errCodeAndPassword'));
       return;
     }
     return run(
-      'Réinitialisation en cours',
-      'Sécurisation de votre compte',
+      t('loadingResetting'),
+      t('loadingSecuring'),
       async () => {
         await resetPassword({ identifier: identifier.trim(), code: code.trim(), newPassword });
-        flashToast({ title: 'Succès', message: 'Mot de passe réinitialisé', tone: 'success' });
+        flashToast({ title: t('successTitle'), message: t('passwordResetDone'), tone: 'success' });
         router.replace(ROUTES.login);
       },
-      'Code invalide ou expiré.',
+      t('errCodeInvalid'),
+      // A wrong or expired code sends the person back to retype it.
+      () => {
+        setStep(2);
+        setCodeShake((n) => n + 1);
+      },
     );
   };
 
@@ -83,9 +110,14 @@ export function useForgotPassword() {
     canReset,
     sendCode,
     submitReset,
-    backToIdentifier: () => {
-      setStep(1);
+    codeShake,
+    continueWithCode,
+    /** One step back: 3 to 2 to 1. Returns false from step 1, where the screen should leave instead. */
+    backStep: () => {
       setError(undefined);
+      if (step === 1) return false;
+      setStep((step - 1) as 1 | 2);
+      return true;
     },
   };
 }
