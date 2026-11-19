@@ -2,7 +2,7 @@ import { db } from '../../config/db.js';
 import { acquireMissionLock } from '../../services/redis.service.js';
 import { scheduleMissionTimeout } from '../../queues/mission.queue.js';
 import { MissionStatus } from '@el7al/shared';
-import { COMMISSION_FEE_TND, maxProviderDebt } from '../../config/business.js';
+import { COMMISSION_DUE_MESSAGE, COMMISSION_FEE_TND, owesCommission } from '../../config/business.js';
 import { publish } from '../../events/domain-events.js';
 import {
   ONGOING_STATUSES,
@@ -144,9 +144,7 @@ export async function acceptMission(missionId: string, providerUserId: string) {
     throw new Error('Votre compte doit être vérifié par El 7al avant de recevoir des demandes.');
   }
 
-  if (maxProviderDebt() > 0 && Number(providerProfile.walletBalance) < -maxProviderDebt()) {
-    throw new Error('Votre solde de commissions dépasse la limite autorisée. Contactez El 7al pour le régulariser.');
-  }
+  if (owesCommission(providerProfile)) throw new Error(COMMISSION_DUE_MESSAGE);
 
   // 1. Acquire Redis Atomic Lock (Redlock algorithm) to guarantee first-to-accept pairing
   const lockAcquired = await acquireMissionLock(missionId, providerProfile.id);

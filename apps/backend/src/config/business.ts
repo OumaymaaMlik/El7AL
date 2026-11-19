@@ -1,11 +1,13 @@
-/** Fixed commission charged to the artisan for every completed mission, in TND. */
-export const COMMISSION_FEE_TND = 30;
+import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND } from '@el7al/shared';
+
+export { ACTIVATION_FEE_TND, COMMISSION_FEE_TND };
 
 /**
- * Optional safety net: when MAX_PROVIDER_DEBT_TND is set (> 0), an artisan who owes more commission than
- * that stops receiving offers and cannot accept new ones until the balance is settled. Unset = no limit.
+ * An artisan is stopped while they owe El 7al: after a finished job they have been paid in cash, and the commission
+ * (plus, once, the activation fee) is taken from the wallet, which goes negative until a transfer is confirmed.
  */
-export function maxProviderDebt(): number {
-  const value = Number(process.env.MAX_PROVIDER_DEBT_TND);
-  return Number.isFinite(value) && value > 0 ? value : 0;
+export function owesCommission(profile: { walletBalance: unknown }): boolean {
+  return Number(profile.walletBalance) < 0;
 }
+
+export const COMMISSION_DUE_MESSAGE = 'Réglez votre commission pour continuer à recevoir des demandes.';

@@ -13,6 +13,8 @@ const transactionSchema = z
 const walletSchema = z.object({
   walletBalance: z.any(),
   transactions: z.array(transactionSchema),
+  /** What the artisan owes now (the commission, plus once the activation fee). */
+  due: z.number().nullish(),
 });
 
 export type TopupTransaction = z.infer<typeof transactionSchema>;

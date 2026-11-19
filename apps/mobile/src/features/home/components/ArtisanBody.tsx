@@ -17,6 +17,7 @@ import { TradeTile } from './TradeTile';
 import { Button } from '../../../shared/ui/Button';
 import { ROUTES } from '../../../navigation/routes';
 import { styles } from './ArtisanHome.styles';
+import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND } from '@el7al/shared';
 
 /** The mission under way, as a card that opens the live tracking screen. */
 function ActiveMissionCard() {
@@ -63,18 +64,35 @@ function ActiveMissionCard() {
 interface BodyProps {
   /** What the artisan owes El 7al (commissions), in TND. */
   due: number;
+  /** Set when the artisan owes commission and so cannot receive requests. */
+  block: 'COMMISSION' | null;
   available: boolean;
   missionActive: boolean;
   completed: Mission[];
 }
 
+type Translate = ReturnType<typeof useTranslation>['t'];
+
+/** The wording of the notice at the top of the artisan home. The first debt includes the activation fee. */
+function blockNotice(block: BodyProps['block'], due: number, t: Translate) {
+  if (block !== 'COMMISSION') return { title: t('pausedAccountTitle'), sub: t('pausedAccountSub') };
+  const money = (n: number) => `${formatAmount(n)} ${t('currency')}`;
+  const first = due === COMMISSION_FEE_TND + ACTIVATION_FEE_TND;
+  const sub = (first ? t('commissionBlockedFirstSub') : t('commissionBlockedSub'))
+    .replace('{amount}', money(due))
+    .replace('{commission}', money(COMMISSION_FEE_TND))
+    .replace('{activation}', money(ACTIVATION_FEE_TND));
+  return { title: t('commissionBlockedTitle'), sub };
+}
+
 /** What sits under the header: a paused-account notice, the live mission or the waiting state, and recent missions. */
-export function ArtisanBody({ due, available, missionActive, completed }: BodyProps) {
+export function ArtisanBody({ due, block, available, missionActive, completed }: BodyProps) {
   const router = useRouter();
   const colors = useThemeStore((s) => s.colors);
   const { t, language } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const paused = user?.status === 'SUSPENDED_LOW_BALANCE';
+  const paused = block !== null || user?.status === 'SUSPENDED_LOW_BALANCE';
+  const notice = blockNotice(block, due, t);
   const recent = completed.slice(0, 3);
 
   return (
@@ -88,10 +106,10 @@ export function ArtisanBody({ due, available, missionActive, completed }: BodyPr
           <AlertCircle size={20} color={colors.warnText} />
           <View style={styles.flex}>
             <Txt variant="bodyStrong" color={colors.warnText}>
-              {t('pausedAccountTitle')}
+              {notice.title}
             </Txt>
             <Txt variant="small" color={colors.textMuted}>
-              {t('pausedAccountSub')}
+              {notice.sub}
             </Txt>
           </View>
           <Mirrored>

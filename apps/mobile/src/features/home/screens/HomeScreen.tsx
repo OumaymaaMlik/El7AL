@@ -66,6 +66,10 @@ export function HomeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  // An artisan who owes commission is stopped until the transfer is confirmed.
+  const owed = (dashboard.stats.walletBalance ?? 0) < 0;
+  const providerBlock = isProviderRole && owed ? 'COMMISSION' : null;
+
   useEffect(() => {
     if (user?.role === 'ADMIN') router.replace(ROUTES.adminDashboard);
   }, [user?.role, router]);
@@ -125,6 +129,7 @@ export function HomeScreen() {
             <VerificationBanner />
             <ArtisanBody
               due={Math.max(0, -(dashboard.stats.walletBalance ?? 0))}
+              block={providerBlock}
               available={dashboard.isProviderAvailable}
               missionActive={missionActive}
               completed={dashboard.completedMissions}

@@ -77,7 +77,6 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
       FROM_EMAIL: ${FROM_EMAIL:-}
-      MAX_PROVIDER_DEBT_TND: ${MAX_PROVIDER_DEBT_TND:-}
       # Error reporting; empty = off.
       SENTRY_DSN: ${SENTRY_DSN_BACKEND:-}
     healthcheck:

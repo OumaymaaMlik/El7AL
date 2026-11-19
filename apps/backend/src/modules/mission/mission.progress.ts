@@ -2,8 +2,9 @@ import type { Prisma } from '@prisma/client';
 import { db } from '../../config/db.js';
 import { MissionStatus } from '@el7al/shared';
 import { calculateDistanceKm, calculateEtaMinutes } from '../../utils/geo.js';
-import { COMMISSION_FEE_TND } from '../../config/business.js';
+import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND, owesCommission } from '../../config/business.js';
 import { publish } from '../../events/domain-events.js';
+import { removeProviderGeoLocation } from '../../services/redis.service.js';
 
 type MissionWithUsers = NonNullable<Awaited<ReturnType<typeof loadMission>>>;
 
@@ -206,10 +207,25 @@ export async function dualConfirmMission(missionId: string, userId: string, role
     async (tx, current) => {
       if (!current.providerId) return;
       const fee = Number(current.commissionFee);
-      await tx.providerProfile.update({
+      const commission = Number.isFinite(fee) && fee > 0 ? fee : COMMISSION_FEE_TND;
+      // The activation fee is charged once, with the commission of the artisan's first finished job (15 + 30).
+      const owner = await tx.providerProfile.findUniqueOrThrow({
         where: { id: current.providerId },
-        data: { walletBalance: { decrement: Number.isFinite(fee) && fee > 0 ? fee : COMMISSION_FEE_TND } },
+        select: { activationChargedAt: true },
       });
+      const activation = owner.activationChargedAt ? 0 : ACTIVATION_FEE_TND;
+      const profile = await tx.providerProfile.update({
+        where: { id: current.providerId },
+        data: {
+          walletBalance: { decrement: commission + activation },
+          ...(activation > 0 ? { activationChargedAt: new Date() } : {}),
+        },
+      });
+      // Commission is owed from now on: the artisan goes offline until the transfer is confirmed.
+      if (owesCommission(profile)) {
+        await tx.providerProfile.update({ where: { id: profile.id }, data: { isAvailable: false } });
+        await removeProviderGeoLocation(profile.id).catch(() => undefined);
+      }
     },
   );
   if (changed) {

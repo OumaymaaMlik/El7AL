@@ -91,6 +91,7 @@ model ProviderProfile {
   vehicleType   String?            // CAR, VAN or MOTO
   verificationNote String?         // why the identity check was refused (shown to the artisan)
   verifiedAt    DateTime?          // when an admin approved the account
+  activationChargedAt DateTime?    // when the one-time activation fee was added to what the artisan owes (with the first commission)
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 

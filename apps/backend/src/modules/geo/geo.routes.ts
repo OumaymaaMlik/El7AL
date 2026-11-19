@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { db } from '../../config/db.js';
 import { updateProviderGeoLocation, removeProviderGeoLocation } from '../../services/redis.service.js';
 import { authenticate, currentUser } from '../../utils/authGuards.js';
+import { COMMISSION_DUE_MESSAGE, owesCommission } from '../../config/business.js';
 
 const TAG = 'Geospatial & Availability';
 const SECURED = [{ bearerAuth: [] }];
@@ -48,6 +49,10 @@ export async function geoRoutes(app: FastifyInstance) {
           code: 'ACCOUNT_NOT_VERIFIED',
           error: 'Votre compte doit être vérifié par El 7al avant de recevoir des demandes.',
         });
+      }
+
+      if (isAvailable && owesCommission(profile)) {
+        return reply.code(403).send({ success: false, code: 'COMMISSION_DUE', error: COMMISSION_DUE_MESSAGE });
       }
 
       const updated = await db.providerProfile.update({

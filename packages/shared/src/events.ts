@@ -119,6 +119,11 @@ export interface AccountVerificationPayload {
   note: string | null;
 }
 
+/** An admin decided about a bank transfer the artisan sent (commission). */
+export interface TopupDecidedPayload {
+  status: 'APPROVED' | 'REJECTED';
+}
+
 /** Every event the server sends, with its payload. */
 export interface ServerEvents {
   'mission:new_offer': NewOfferPayload;
@@ -138,6 +143,7 @@ export interface ServerEvents {
   'chat:seen': { missionId: string; readerId: string; readAt: string };
   'chat:error': { message: string };
   'account:verification': AccountVerificationPayload;
+  'wallet:topup_decided': TopupDecidedPayload;
   /** To admins only: an artisan finished registering and waits for the identity check. */
   'admin:artisan_pending': { providerId: string; fullName: string; createdAt: string };
 }

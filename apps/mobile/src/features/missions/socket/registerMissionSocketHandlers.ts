@@ -128,7 +128,21 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
     });
   };
 
+  // An admin confirmed or refused a bank transfer: tell the artisan and reload the home screen's wallet figures.
+  const onTopupDecided = (data: ServerEvents['wallet:topup_decided']) => {
+    const approved = data.status === 'APPROVED';
+    const user = useAuthStore.getState().user;
+    // Saving the same status gives the session a new object, which makes the home screen reload the profile.
+    if (user) void useAuthStore.getState().setAccountStatus(user.status);
+    notify({
+      type: 'SYSTEM',
+      title: translate(approved ? 'topupApprovedTitle' : 'topupRefusedTitle'),
+      message: translate(approved ? 'topupApprovedBody' : 'topupRefusedBody'),
+    });
+  };
+
   const stops = [
+    onServerEvent(socket, 'wallet:topup_decided', onTopupDecided),
     onServerEvent(socket, 'account:verification', onVerification),
     onServerEvent(socket, 'location:stream', onLocationStream),
     onServerEvent(socket, 'mission:offer_dispatched', onOfferDispatched),

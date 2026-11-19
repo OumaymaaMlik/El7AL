@@ -10,6 +10,8 @@ import { useChatStore } from '../../src/features/chat/store/useChatStore';
 import { useType } from '../../src/shared/theme/useType';
 import { numeralFont } from '../../src/shared/theme/typography';
 import { tabBarHeight } from '../../src/shared/theme/tokens';
+import { CLIENT_ENABLED } from '../../src/config/env';
+import { ClientComingSoon } from '../../src/features/home/components/ClientComingSoon';
 
 /** The bar of the prototype: four plain icons with a label, the current one in green, no pill behind it. */
 export default function TabsLayout() {
@@ -30,6 +32,9 @@ export default function TabsLayout() {
   const showTracking = true;
 
   const bottomInset = Math.max(insets.bottom, 10);
+
+  // The client side is not open yet: clients see "coming soon" instead of the app.
+  if (!CLIENT_ENABLED && user?.role === 'CLIENT' && !isProvider) return <ClientComingSoon />;
 
   return (
     <Tabs

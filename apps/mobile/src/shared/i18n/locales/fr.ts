@@ -519,4 +519,25 @@ export const fr = {
   sendCode: 'Envoyer le code',
   newPassword: 'Nouveau mot de passe',
   placeOnMap: 'Placer sur la carte',
+  comingSoonTitle: 'Bientôt disponible',
+  comingSoonSub: "L'espace client arrive très bientôt. Pour le moment, l'application est réservée aux artisans.",
+  termsTitle: 'Avant de commencer',
+  termsIntro: 'Voici comment El 7al fonctionne pour les artisans.',
+  termsActivationTitle: "Frais d'activation",
+  termsActivationBody:
+    "{activation} d'activation, une seule fois, ajoutés à la commission de votre première intervention.",
+  termsCommissionTitle: 'Commission',
+  termsCommissionBody:
+    'Le client vous paie en espèces. Ensuite, vous réglez {commission} de commission à El 7al par virement, pour chaque intervention terminée. La première fois : {total} ({commission} + {activation}).',
+  termsBlockTitle: 'Compte bloqué si impayé',
+  termsBlockBody: "Tant que la commission n'est pas réglée, vous ne recevez plus de nouvelles demandes.",
+  termsAccept: "J'ai compris",
+  commissionBlockedTitle: 'Compte bloqué',
+  commissionBlockedSub: 'Réglez votre commission de {amount} pour recevoir de nouvelles demandes.',
+  topupApprovedTitle: 'Virement confirmé',
+  topupApprovedBody: 'Vous pouvez passer en ligne et recevoir des demandes.',
+  topupRefusedTitle: 'Virement refusé',
+  topupRefusedBody: 'Votre preuve a été refusée. Envoyez-en une nouvelle.',
+  commissionBlockedFirstSub:
+    "Réglez {amount} pour recevoir de nouvelles demandes : {commission} de commission + {activation} de frais d'activation (première intervention).",
 };

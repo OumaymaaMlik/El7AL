@@ -2,7 +2,6 @@ import { db } from '../../config/db.js';
 import { findNearbyProviderIds } from '../../services/redis.service.js';
 import { MissionStatus } from '@el7al/shared';
 import { calculateDistanceKm } from '../../utils/geo.js';
-import { maxProviderDebt } from '../../config/business.js';
 import { publish } from '../../events/domain-events.js';
 import { logger } from '../../utils/logger.js';
 
@@ -55,8 +54,8 @@ export async function findCandidateProviders(
     where: {
       id: { in: nearbyProviderIds },
       isAvailable: true,
-      // Artisans are only held back when an optional debt limit is configured (MAX_PROVIDER_DEBT_TND).
-      ...(maxProviderDebt() > 0 ? { walletBalance: { gte: -maxProviderDebt() } } : {}),
+      // Nobody who owes commission (see owesCommission).
+      walletBalance: { gte: 0 },
       user: { status: 'ACTIVE' },
       categories: { some: { categoryId } },
       // Must NOT be actively engaged on an ongoing mission

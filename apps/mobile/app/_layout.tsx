@@ -13,6 +13,7 @@ import { ProviderLocationSharing } from '../src/providers/ProviderLocationSharin
 import { NotificationToast } from '../src/features/notifications/components/NotificationToast';
 import { GlobalLoadingOverlay } from '../src/providers/GlobalLoadingOverlay';
 import { IncomingOfferModal } from '../src/features/missions/components/IncomingOfferModal';
+import { ProviderTermsGate } from '../src/features/wallet/components/ProviderTermsGate';
 import { FONT_ASSETS } from '../src/shared/theme/typography';
 import { initMonitoring, withMonitoring } from '../src/services/monitoring';
 
@@ -51,6 +52,7 @@ function RootLayout() {
         <GlobalSocketListener />
         <ProviderLocationSharing />
         <IncomingOfferModal />
+        <ProviderTermsGate />
         <NotificationToast />
         <GlobalLoadingOverlay />
         <Stack

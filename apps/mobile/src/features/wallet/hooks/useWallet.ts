@@ -16,6 +16,7 @@ export function useWallet() {
   const flashToast = useNotificationStore((s) => s.flashToast);
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
+  const [serverDue, setServerDue] = useState<number | null>(null);
   const [latest, setLatest] = useState<TopupTransaction | null>(null);
   const [sending, setSending] = useState(false);
 
@@ -23,6 +24,7 @@ export function useWallet() {
     try {
       const wallet = await fetchWallet();
       setBalance(toNumber(wallet.walletBalance) ?? 0);
+      setServerDue(wallet.due ?? null);
       setLatest(wallet.transactions[0] ?? null);
     } catch (e) {
       logger.warn('Wallet load failed:', e);
@@ -64,8 +66,8 @@ export function useWallet() {
     loading,
     sending,
     balance,
-    /** What the artisan owes El 7al (the wallet is negative), or 0. */
-    due: Math.max(0, -balance),
+    /** What to transfer now: what is owed (the wallet is negative), or 0. */
+    due: serverDue ?? Math.max(0, -balance),
     state,
     latest,
     send,

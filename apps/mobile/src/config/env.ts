@@ -28,4 +28,10 @@ export const API_URL = resolveApiUrl();
 /** El 7al's bank account for artisan transfers. Set EXPO_PUBLIC_EL7AL_RIB; the row is hidden when it is not set. */
 export const EL7AL_RIB = process.env.EXPO_PUBLIC_EL7AL_RIB?.trim() || null;
 
+/**
+ * The client side of the app (requesting an artisan) is "coming soon" until EXPO_PUBLIC_CLIENT_ENABLED=true.
+ * The first release is for artisans and admins; clients are held on a "coming soon" page.
+ */
+export const CLIENT_ENABLED = process.env.EXPO_PUBLIC_CLIENT_ENABLED?.trim() === 'true';
+
 export const SOCKET_URL = API_URL.replace(/\/api\/v1$/, '');

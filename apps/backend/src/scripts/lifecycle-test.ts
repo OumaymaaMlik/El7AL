@@ -409,8 +409,8 @@ async function main() {
       select: { walletBalance: true },
     });
     check(
-      'the fixed 30 TND commission is charged automatically on completion',
-      Number(afterConfirm?.walletBalance) === -30,
+      'the first job charges the 30 TND commission plus the 15 TND activation fee',
+      Number(afterConfirm?.walletBalance) === -45,
       String(afterConfirm?.walletBalance),
     );
     await call('POST', `/missions/${missionId}/dual-confirm`, client.token);
@@ -420,7 +420,7 @@ async function main() {
     });
     check(
       'confirming twice does not charge twice',
-      Number(afterRepeat?.walletBalance) === -30,
+      Number(afterRepeat?.walletBalance) === -45,
       String(afterRepeat?.walletBalance),
     );
 
@@ -585,6 +585,60 @@ async function main() {
     });
     check('an approved artisan can go online', approvedOnline.status === 200, String(approvedOnline.status));
     await call('PUT', '/geo/provider/availability', newcomer.token, { isAvailable: false });
+
+    // ---- Commission owed: the artisan is stopped until the transfer is confirmed
+    const owingProfile = await db.providerProfile.findUnique({ where: { userId: provider.id } });
+    check('an artisan who owes commission is taken offline', owingProfile?.isAvailable === false);
+    const owingWallet = await call('GET', '/wallet/transactions', provider.token);
+    check(
+      'the wallet says commission is due and how much',
+      owingWallet.body?.data?.blocked === true && owingWallet.body?.data?.due === 45,
+      JSON.stringify(owingWallet.body?.data).slice(0, 140),
+    );
+    const owingOnline = await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    check(
+      'an artisan who owes commission cannot go online',
+      owingOnline.status === 403 && owingOnline.body?.code === 'COMMISSION_DUE',
+      String(owingOnline.status),
+    );
+    const commissionTopup = await call('POST', '/wallet/topup', provider.token, {
+      amount: 45,
+      receiptPhotoUrl: 'https://x.invalid/commission.jpg',
+    });
+    check(
+      'a transfer receipt is recorded for the admin to check',
+      commissionTopup.status === 201,
+      JSON.stringify(commissionTopup.body).slice(0, 120),
+    );
+    const secondTopup = await call('POST', '/wallet/topup', provider.token, {
+      amount: 30,
+      receiptPhotoUrl: 'https://x.invalid/commission2.jpg',
+    });
+    check(
+      'only one transfer can wait for validation at a time',
+      secondTopup.status === 400,
+      String(secondTopup.status),
+    );
+    const approvedCommission = await call(
+      'POST',
+      `/admin/topups/${commissionTopup.body?.data?.id}/approve`,
+      adminToken,
+    );
+    check(
+      'the admin confirms the commission transfer',
+      approvedCommission.status === 200,
+      String(approvedCommission.status),
+    );
+    const paidOnline = await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    check('once the commission is paid the artisan works again', paidOnline.status === 200, String(paidOnline.status));
 
     // ---- Nobody nearby: no one is notified
     await call('PUT', '/geo/provider/availability', provider.token, { isAvailable: false });

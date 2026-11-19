@@ -93,7 +93,7 @@ Connect with `auth: { token }`; the server puts you in `user_<id>` (and `provide
 Push (Expo) is sent to the phone for the same events: new offer, accepted, en route, arrived, work finished, completed, cancelled, review, chat.
 
 ## Commission
-Every completed mission charges the artisan a **fixed 30 TND**, taken automatically from their balance (`walletBalance`, which goes negative) in the same transaction as the client's final confirmation. Nobody has to approve it; repeating the confirmation never charges twice. Artisans are not held back by a negative balance unless `MAX_PROVIDER_DEBT_TND` is set (then they stop receiving offers beyond that debt).
+Every completed mission charges the artisan a **fixed 30 TND**, taken automatically from their balance (`walletBalance`, which goes negative) in the same transaction as the client's final confirmation. Nobody has to approve it; repeating the confirmation never charges twice. The first completed mission of an artisan also charges a one-time **15 TND activation fee** (15 + 30 = 45 TND in total; `activationChargedAt` records it). An artisan who owes anything (negative balance) is **blocked**: not offered requests, cannot go online or accept, and finishing the job that creates the debt takes them offline at once. `GET /wallet/transactions` returns `blocked`, `due`, `activationFee`, `commissionFee`. `POST /wallet/topup` refuses a second transfer while one is waiting for validation. Going online while blocked answers 403 `COMMISSION_DUE`.
 
 ## Artisan verification
 A new artisan is `PENDING_VERIFICATION`: they can sign in and read their profile, but `PUT /geo/provider/availability {isAvailable:true}` and `POST /missions/:id/accept` answer 403 (`code: ACCOUNT_NOT_VERIFIED`). An admin works the queue:

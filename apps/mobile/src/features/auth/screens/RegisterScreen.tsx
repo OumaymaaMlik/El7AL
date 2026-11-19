@@ -23,13 +23,14 @@ import { SegmentedControl } from '../../../shared/ui/SegmentedControl';
 import { TradesStep } from '../components/TradesStep';
 import { REGISTER_STEP_COUNT, useRegisterWizard } from '../hooks/useRegisterWizard';
 import { useFormFocus } from '../hooks/useFormFocus';
+import { CLIENT_ENABLED } from '../../../config/env';
 
 export function RegisterScreen() {
   const params = useLocalSearchParams<{ role?: string }>();
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const form = useRegisterWizard(params.role === 'PROVIDER' ? 'PROVIDER' : 'CLIENT');
+  const form = useRegisterWizard(!CLIENT_ENABLED || params.role === 'PROVIDER' ? 'PROVIDER' : 'CLIENT');
   const { isProvider, step } = form;
 
   // The header collapses as the form scrolls up, then settles fully open or fully closed.
@@ -118,17 +119,19 @@ export function RegisterScreen() {
           />
         </View>
 
-        <SegmentedControl
-          options={[
-            { key: 'CLIENT', label: t('roleClient') },
-            { key: 'PROVIDER', label: t('roleArtisan') },
-          ]}
-          value={form.role}
-          onChange={(next) => {
-            form.changeRole(next);
-            setRoleKey((k) => k + 1);
-          }}
-        />
+        {CLIENT_ENABLED && (
+          <SegmentedControl
+            options={[
+              { key: 'CLIENT', label: t('roleClient') },
+              { key: 'PROVIDER', label: t('roleArtisan') },
+            ]}
+            value={form.role}
+            onChange={(next) => {
+              form.changeRole(next);
+              setRoleKey((k) => k + 1);
+            }}
+          />
+        )}
 
         {isProvider && <RegisterStepper currentStep={step} />}
 

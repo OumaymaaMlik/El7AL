@@ -7,21 +7,7 @@
 import { AccountStatus, UserRole } from '@prisma/client';
 import { db } from '../config/db.js';
 import { hashPassword } from '../utils/hash.js';
-
-const CATEGORIES = [
-  { name: 'Plomberie', icon: 'Wrench', description: "Fuites d'eau, canalisations, robinetterie, chauffe-eau" },
-  { name: 'Électricité', icon: 'Zap', description: 'Pannes électriques, installation de prises, tableaux électriques' },
-  { name: 'Mécanique & Auto', icon: 'Car', description: 'Dépannage automobile, vidange, batterie, diagnostic' },
-  { name: 'Climatisation & Froid', icon: 'Fan', description: 'Entretien, recharge fréon, réparation climatiseurs' },
-  { name: 'Chauffage & Gaz', icon: 'Flame', description: 'Dépannage chaudière, radiateurs, chauffe-eau à gaz' },
-  { name: 'Serrurerie', icon: 'Key', description: 'Dépannage serrures, portes bloquées, clés cassées' },
-  {
-    name: 'Peinture & Rénovation',
-    icon: 'PaintBucket',
-    description: "Peinture d'intérieur, revêtements, petits travaux",
-  },
-  { name: 'Ménage & Entretien', icon: 'Sparkles', description: 'Nettoyage domicile, repassage, entretien régulier' },
-];
+import { CATEGORIES } from './categories.js';
 
 async function main() {
   if ((await db.category.count()) === 0) {

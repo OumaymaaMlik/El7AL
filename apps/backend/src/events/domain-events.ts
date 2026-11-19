@@ -70,6 +70,8 @@ export interface DomainEvents {
   /** An artisan finished registering: the admins are told there is someone to verify. */
   'provider.registered': { providerId: string; fullName: string; createdAt: Date };
   'provider.verified': { userId: string; status: 'ACTIVE' | 'REJECTED'; note: string | null };
+  /** An admin confirmed or refused an artisan's bank transfer. */
+  'topup.decided': { userId: string; status: 'APPROVED' | 'REJECTED' };
 }
 
 type Handler<K extends keyof DomainEvents> = (payload: DomainEvents[K]) => Promise<void> | void;

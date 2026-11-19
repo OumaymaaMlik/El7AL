@@ -203,4 +203,18 @@ export function registerNotificationListeners(): void {
       { type: 'ACCOUNT_VERIFICATION', status },
     );
   });
+
+  // ---- An admin decided about a bank transfer.
+  subscribe('topup.decided', ({ userId, status }) => {
+    send(getIO().to(`user_${userId}`), 'wallet:topup_decided', { status });
+    const approved = status === 'APPROVED';
+    void pushToUser(
+      userId,
+      approved ? 'Commission réglée' : 'Virement refusé',
+      approved
+        ? 'Vous pouvez passer en ligne et recevoir des demandes.'
+        : 'Votre preuve de virement a été refusée. Envoyez-en une nouvelle.',
+      { type: 'TOPUP_DECIDED', status },
+    );
+  });
 }

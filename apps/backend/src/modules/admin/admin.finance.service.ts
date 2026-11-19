@@ -1,6 +1,7 @@
 import { db } from '../../config/db.js';
 import { AccountStatus, TransactionStatus } from '@el7al/shared';
 import { COMMISSION_FEE_TND } from '../../config/business.js';
+import { publish } from '../../events/domain-events.js';
 
 export async function getPendingTopups() {
   return db.topupTransaction.findMany({
@@ -37,15 +38,18 @@ export async function approveTopup(id: string, adminUserId: string) {
   if (transaction.provider.user.status === AccountStatus.SUSPENDED_LOW_BALANCE && newBalance >= COMMISSION_FEE_TND) {
     await db.user.update({ where: { id: transaction.provider.userId }, data: { status: AccountStatus.ACTIVE } });
   }
+  await publish('topup.decided', { userId: transaction.provider.userId, status: 'APPROVED' });
   return { transaction: updated, newWalletBalance: newBalance };
 }
 
 export async function rejectTopup(id: string, adminUserId: string) {
-  await pendingTopup(id);
-  return db.topupTransaction.update({
+  const transaction = await pendingTopup(id);
+  const rejected = await db.topupTransaction.update({
     where: { id },
     data: { status: TransactionStatus.REJECTED, validatedBy: adminUserId },
   });
+  await publish('topup.decided', { userId: transaction.provider.userId, status: 'REJECTED' });
+  return rejected;
 }
 
 export async function getDisputes() {

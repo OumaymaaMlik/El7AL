@@ -3,6 +3,7 @@ import { getCurrentCoords } from '../../map/services/location';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { useNotificationStore } from '../../notifications';
 import { logger } from '../../../shared/utils/logger';
+import { getApiErrorMessage } from '../../../shared/utils/apiError';
 import { setAvailability } from '../api/profile.api';
 
 /**
@@ -39,6 +40,12 @@ export function useAvailability() {
       } catch (e) {
         logger.warn('Failed to go online:', e);
         setProviderAvailable(false);
+        // The server says why (commission owed, account not verified).
+        flashToast({
+          title: t('errorTitle'),
+          message: getApiErrorMessage(e, t('errEnableLocationProvider')),
+          tone: 'error',
+        });
       }
       return;
     }
