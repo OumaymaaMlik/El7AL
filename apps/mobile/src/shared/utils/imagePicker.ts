@@ -24,10 +24,7 @@ export async function pickImageFromDevice(): Promise<string | null> {
     // Loaded on demand so a build without the module still starts.
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ImagePicker = require('expo-image-picker');
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      return null;
-    }
+    // The system photo picker needs no storage permission: the user picks one photo and only that photo is shared.
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
