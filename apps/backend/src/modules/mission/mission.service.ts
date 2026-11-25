@@ -1,8 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import { db } from '../../config/db.js';
+import { forgetChosen, rememberChosen } from './mission.lateOffers.js';
 import { acquireMissionLock } from '../../services/redis.service.js';
 import { scheduleMissionTimeout } from '../../queues/mission.queue.js';
 import { MissionStatus } from '@el7al/shared';
-import { COMMISSION_DUE_MESSAGE, COMMISSION_FEE_TND, owesCommission } from '../../config/business.js';
+import { COMMISSION_DUE_MESSAGE, COMMISSION_FEE_TND } from '../../config/business.js';
+import { isBlocked } from '../wallet/wallet.standing.js';
 import { publish } from '../../events/domain-events.js';
 import {
   ONGOING_STATUSES,
@@ -45,9 +48,14 @@ export async function requestMission(input: CreateMissionInput) {
     throw new Error('Vous avez déjà une recherche en cours ou une mission active.');
   }
 
+  // Saved before the mission exists, so that nobody else can be offered it in between.
+  const id = randomUUID();
+  if (input.selectedProviderIds?.length) await rememberChosen(id, input.selectedProviderIds);
+
   // 1. Create Mission record in DB
   const mission = await db.mission.create({
     data: {
+      id,
       clientId: clientProfile.id,
       categoryId: input.categoryId,
       pickupLat: input.pickupLat,
@@ -118,6 +126,7 @@ export async function relaunchMission(missionId: string, clientId: string) {
   });
 
   // Re-broadcast to the artisans currently in range.
+  await forgetChosen(missionId);
   const candidates = await findCandidateProviders(
     updatedMission.categoryId,
     updatedMission.pickupLat,
@@ -144,7 +153,7 @@ export async function acceptMission(missionId: string, providerUserId: string) {
     throw new Error('Votre compte doit être vérifié par El 7al avant de recevoir des demandes.');
   }
 
-  if (owesCommission(providerProfile)) throw new Error(COMMISSION_DUE_MESSAGE);
+  if (await isBlocked(providerProfile)) throw new Error(COMMISSION_DUE_MESSAGE);
 
   // 1. Acquire Redis Atomic Lock (Redlock algorithm) to guarantee first-to-accept pairing
   const lockAcquired = await acquireMissionLock(missionId, providerProfile.id);

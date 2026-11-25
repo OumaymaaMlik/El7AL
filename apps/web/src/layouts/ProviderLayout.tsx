@@ -8,6 +8,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { ProviderOfferListener } from '../components/provider/ProviderOfferListener';
 import { ProviderReviewReceivedModal } from '../components/provider/ProviderReviewReceivedModal';
+import { ProviderTermsNotice } from '../components/provider/ProviderTermsNotice';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useProviderPresence } from '../hooks/useProviderPresence';
 
@@ -23,6 +24,7 @@ export const ProviderLayout: React.FC<{ children: React.ReactNode }> = ({ childr
     <div className="relative min-h-screen flex flex-col bg-light-bg dark:bg-dark-bg text-slate-900 dark:text-slate-100">
       <PixelBackground />
       <ProviderOfferListener />
+      <ProviderTermsNotice />
       <ProviderReviewReceivedModal review={openReview} onClose={() => showReview(null)} />
       <AppHeader
         homeTo="/provider/home"

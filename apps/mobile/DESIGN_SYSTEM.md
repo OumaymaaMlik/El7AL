@@ -190,7 +190,7 @@ each weight is its own font file. Write labels in sentence case ("Se connecter",
 - Home: the trade, stats and the online switch; the incoming-request sheet with a countdown; the live mission screen (same `MissionLive`); the "Missions" tab. When commissions are owed, a card shows the amount and a "Payer El 7al" button.
 - Documents (register step 3): three upload tiles (dashed, then solid green with the photo), a one-line note on privacy, then the "Dossier envoyé" page (`/docs-sent`).
 - Profile: the green identity card holds the rating and the balance; the online switch lives on Home only (one place).
-- Pay (`/pay`): the transfer amount (starts at what is owed), El 7al's bank account (shown only when `EXPO_PUBLIC_EL7AL_RIB` is set), the receipt photo, "Envoyer la preuve" (`POST /wallet/topup`). Once sent, the page shows where the receipt stands: paused while El 7al checks it, or refused with "Renvoyer une preuve".
+- Pay (`/pay`): the transfer amount (starts at what is owed), El 7al's bank account (from the server; the admin changes it in the Virements tab; hidden when none is set), the receipt photo, "Envoyer la preuve" (`POST /wallet/topup`). Once sent, the page shows where the receipt stands: paused while El 7al checks it, or refused with "Renvoyer une preuve".
 - Warm notices (check pending, account paused) use the `warnSoft` / `warnText` pair; refusals use `dangerSoft`.
 
 **Admin**: the "Admin" badge beside logout; the first tab is a green revenue card, the figures by period, then "À traiter" (payments, verifications, disputes, each opening its tab); verification cards show the artisan, the documents side by side and Refuser / Valider; payment cards show who, the receipt photo and the amount.

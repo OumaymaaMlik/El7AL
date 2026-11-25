@@ -14,8 +14,10 @@ import { useNotificationStore } from '../store/useNotificationStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { api, apiErrorMessage } from '../services/api';
 import { getSocket } from '../services/socket';
+import { FinishAmountModal } from '../components/provider/FinishAmountModal';
 import { MissionEndedCard } from '../components/tracking/MissionEndedCard';
 import { useLocationStream } from '../hooks/useLocationStream';
+import { ReportProblem } from '../components/ui/ReportProblem';
 import { useMission } from '../hooks/useMission';
 import { getPosition, Position, useWatchPosition } from '../hooks/useGeolocation';
 import { distanceKm as haversineKm, isOngoing } from '../lib/mission';
@@ -88,13 +90,20 @@ export const ProviderTrackingPage: React.FC = () => {
   const distanceKm = stream.distanceKm ?? (localDistance !== null ? Number(localDistance.toFixed(1)) : null);
   const etaMinutes = stream.etaMinutes ?? (localDistance !== null ? Math.ceil((localDistance / 30) * 60) : null);
 
-  // One button, one server step
-  const handleAdvanceSubStep = async () => {
+  const [askAmount, setAskAmount] = useState(false);
+
+  // One button, one server step. Finishing asks for the price first: the client confirms it.
+  const handleAdvanceSubStep = async (amount?: number) => {
     const endpoint = STEP_ENDPOINT[subStep];
     if (!mission?.id || !endpoint) return;
+    if (endpoint === 'dual-confirm' && amount === undefined) {
+      setAskAmount(true);
+      return;
+    }
     try {
       setIsActionLoading(true);
-      await api.post(`/missions/${mission.id}/${endpoint}`);
+      await api.post(`/missions/${mission.id}/${endpoint}`, amount === undefined ? {} : { amount });
+      setAskAmount(false);
       await reload();
       if (endpoint === 'dual-confirm') {
         addNotification({
@@ -210,6 +219,7 @@ export const ProviderTrackingPage: React.FC = () => {
                   clientFirstName={mission.client?.user?.fullName?.split(' ')[0] || 'Client'}
                   initialMessages={mission.messages}
                 />
+                <ReportProblem missionId={mission.id} className="w-full" />
               </div>
             </div>
 
@@ -217,8 +227,14 @@ export const ProviderTrackingPage: React.FC = () => {
               missionId={mission.id}
               status={mission.status}
               subStep={subStep}
-              onAdvanceSubStep={handleAdvanceSubStep}
+              onAdvanceSubStep={() => void handleAdvanceSubStep()}
               isLoading={isActionLoading}
+            />
+            <FinishAmountModal
+              isOpen={askAmount}
+              loading={isActionLoading}
+              onClose={() => setAskAmount(false)}
+              onSend={(value) => void handleAdvanceSubStep(value)}
             />
           </div>
         )}

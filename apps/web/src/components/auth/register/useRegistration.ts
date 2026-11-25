@@ -39,12 +39,8 @@ export function useRegistration(initialRole: UserRole) {
   const digitsOnly = (value: string) => value.replace(/\D/g, '').slice(0, 8);
 
   const toggleCategory = (id: string) =>
-    setField(
-      'selectedCategories',
-      form.selectedCategories.includes(id)
-        ? form.selectedCategories.filter((c) => c !== id)
-        : [...form.selectedCategories, id],
-    );
+    // One trade only: choosing another replaces it, choosing it again clears it.
+    setField('selectedCategories', form.selectedCategories.includes(id) ? [] : [id]);
 
   /** The rule of one step; returns the message to show, or null when the step is fine. */
   const problemWith = (s: number): string | null => {

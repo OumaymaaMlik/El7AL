@@ -1,3 +1,4 @@
+import { ReportProblem } from './ReportProblem';
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ChevronDown, ChevronUp, MapPin, Phone } from 'lucide-react-native';
@@ -86,6 +87,7 @@ export function MissionHistoryList({ missions, onCall }: Props) {
                           .join(' · ')}
                       />
                     )}
+                    {item.status === 'COMPLETED' && <ReportProblem missionId={item.id} />}
                     {Boolean(clientPhone) && (
                       <Button
                         title={`${t('callClientBtn')} (${clientPhone})`}

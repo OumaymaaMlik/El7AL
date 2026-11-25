@@ -34,6 +34,16 @@ export async function requestMission(input: RequestMissionInput) {
   return parsed.success ? parsed.data : null;
 }
 
+/** Sends a request that found nobody out again to the artisans in range. Throws when the server refuses. */
+export async function relaunchMission(missionId: string): Promise<void> {
+  await api.post(`/missions/${missionId}/relaunch`, {});
+}
+
+/** Reports a problem about an intervention to El 7al. Throws when the server refuses. */
+export async function reportProblem(missionId: string, reason: string): Promise<void> {
+  await api.post('/disputes', { missionId, reason });
+}
+
 /** Returns true when the server confirms the cancellation. */
 export async function cancelMission(missionId: string, reason: string): Promise<boolean> {
   const res = await api.post(`/missions/${missionId}/cancel`, { reason });

@@ -64,8 +64,18 @@ export async function deleteCategory(categoryId: string) {
   await api.delete(`/admin/categories/${categoryId}`);
 }
 
-export async function approveTopup(topupId: string) {
-  await api.post(`/admin/topups/${topupId}/approve`);
+export async function approveTopup(topupId: string, receivedAmount: number) {
+  await api.post(`/admin/topups/${topupId}/approve`, { receivedAmount });
+}
+
+/** El 7al's bank account, where artisans transfer what they owe. */
+export async function fetchRib(): Promise<string | null> {
+  const data = await getData('/admin/rib', z.object({ rib: z.string().nullable() }));
+  return data?.rib ?? null;
+}
+
+export async function updateRib(rib: string) {
+  await api.put('/admin/rib', { rib });
 }
 
 export async function rejectTopup(topupId: string) {

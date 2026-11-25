@@ -7,11 +7,15 @@ import { calculateDistanceKm, calculateEtaMinutes } from '../utils/geo.js';
 import { canJoinRoom, type SocketIdentity } from './socket.rooms.js';
 import { pushToUser } from '../services/pushNotification.service.js';
 import { logger } from '../utils/logger.js';
+import { offerOpenMissionsTo, rememberDeclined } from '../modules/mission/mission.lateOffers.js';
 
 let io: Server | null = null;
 
 // Track last known ETAs per mission to detect delay spikes
 const missionEtaMap: Record<string, number> = {};
+/** Missions whose client was already told the artisan is close. */
+const nearNotified = new Set<string>();
+const NEAR_ETA_MINUTES = 3;
 
 type VerifyToken = (token: string) => { userId: string };
 
@@ -73,6 +77,8 @@ export function initSocketGateway(server: HttpServer, verifyToken: VerifyToken) 
     if (me.role === 'PROVIDER') {
       socket.join(`provider_${me.id}`);
       socket.join('providers');
+      // The app was closed or the network dropped: send the searches still running (a moment later, once it listens).
+      setTimeout(() => void offerOpenMissionsTo(me.id), 1500);
     }
     if (me.role === 'ADMIN') socket.join('admins');
 
@@ -132,6 +138,20 @@ export function initSocketGateway(server: HttpServer, verifyToken: VerifyToken) 
 
             if (prevEta === undefined || etaMinutes < prevEta) {
               missionEtaMap[missionId] = etaMinutes;
+            }
+
+            // Told once, when the artisan is a few minutes away: on screen and on the phone.
+            if (etaMinutes <= NEAR_ETA_MINUTES && !nearNotified.has(missionId)) {
+              nearNotified.add(missionId);
+              io?.to(`mission_${missionId}`)
+                .to(`user_${mission.client.userId}`)
+                .emit('mission:provider_near', { missionId, etaMinutes });
+              void pushToUser(
+                mission.client.userId,
+                'Votre artisan est tout proche',
+                etaMinutes <= 1 ? 'Il arrive à votre adresse.' : `Il arrive dans environ ${etaMinutes} minutes.`,
+                { type: 'PROVIDER_NEAR', missionId },
+              );
             }
 
             // Stream real-time location and ETA to room
@@ -227,6 +247,7 @@ export function initSocketGateway(server: HttpServer, verifyToken: VerifyToken) 
     // 4. Provider Rejects Offer Notification to Client
     socket.on('mission:reject_offer', (data: { missionId: string }) => {
       if (me.role !== 'PROVIDER' || typeof data?.missionId !== 'string') return;
+      void rememberDeclined(data.missionId, me.id);
       io?.to(`mission_${data.missionId}`).emit('mission:offer_rejected', {
         missionId: data.missionId,
         providerName: me.fullName || 'Un prestataire',

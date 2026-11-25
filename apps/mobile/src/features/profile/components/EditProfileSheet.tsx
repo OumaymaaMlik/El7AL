@@ -10,6 +10,8 @@ import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import type { EditProfileForm } from '../hooks/useEditProfile';
 
+const RADIUS_OPTIONS = [5, 10, 15, 25, 50];
+
 interface Props {
   form: EditProfileForm;
   isClient: boolean;
@@ -87,24 +89,63 @@ export function EditProfileSheet({ form, isClient, displayName }: Props) {
           </View>
         </Pressable>
 
-        {isClient ? (
-          <View style={{ gap: space.md }}>
+        <View style={{ gap: space.md }}>
+          <Input
+            label={t('address')}
+            placeholder="Lac 2, Tunis"
+            value={form.address}
+            onChangeText={form.setAddress}
+            icon={<MapPin size={18} color={colors.textMuted} />}
+          />
+          <Button
+            title={t('placeOnMap')}
+            variant="outline"
+            onPress={() => form.setMapOpen(true)}
+            iconPosition="left"
+            icon={<MapPin size={16} color={colors.accentText} />}
+          />
+        </View>
+
+        {!isClient && (
+          <>
             <Input
-              label={t('address')}
-              placeholder="Lac 2, Tunis"
-              value={form.address}
-              onChangeText={form.setAddress}
-              icon={<MapPin size={18} color={colors.textMuted} />}
+              label={`${t('bio')} ${t('optionalTag')}`}
+              placeholder={t('bioPlaceholder')}
+              multiline
+              value={form.bio}
+              onChangeText={form.setBio}
             />
-            <Button
-              title={t('placeOnMap')}
-              variant="outline"
-              onPress={() => form.setMapOpen(true)}
-              iconPosition="left"
-              icon={<MapPin size={16} color={colors.accentText} />}
-            />
-          </View>
-        ) : null}
+            <View style={{ gap: space.sm }}>
+              <Txt variant="captionStrong" color={colors.textSecondary}>
+                {t('radiusLabel')}
+              </Txt>
+              <View style={styles.radii}>
+                {RADIUS_OPTIONS.map((km) => {
+                  const on = form.radiusKm === km;
+                  return (
+                    <Pressable
+                      key={km}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: on }}
+                      onPress={() => form.setRadiusKm(km)}
+                      style={[
+                        styles.radiusChip,
+                        {
+                          backgroundColor: on ? colors.brand : 'transparent',
+                          borderColor: on ? colors.brand : colors.inputBorder,
+                        },
+                      ]}
+                    >
+                      <Txt variant="smallStrong" color={on ? colors.onBrand : colors.textSecondary}>
+                        {`${km} km`}
+                      </Txt>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </>
+        )}
 
         {Boolean(form.error) && (
           <View accessibilityRole="alert" style={[styles.banner, { backgroundColor: colors.dangerSoft }]}>
@@ -124,6 +165,16 @@ export function EditProfileSheet({ form, isClient, displayName }: Props) {
 const styles = StyleSheet.create({
   flex: { flex: 1 },
   form: { gap: space.lg },
+  radii: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  radiusChip: {
+    minHeight: 44,
+    minWidth: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+  },
   avatarWrap: { alignSelf: 'center', marginBottom: space.sm },
   cameraBadge: {
     position: 'absolute',

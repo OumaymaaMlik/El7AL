@@ -56,7 +56,6 @@ export const ProviderProfilePage: React.FC = () => {
               <ProfileTradesCard
                 trades={profile.trades}
                 selected={profile.categoryIds}
-                onToggle={profile.toggleTrade}
                 radiusKm={profile.radiusKm}
                 onRadius={profile.setRadiusKm}
                 bio={profile.bio}

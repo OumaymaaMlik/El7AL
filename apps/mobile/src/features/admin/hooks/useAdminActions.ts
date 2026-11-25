@@ -114,9 +114,9 @@ export function useAdminActions(reload: () => void) {
     }
   };
 
-  const approve = async (topupId: string) => {
+  const approve = async (topupId: string, receivedAmount: number) => {
     try {
-      await approveTopup(topupId);
+      await approveTopup(topupId, receivedAmount);
       success(t('topupApproved'));
       reload();
     } catch (e) {

@@ -3,13 +3,30 @@ import { Animated, Easing, PanResponder } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useMissionStore } from '../../missions';
-import { useNotificationStore } from '../store/useNotificationStore';
+import { useNotificationStore, type NotificationItem } from '../store/useNotificationStore';
 import { useReducedMotion } from '../../../shared/ui/useReducedMotion';
 
 const SLIDE_DISTANCE = 20; // calm slide from the top
 const AUTO_DISMISS_MS = 4000;
 const ENTER_DURATION = 250;
 const EXIT_DURATION = 200;
+
+/** Opens what a pop-up is about: a message opens its conversation, news about a job opens the job. */
+function openToastTarget(toast: NotificationItem, router: ReturnType<typeof useRouter>) {
+  const missionId = toast.metadata?.missionId;
+  if (toast.type === 'CHAT') {
+    router.push(missionId ? { pathname: '/(tabs)/chat', params: { missionId } } : '/(tabs)/chat');
+    return;
+  }
+  if (toast.type === 'COMPLETED' && toast.metadata?.reviewData) {
+    useMissionStore.getState().setReviewData(toast.metadata.reviewData);
+    router.push('/(tabs)/home');
+    return;
+  }
+  if (toast.metadata?.opensPayments) router.push('/pay');
+  else if (toast.type === 'OFFER') router.push('/(tabs)/home');
+  else if (toast.type === 'ACCEPT' || missionId) router.push('/(tabs)/tracking');
+}
 
 /**
  * Behaviour of the in-app toast: slide in/out (respecting reduced motion), auto-dismiss that
@@ -108,26 +125,19 @@ export function useToastController() {
   }, [toastId, restingY, reduceMotion, startDismissTimer, clearDismissTimer, opacity, translateY]);
 
   const handlePressToast = useCallback(() => {
-    if (!activeToast) return;
+    // Read from the store, so that the pop-up on screen is the one opened.
+    const toast = useNotificationStore.getState().activeToast;
+    if (!toast) return;
     clearDismissTimer();
     dismissToast();
 
-    if (activeToast.type === 'CHAT') {
-      const missionId = activeToast.metadata?.missionId;
-      if (missionId) {
-        router.push({ pathname: '/(tabs)/chat', params: { missionId } });
-      } else {
-        router.push('/(tabs)/chat');
-      }
-    } else if (activeToast.type === 'ACCEPT') {
-      router.push('/(tabs)/tracking');
-    } else if (activeToast.type === 'OFFER') {
-      router.push('/(tabs)/home');
-    } else if (activeToast.type === 'COMPLETED' && activeToast.metadata?.reviewData) {
-      useMissionStore.getState().setReviewData(activeToast.metadata.reviewData);
-      router.push('/(tabs)/home');
-    }
-  }, [activeToast, clearDismissTimer, dismissToast, router]);
+    openToastTarget(toast, router);
+  }, [clearDismissTimer, dismissToast, router]);
+
+  // The gesture handler is created once: it reaches the current functions through this, never through the ones that
+  // existed when no pop-up was on screen yet (a tap did nothing for that reason).
+  const live = useRef({ restingY, clearDismissTimer, startDismissTimer, handleDismiss, handlePressToast });
+  live.current = { restingY, clearDismissTimer, startDismissTimer, handleDismiss, handlePressToast };
 
   // PanResponder for swipe-up dismiss and pausing timer while touching
   const panResponder = useRef(
@@ -135,34 +145,34 @@ export function useToastController() {
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dy) > 4,
       onPanResponderGrant: () => {
-        clearDismissTimer();
+        live.current.clearDismissTimer();
       },
       onPanResponderMove: (_, gesture) => {
         if (gesture.dy < 0) {
           // Follow swipe upwards smoothly
-          translateY.setValue(restingY + gesture.dy);
+          translateY.setValue(live.current.restingY + gesture.dy);
         }
       },
       onPanResponderRelease: (_, gesture) => {
         if (gesture.dy < -16 || gesture.vy < -0.28) {
           // Swipe up threshold met -> Dismiss immediately
-          handleDismiss();
-        } else if (Math.abs(gesture.dy) < 5 && Math.abs(gesture.dx) < 5) {
-          // Tap detected -> Open conversation
-          handlePressToast();
+          live.current.handleDismiss();
+        } else if (Math.abs(gesture.dy) < 8 && Math.abs(gesture.dx) < 8) {
+          // Tap detected -> open what the pop-up is about
+          live.current.handlePressToast();
         } else {
-          // Snap back to resting position and restart 4s timer
+          // Snap back to resting position and restart the timer
           Animated.timing(translateY, {
-            toValue: restingY,
+            toValue: live.current.restingY,
             duration: 160,
             easing: Easing.out(Easing.cubic),
             useNativeDriver: true,
           }).start();
-          startDismissTimer();
+          live.current.startDismissTimer();
         }
       },
       onPanResponderTerminate: () => {
-        startDismissTimer();
+        live.current.startDismissTimer();
       },
     }),
   ).current;

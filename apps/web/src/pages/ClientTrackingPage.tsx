@@ -12,6 +12,7 @@ import { MissionEndedCard } from '../components/tracking/MissionEndedCard';
 import { ClientInlineChatCard } from '../components/client/ClientInlineChatCard';
 import { ClientReviewModal } from '../components/client/ClientReviewModal';
 import { useLocationStream } from '../hooks/useLocationStream';
+import { ReportProblem } from '../components/ui/ReportProblem';
 import { useMission } from '../hooks/useMission';
 import { useTranslation } from '../hooks/useTranslation';
 import { isActive, type ApiMission } from '../lib/mission';
@@ -104,8 +105,9 @@ export const ClientTrackingPage: React.FC = () => {
               <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between gap-4 flex-wrap">
                 <div className="text-xs text-emerald-900 dark:text-emerald-200">
                   <strong className="block text-sm">Travaux terminés ?</strong>
-                  L&apos;artisan a signalé la fin de l&apos;intervention. Confirmez pour la clôturer et laisser votre
-                  avis.
+                  L&apos;artisan a signalé la fin de l&apos;intervention
+                  {mission.declaredAmount ? ` : ${Number(mission.declaredAmount)} TND à régler en espèces` : ''}.
+                  Confirmez pour la clôturer et laisser votre avis.
                 </div>
                 <Button variant="primary" onClick={() => setIsReviewOpen(true)}>
                   Confirmer la fin des travaux
@@ -159,6 +161,7 @@ export const ClientTrackingPage: React.FC = () => {
                   status={mission.status}
                   onRefresh={() => void reload()}
                 />
+                {mission.provider && <ReportProblem missionId={mission.id} className="w-full" />}
               </div>
             </div>
 
@@ -172,7 +175,7 @@ export const ClientTrackingPage: React.FC = () => {
                 missionId={mission.id}
                 providerName={mission.provider?.user.fullName}
                 isAlreadyCompleted={mission.status === 'COMPLETED'}
-                categoryName={mission.category?.name}
+                declaredAmount={mission.declaredAmount}
                 onReviewSubmitted={() => {
                   void reload();
                   goHome();

@@ -2,6 +2,7 @@ import React from 'react';
 import { MapPin, Phone, Star } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Badge } from '../ui/Badge';
+import { ReportProblem } from '../ui/ReportProblem';
 import { Mission } from './ActiveMissionsList';
 import { getCategoryIcon } from './CategoryGrid';
 import { useMissionCopy } from '../../lib/missionCopy';
@@ -144,6 +145,9 @@ export const InterventionDetailsModal: React.FC<{
           </Row>
         )}
       </dl>
+
+      {/* A finished job with an artisan can be reported, by either side. */}
+      {mission.status === 'COMPLETED' && <ReportProblem missionId={mission.id} className="w-full mt-4" />}
 
       <button
         type="button"

@@ -9,6 +9,7 @@ import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { numeralFont } from '../../../shared/theme/typography';
 import { radius, space } from '../../../shared/theme/tokens';
+import { ReportProblem } from './ReportProblem';
 
 interface DualCompletionModalProps {
   visible: boolean;
@@ -17,7 +18,8 @@ interface DualCompletionModalProps {
   loading?: boolean;
   /** The amount in TND the artisan declared. The only price the client ever sees. */
   amount: number | null;
-  providerName?: string | null;
+  /** For "report a problem" when the price is not the one agreed. */
+  missionId?: string | null;
 }
 
 /**
@@ -31,7 +33,7 @@ export function DualCompletionModal({
   onClose,
   loading = false,
   amount,
-  providerName,
+  missionId,
 }: DualCompletionModalProps) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
@@ -66,36 +68,29 @@ export function DualCompletionModal({
   const shownCounting = hasAmount ? format(counted) : '';
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={t('jobDoneTitle')} subtitle={providerName ?? undefined}>
+    <BottomSheet visible={visible} onClose={onClose} title={t('jobDoneTitle')}>
       <View style={styles.body}>
         <View style={[styles.check, { backgroundColor: colors.brand }]}>
           <Check size={30} color={colors.live} strokeWidth={2.8} />
         </View>
 
         {hasAmount && (
-          <View style={styles.card}>
-            <Txt variant="small" color={colors.onBrandMuted}>
-              {t('amountDeclaredBy').replace('{name}', providerName || t('provider'))}
-            </Txt>
+          <View style={styles.amountBlock}>
             <View style={styles.amountRow} accessibilityLabel={`${shown} TND`}>
-              <Text style={styles.amount}>{shownCounting}</Text>
-              <Text style={[styles.currency, { color: colors.live }]}>TND</Text>
+              <Text style={[styles.amount, { color: colors.text }]}>{shownCounting}</Text>
+              <Text style={[styles.currency, { color: colors.accentText }]}>TND</Text>
             </View>
-            <View style={styles.chip}>
-              <Banknote size={16} color={colors.onBrandMuted} />
-              <Txt variant="captionStrong" color={colors.onBrandMuted}>
-                {t('cashOnly')}
+            <View style={[styles.chip, { backgroundColor: colors.tint }]}>
+              <Banknote size={16} color={colors.accentText} />
+              <Txt variant="captionStrong" color={colors.accentText}>
+                {t('cashWord')}
               </Txt>
             </View>
           </View>
         )}
 
-        <Button
-          title={hasAmount ? t('iPaidCash').replace('{amount}', shown) : t('confirmWorkFinish')}
-          onPress={onConfirm}
-          loading={loading}
-        />
-        <Button title={t('notNow')} variant="outline" onPress={onClose} disabled={loading} />
+        <Button title={hasAmount ? t('iPaidShort') : t('confirmWorkFinish')} onPress={onConfirm} loading={loading} />
+        {Boolean(missionId) && <ReportProblem missionId={missionId!} />}
       </View>
     </BottomSheet>
   );
@@ -111,10 +106,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  card: { borderRadius: 24, padding: space.xl, alignItems: 'center', gap: 6, backgroundColor: '#0D5C3A' },
+  amountBlock: { alignItems: 'center', gap: space.sm },
   amountRow: { flexDirection: 'row', alignItems: 'baseline', gap: space.sm },
-  amount: { fontFamily: numeralFont, fontSize: 58, lineHeight: 62, color: '#FFFFFF', letterSpacing: -1 },
-  currency: { fontFamily: numeralFont, fontSize: 20, lineHeight: 62 },
+  amount: { fontFamily: numeralFont, fontSize: 64, lineHeight: 68, letterSpacing: -1 },
+  currency: { fontFamily: numeralFont, fontSize: 22, lineHeight: 68 },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,6 +117,5 @@ const styles = StyleSheet.create({
     height: 32,
     paddingHorizontal: 14,
     borderRadius: radius.full,
-    backgroundColor: 'rgba(255,255,255,0.1)',
   },
 });

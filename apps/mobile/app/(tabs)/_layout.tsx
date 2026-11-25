@@ -12,6 +12,7 @@ import { numeralFont } from '../../src/shared/theme/typography';
 import { tabBarHeight } from '../../src/shared/theme/tokens';
 import { CLIENT_ENABLED } from '../../src/config/env';
 import { ClientComingSoon } from '../../src/features/home/components/ClientComingSoon';
+import { useStayOnMission } from '../../src/features/missions/hooks/useStayOnMission';
 
 /** The bar of the prototype: four plain icons with a label, the current one in green, no pill behind it. */
 export default function TabsLayout() {
@@ -32,6 +33,7 @@ export default function TabsLayout() {
   const showTracking = true;
 
   const bottomInset = Math.max(insets.bottom, 10);
+  const onMission = useStayOnMission();
 
   // The client side is not open yet: clients see "coming soon" instead of the app.
   if (!CLIENT_ENABLED && user?.role === 'CLIENT' && !isProvider) return <ClientComingSoon />;
@@ -74,6 +76,8 @@ export default function TabsLayout() {
         name="home"
         options={{
           title: t('accueil'),
+          href: onMission ? null : '/(tabs)/home',
+          tabBarItemStyle: { ...styles.item, display: onMission ? 'none' : 'flex' },
           tabBarIcon: ({ color, focused }) => <TabIcon name="home" color={color} strokeWidth={focused ? 2.4 : 2} />,
         }}
       />

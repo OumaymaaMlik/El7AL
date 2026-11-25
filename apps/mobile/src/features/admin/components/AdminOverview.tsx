@@ -51,6 +51,33 @@ function TodoRow({
   );
 }
 
+/** What artisans were charged (the activation fees among it) and what is still unpaid. One line each, so large
+ * amounts always fit. */
+function MoneyCard({ stats }: { stats: AdminStats | null }) {
+  const colors = useThemeStore((state) => state.colors);
+  const { t } = useTranslation();
+  const lines = [
+    { label: t('moneyBilled'), value: stats?.billedTotalTND },
+    { label: t('moneyActivation'), value: stats?.activationBilledTND },
+    { label: t('moneyUnpaid'), value: stats?.unpaidTotalTND },
+  ];
+  return (
+    <Surface>
+      {lines.map((line) => (
+        <View
+          key={line.label}
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: 16 }}
+        >
+          <Txt variant="small" color={colors.textMuted}>
+            {line.label}
+          </Txt>
+          <Txt variant="bodyStrong">{`${statValue(line.value)} ${t('currency')}`}</Txt>
+        </View>
+      ))}
+    </Surface>
+  );
+}
+
 /**
  * The admin's first page, as in the prototype: a green card with the money and the finished jobs, the figures by
  * period, then "À traiter" (what is waiting for the admin, each row opening its tab) and the active artisans.
@@ -76,9 +103,7 @@ export function AnalyticsTab({
             {t('revenueTitle')}
           </Txt>
           <View style={styles.heroValue}>
-            <Txt style={[styles.heroNumber, { color: colors.onBrand }]}>
-              {statValue(stats?.totalCommissionsCollectedTND)}
-            </Txt>
+            <Txt style={[styles.heroNumber, { color: colors.onBrand }]}>{statValue(stats?.receivedTotalTND)}</Txt>
             <Txt style={[styles.heroUnit, { color: colors.live }]}>{t('currency')}</Txt>
           </View>
         </View>
@@ -93,13 +118,15 @@ export function AnalyticsTab({
 
       <Surface>
         <View style={styles.row}>
-          <StatCell label={t('revenueToday')} value={statValue(stats?.revenueTodayTND)} unit={t('currency')} />
+          <StatCell label={t('revenueToday')} value={statValue(stats?.receivedTodayTND)} unit={t('currency')} />
           <View style={[styles.vLine, { backgroundColor: colors.border }]} />
-          <StatCell label={t('revenueWeek')} value={statValue(stats?.revenueWeekTND)} unit={t('currency')} />
+          <StatCell label={t('revenueWeek')} value={statValue(stats?.receivedWeekTND)} unit={t('currency')} />
           <View style={[styles.vLine, { backgroundColor: colors.border }]} />
-          <StatCell label={t('revenueMonth')} value={statValue(stats?.revenueMonthTND)} unit={t('currency')} />
+          <StatCell label={t('revenueMonth')} value={statValue(stats?.receivedMonthTND)} unit={t('currency')} />
         </View>
       </Surface>
+
+      <MoneyCard stats={stats} />
 
       <Txt variant="overline" color={colors.textMuted} style={styles.cap}>
         {t('toTreat')}

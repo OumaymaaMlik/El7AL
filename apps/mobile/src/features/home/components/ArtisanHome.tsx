@@ -5,7 +5,6 @@ import { Txt } from '../../../shared/ui/Txt';
 import { LiveDot } from '../../../shared/ui/LiveDot';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
-import { formatAmount } from '../../../shared/utils/format';
 import { useAuthStore } from '../../auth';
 import { styles } from './ArtisanHome.styles';
 import { useTopPad } from '../../../shared/theme/useTopPad';
@@ -40,7 +39,7 @@ interface HeaderProps {
 
 /**
  * The artisan's header, as in the prototype: the brand-green block with rounded bottom corners, who they are,
- * the online switch, and three figures (missions, rating, balance).
+ * the online switch, and two figures (missions, rating).
  */
 export function ArtisanHeader({ stats, trade, available, onToggleAvailability }: HeaderProps) {
   const colors = useThemeStore((s) => s.colors);
@@ -58,7 +57,6 @@ export function ArtisanHeader({ stats, trade, available, onToggleAvailability }:
   const tiles: [string, string][] = [
     [String(stats.completedCount ?? 0), t('statMissions')],
     [rating, t('statRating')],
-    [stats.walletBalance === null ? '0' : formatAmount(stats.walletBalance), t('statBalance')],
   ];
 
   return (

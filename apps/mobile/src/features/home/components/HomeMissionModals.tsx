@@ -12,7 +12,6 @@ interface Props {
 
 /** The dialogs and sheets of a mission that open over the home page: navigation, payment, rating, reviews. */
 export function HomeMissionModals({ flow }: Props) {
-  const partner = useMissionStore((state) => state.activePairingProvider);
   const activeMission = useMissionStore((state) => state.activeMission);
   const distanceKm = useMissionStore((state) => state.distanceKm);
   const etaMinutes = useMissionStore((state) => state.etaMinutes);
@@ -41,7 +40,7 @@ export function HomeMissionModals({ flow }: Props) {
         onClose={() => flow.setDualOpen(false)}
         loading={flow.actionLoading}
         amount={declaredAmount}
-        providerName={partner?.fullName}
+        missionId={flow.missionId}
       />
       <AmountSheet
         visible={flow.amountOpen}

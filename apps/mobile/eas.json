@@ -15,7 +15,6 @@
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.el7al.tn/api/v1",
-        "EXPO_PUBLIC_EL7AL_RIB": "TN59 0000 0000 0000 0000 0000",
         "EXPO_PUBLIC_CLIENT_ENABLED": "false",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }
@@ -24,7 +23,6 @@
       "autoIncrement": true,
       "env": {
         "EXPO_PUBLIC_API_URL": "https://api.el7al.tn/api/v1",
-        "EXPO_PUBLIC_EL7AL_RIB": "TN59 0000 0000 0000 0000 0000",
         "EXPO_PUBLIC_CLIENT_ENABLED": "false",
         "SENTRY_DISABLE_AUTO_UPLOAD": "true"
       }

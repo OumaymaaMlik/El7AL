@@ -36,8 +36,9 @@ export const styles = StyleSheet.create({
   },
   tileValue: { fontFamily: numeralFont, fontSize: 26, lineHeight: 29 },
   body: { gap: 14 },
-  dueCard: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: 24, borderWidth: 1 },
-  dueAmount: { fontFamily: numeralFont, fontSize: 22, lineHeight: 26 },
+  moneyRow: { flexDirection: 'row', gap: 10 },
+  moneyBox: { flex: 1, minWidth: 0, gap: 6, padding: 14, borderRadius: 20, borderWidth: 1 },
+  moneyValue: { fontFamily: numeralFont, fontSize: 24, lineHeight: 28 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   activeCard: { gap: 12, padding: 16, borderRadius: 24, borderWidth: 1.5 },
   liveBadge: {

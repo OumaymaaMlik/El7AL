@@ -6,6 +6,7 @@ import { onServerEvent } from '../../services/serverEvents';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useNotificationStore } from '../../store/useNotificationStore';
 import { useNotificationCopy } from '../../lib/notificationCopy';
+import { useWalletCopy } from '../../lib/walletCopy';
 import { useProviderStore } from '../../store/useProviderStore';
 
 /**
@@ -20,14 +21,15 @@ export const NotificationBridge: React.FC = () => {
   const user = useAuthStore((s) => s.user);
   const add = useNotificationStore((s) => s.addNotification);
   const c = useNotificationCopy();
+  const w = useWalletCopy();
   const { pathname, search } = useLocation();
   const isProvider = user?.role === 'PROVIDER';
   const isClient = user?.role === 'CLIENT';
   const trackingUrl = isProvider ? '/provider/tracking' : '/client/tracking';
 
   // The handlers read the latest page and language without re-subscribing at every navigation.
-  const latest = useRef({ pathname, search, c });
-  latest.current = { pathname, search, c };
+  const latest = useRef({ pathname, search, c, w });
+  latest.current = { pathname, search, c, w };
 
   useEffect(() => {
     if (!user?.id || (!isProvider && !isClient)) return;
@@ -49,6 +51,7 @@ export const NotificationBridge: React.FC = () => {
 
     const onCompleted = (d: ServerEvents['mission:completed']) => {
       if (!isProvider) return; // the client just confirmed it themselves
+      void useProviderStore.getState().load(); // the commission is now owed: the account is blocked until it is paid
       const t = text().completedPro;
       add({
         kind: 'COMPLETED',
@@ -58,6 +61,19 @@ export const NotificationBridge: React.FC = () => {
         actionUrl: '/provider/home',
         missionId: d?.missionId,
       });
+    };
+
+    const onTopupDecided = (d: ServerEvents['wallet:topup_decided']) => {
+      if (!isProvider) return;
+      const t = d?.status === 'APPROVED' ? latest.current.w.topupApproved : latest.current.w.topupRefused;
+      add({
+        kind: 'SYSTEM',
+        title: t.title,
+        message: t.text,
+        type: d?.status === 'APPROVED' ? 'success' : 'danger',
+        actionUrl: '/provider/home',
+      });
+      void useProviderStore.getState().load();
     };
 
     const onReviewed = (d: ServerEvents['mission:reviewed']) => {
@@ -124,6 +140,32 @@ export const NotificationBridge: React.FC = () => {
         });
     };
 
+    const onOfferSent = (d: ServerEvents['mission:offer_dispatched']) => {
+      if (!isClient || !(d?.count > 0)) return;
+      const t = text().offerSent;
+      add({
+        kind: 'STATUS',
+        title: t.title,
+        message: t.text,
+        type: 'info',
+        actionUrl: withId(d?.missionId),
+        missionId: d?.missionId,
+      });
+    };
+
+    const onNear = (d: ServerEvents['mission:provider_near']) => {
+      if (!isClient) return;
+      const t = text().providerNear(d?.etaMinutes ?? 0);
+      add({
+        kind: 'STATUS',
+        title: t.title,
+        message: t.text,
+        type: 'success',
+        actionUrl: withId(d?.missionId),
+        missionId: d?.missionId,
+      });
+    };
+
     const onDelay = (d: ServerEvents['mission:delay_alert']) => {
       if (!isClient || typeof d?.etaMinutes !== 'number') return;
       const t = text().delay(d.etaMinutes);
@@ -175,9 +217,12 @@ export const NotificationBridge: React.FC = () => {
       onServerEvent(socket, 'mission:new_offer', onOffer),
       onServerEvent(socket, 'mission:accepted', onAccepted),
       onServerEvent(socket, 'mission:status_update', onStatus),
+      onServerEvent(socket, 'mission:offer_dispatched', onOfferSent),
+      onServerEvent(socket, 'mission:provider_near', onNear),
       onServerEvent(socket, 'mission:delay_alert', onDelay),
       onServerEvent(socket, 'mission:completed', onCompleted),
       onServerEvent(socket, 'mission:cancelled', onCancelled),
+      onServerEvent(socket, 'wallet:topup_decided', onTopupDecided),
       onServerEvent(socket, 'mission:reviewed', onReviewed),
       onServerEvent(socket, 'chat:receive', onChat),
     ];

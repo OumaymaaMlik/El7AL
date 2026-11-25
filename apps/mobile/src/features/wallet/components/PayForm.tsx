@@ -1,15 +1,5 @@
 import { useState } from 'react';
-import {
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AlertCircle, Camera, ChevronLeft, Lock } from 'lucide-react-native';
 import { Mirrored } from '../../../shared/ui/Mirrored';
@@ -17,35 +7,36 @@ import { Txt } from '../../../shared/ui/Txt';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { numeralFont } from '../../../shared/theme/typography';
-import { gutter, inputReset } from '../../../shared/theme/tokens';
+import { gutter } from '../../../shared/theme/tokens';
 import { useTopPad } from '../../../shared/theme/useTopPad';
-import { EL7AL_RIB } from '../../../config/env';
 import { formatAmount } from '../../../shared/utils/format';
 import { pickImageFromDevice } from '../../../shared/utils/imagePicker';
 
 interface Props {
-  /** What the artisan owes; the amount starts there. */
+  /** What the artisan owes: the amount to transfer (the server decides it, so it cannot be mistyped). */
   due: number;
+  /** El 7al's bank account from the server; the app's own setting is the fallback. */
+  rib: string | null;
   paused: boolean;
   sending: boolean;
   onBack: () => void;
-  onSend: (amount: number, photoUri: string) => void;
+  onSend: (photoUri: string) => void;
+  /** The charges and transfers, under the form. */
+  history?: React.ReactNode;
 }
 
 /**
  * "Payer El 7al": the amount to transfer (it starts at what is owed), where to send it, the photo of the transfer
  * receipt, and one button. The account stays paused until El 7al checks the receipt.
  */
-export function PayForm({ due, paused, sending, onBack, onSend }: Props) {
+export function PayForm({ due, rib, paused, sending, onBack, onSend, history }: Props) {
   const colors = useThemeStore((s) => s.colors);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const topPad = useTopPad();
-  const [text, setText] = useState(due > 0 ? formatAmount(due).replace('.', ',') : '');
   const [photo, setPhoto] = useState<string | null>(null);
 
-  const amount = Number(text.replace(',', '.'));
-  const ready = Boolean(photo) && Number.isFinite(amount) && amount > 0;
+  const ready = Boolean(photo) && due > 0;
 
   const pick = async () => {
     const uri = await pickImageFromDevice();
@@ -96,27 +87,18 @@ export function PayForm({ due, paused, sending, onBack, onSend }: Props) {
             <Lock size={16} color={colors.onBrandMuted} strokeWidth={2} />
           </View>
           <View style={styles.amountRow}>
-            <TextInput
-              accessibilityLabel={t('transferAmount')}
-              style={[styles.amountInput, inputReset, { color: colors.onBrand }]}
-              keyboardType="decimal-pad"
-              value={text}
-              onChangeText={setText}
-              placeholder="0"
-              placeholderTextColor="rgba(255,255,255,0.35)"
-              maxLength={8}
-            />
+            <Text style={[styles.amountInput, { color: colors.onBrand }]}>{formatAmount(due)}</Text>
             <Text style={[styles.unit, { color: colors.live }]}>{t('currency')}</Text>
           </View>
         </View>
 
-        {EL7AL_RIB && (
+        {rib && (
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Txt variant="caption" color={colors.textMuted}>
               {t('ribLabel')}
             </Txt>
             <Txt variant="bodyStrong" selectable style={styles.rib}>
-              {EL7AL_RIB}
+              {rib}
             </Txt>
           </View>
         )}
@@ -160,6 +142,7 @@ export function PayForm({ due, paused, sending, onBack, onSend }: Props) {
             </Txt>
           </View>
         )}
+        {history}
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 10 }]}>
@@ -167,7 +150,7 @@ export function PayForm({ due, paused, sending, onBack, onSend }: Props) {
           accessibilityRole="button"
           accessibilityState={{ disabled: !ready || sending, busy: sending }}
           disabled={!ready || sending}
-          onPress={() => photo && onSend(amount, photo)}
+          onPress={() => photo && onSend(photo)}
           style={({ pressed }) => [
             styles.send,
             { backgroundColor: ready ? colors.brand : colors.tint },

@@ -70,7 +70,8 @@ export function useRegisterWizard(initialRole: RegisterRole) {
   };
 
   const toggleCategory = (id: string) => {
-    setSelectedCategoryIds((ids) => (ids.includes(id) ? ids.filter((c) => c !== id) : [...ids, id]));
+    // One trade only: choosing another replaces it, choosing it again clears it.
+    setSelectedCategoryIds((ids) => (ids.includes(id) ? [] : [id]));
     clearError('trades');
   };
 

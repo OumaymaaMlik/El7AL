@@ -61,9 +61,6 @@ export function useProviderProfile() {
       .catch(() => undefined);
   }, [addNotification]);
 
-  const toggleTrade = (id: string) =>
-    setCategoryIds((ids) => (ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id]));
-
   const rememberAvatar = (url: string) => {
     setAvatarUrl(url);
     if (user) setAuth({ ...user, avatarUrl: url }, token || '');
@@ -100,12 +97,8 @@ export function useProviderProfile() {
     addNotification({ title: 'Photo supprimée', message: 'Votre photo de profil a été retirée.', type: 'info' });
   };
 
-  /** Saves the name, address, presentation, trades and zone. The phone and e-mail are not editable here: changing them needs a verification. */
+  /** Saves the name, address, presentation and zone (the trade cannot be changed). The phone and e-mail are not editable here: changing them needs a verification. */
   const save = async () => {
-    if (categoryIds.length === 0) {
-      addNotification({ title: 'Métiers', message: 'Choisissez au moins un métier.', type: 'warning' });
-      return;
-    }
     setSaving(true);
     try {
       const res = await api.put('/users/profile', {
@@ -114,7 +107,7 @@ export function useProviderProfile() {
         defaultAddress: address || undefined,
         ...(coords ? { defaultLat: coords.lat, defaultLng: coords.lng } : {}),
       });
-      await api.put('/geo/provider/settings', { bio, radiusKm, categoryIds });
+      await api.put('/geo/provider/settings', { bio, radiusKm });
       const saved = res.data.data;
       if (user)
         setAuth(
@@ -156,7 +149,6 @@ export function useProviderProfile() {
     radiusKm,
     setRadiusKm,
     categoryIds,
-    toggleTrade,
     trades,
     rating,
     hasDocument,

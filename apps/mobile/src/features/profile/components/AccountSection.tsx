@@ -7,6 +7,9 @@ import { Txt } from '../../../shared/ui/Txt';
 import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { SettingRow } from './SettingRow';
+import { useRouter } from 'expo-router';
+import { Button } from '../../../shared/ui/Button';
+import { ROUTES } from '../../../navigation/routes';
 
 interface Props {
   fullName?: string | null;
@@ -22,6 +25,7 @@ interface Props {
 export function AccountSection({ email, isProvider, professions, address, verified }: Props) {
   const colors = useThemeStore((state) => state.colors);
   const { t } = useTranslation();
+  const router = useRouter();
 
   const value = (text: string) => (
     <View style={styles.value}>
@@ -51,18 +55,22 @@ export function AccountSection({ email, isProvider, professions, address, verifi
   ];
 
   return (
-    <Surface>
-      {rows.map(({ Icon, label, right }, index) => (
-        <React.Fragment key={label}>
-          {index > 0 && <Hairline style={styles.sep} />}
-          <SettingRow Icon={Icon} label={label} right={right} />
-        </React.Fragment>
-      ))}
-    </Surface>
+    <View style={styles.wrap}>
+      <Surface>
+        {rows.map(({ Icon, label, right }, index) => (
+          <React.Fragment key={label}>
+            {index > 0 && <Hairline style={styles.sep} />}
+            <SettingRow Icon={Icon} label={label} right={right} />
+          </React.Fragment>
+        ))}
+      </Surface>
+      {isProvider && <Button title={t('myPayments')} variant="outline" onPress={() => router.push(ROUTES.pay)} />}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrap: { gap: 12 },
   sep: { marginStart: 64 },
   value: { flexShrink: 1, maxWidth: 150, alignItems: 'flex-end' },
 });

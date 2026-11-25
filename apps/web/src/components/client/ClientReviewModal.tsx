@@ -2,43 +2,45 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../ui/Modal';
 import { api, apiErrorMessage } from '../../services/api';
 import { useNotificationStore } from '../../store/useNotificationStore';
-import { CashAmountStep, ConfirmWorkStep, RatingStep } from './review/ReviewSteps';
+import { ConfirmWorkStep, RatingStep } from './review/ReviewSteps';
+import { ReportProblem } from '../ui/ReportProblem';
 
-type ModalStep = 'CONFIRM_WORK' | 'PAYMENT' | 'RATING';
+type ModalStep = 'CONFIRM_WORK' | 'RATING';
 
 interface ClientReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   missionId: string;
   providerName?: string;
-  categoryName?: string;
+  /** The cash amount the artisan declared. */
+  declaredAmount?: number | string | null;
   isAlreadyCompleted?: boolean;
   onReviewSubmitted: () => void;
 }
 
-/** After the artisan reports the end of the work: the client confirms, enters the cash amount, then rates. */
+/** After the artisan reports the end of the work: the client sees the price, confirms, then rates. */
 export const ClientReviewModal: React.FC<ClientReviewModalProps> = ({
   isOpen,
   onClose,
   missionId,
   providerName = 'le technicien',
-  categoryName = 'Intervention',
+  declaredAmount,
   isAlreadyCompleted = false,
   onReviewSubmitted,
 }) => {
   const addNotification = useNotificationStore((s) => s.addNotification);
   const [step, setStep] = useState<ModalStep>(isAlreadyCompleted ? 'RATING' : 'CONFIRM_WORK');
-  const [amount, setAmount] = useState('');
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const amountValue = Number(amount.replace(',', '.'));
-  const amountValid = Number.isFinite(amountValue) && amountValue > 0;
+  const amount = declaredAmount === null || declaredAmount === undefined ? null : Number(declaredAmount);
 
+  // The step is chosen when the window opens. The job turning "completed" while it is open must not move it.
   useEffect(() => {
     if (isOpen) setStep(isAlreadyCompleted ? 'RATING' : 'CONFIRM_WORK');
-  }, [isOpen, isAlreadyCompleted]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const confirmWork = async () => {
     setLoading(true);
@@ -49,7 +51,7 @@ export const ClientReviewModal: React.FC<ClientReviewModalProps> = ({
         message: 'Vous avez confirmé la fin des travaux.',
         type: 'success',
       });
-      setStep('PAYMENT');
+      setStep('RATING');
     } catch (err) {
       addNotification({
         title: 'Erreur',
@@ -68,7 +70,7 @@ export const ClientReviewModal: React.FC<ClientReviewModalProps> = ({
       await api.post(`/missions/${missionId}/review`, {
         rating,
         comment: comment.trim(),
-        amount: amountValid ? String(amountValue) : undefined,
+        amount: amount !== null ? String(amount) : undefined,
       });
       addNotification({
         title: 'Merci pour votre évaluation',
@@ -91,15 +93,10 @@ export const ClientReviewModal: React.FC<ClientReviewModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="md">
       {step === 'CONFIRM_WORK' && (
-        <ConfirmWorkStep
-          providerName={providerName}
-          categoryName={categoryName}
-          loading={loading}
-          onConfirm={() => void confirmWork()}
-        />
-      )}
-      {step === 'PAYMENT' && (
-        <CashAmountStep amount={amount} onAmount={setAmount} valid={amountValid} onValidate={() => setStep('RATING')} />
+        <>
+          <ConfirmWorkStep amount={amount} loading={loading} onConfirm={() => void confirmWork()} />
+          <ReportProblem missionId={missionId} className="w-full" />
+        </>
       )}
       {step === 'RATING' && (
         <RatingStep

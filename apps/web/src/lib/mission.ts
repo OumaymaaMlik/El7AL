@@ -50,6 +50,8 @@ export interface ApiMission {
   status: MissionStatus;
   addressText: string;
   description?: string | null;
+  /** The cash price the artisan declared when finishing. */
+  declaredAmount?: number | string | null;
   pickupLat?: number | null;
   pickupLng?: number | null;
   radiusKm?: number | null;

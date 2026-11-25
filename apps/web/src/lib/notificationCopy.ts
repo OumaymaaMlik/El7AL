@@ -23,6 +23,9 @@ interface NotificationCopy {
   arrived: (name: string) => { title: string; text: string };
   confirmEnd: { title: string; text: string };
   delay: (eta: number) => { title: string; text: string };
+  offerSent: { title: string; text: string };
+  providerNear: (eta: number) => { title: string; text: string };
+  topupPending: (name: string, amount: number) => { title: string; text: string };
   cancelledByArtisan: (reason?: string) => { title: string; text: string };
   cancelledByClient: (reason?: string) => { title: string; text: string };
   completedPro: { title: string; text: string };
@@ -58,6 +61,15 @@ const fr: NotificationCopy = {
   arrived: (n) => ({ title: `${n} est arrivé`, text: 'Il est sur place.' }),
   confirmEnd: { title: 'Travaux terminés', text: "Confirmez la fin de l'intervention." },
   delay: (eta) => ({ title: 'Retard de votre artisan', text: `Arrivée estimée dans ${eta} min.` }),
+  offerSent: {
+    title: 'Artisan trouvé',
+    text: 'Nous avons trouvé un artisan près de vous et lui avons envoyé votre demande.',
+  },
+  providerNear: (eta) => ({ title: 'Votre artisan est tout proche', text: `Il arrive dans environ ${eta} min.` }),
+  topupPending: (name, amount) => ({
+    title: 'Virement à valider',
+    text: `${name} a envoyé un virement de ${amount} TND.`,
+  }),
   cancelledByArtisan: (r) => ({
     title: "Intervention annulée par l'artisan",
     text: r || "L'artisan a annulé l'intervention.",
@@ -111,6 +123,12 @@ const en: NotificationCopy = {
   arrived: (n) => ({ title: `${n} has arrived`, text: 'They are on site.' }),
   confirmEnd: { title: 'Work finished', text: 'Please confirm the end of the job.' },
   delay: (eta) => ({ title: 'Your pro is running late', text: `Estimated arrival in ${eta} min.` }),
+  offerSent: { title: 'Pro found', text: 'We found a pro near you and sent them your request.' },
+  providerNear: (eta) => ({ title: 'Your pro is very close', text: `They arrive in about ${eta} min.` }),
+  topupPending: (name, amount) => ({
+    title: 'Transfer to validate',
+    text: `${name} sent a transfer of ${amount} TND.`,
+  }),
   cancelledByArtisan: (r) => ({ title: 'Job cancelled by the pro', text: r || 'The pro cancelled the job.' }),
   cancelledByClient: (r) => ({ title: 'Job cancelled by the customer', text: r || 'The customer cancelled the job.' }),
   completedPro: { title: 'Job completed', text: 'Commission of 30 TND taken.' },
@@ -152,6 +170,12 @@ const ar: NotificationCopy = {
   arrived: (n) => ({ title: `${n} وصل`, text: 'هو الآن في المكان.' }),
   confirmEnd: { title: 'انتهت الأشغال', text: 'يرجى تأكيد نهاية التدخّل.' },
   delay: (eta) => ({ title: 'تأخر الحرفي', text: `الوصول المقدّر خلال ${eta} د.` }),
+  offerSent: { title: 'تم العثور على حرفي', text: 'وجدنا حرفيًا قريبًا منك وأرسلنا إليه طلبك.' },
+  providerNear: (eta) => ({ title: 'الحرفي قريب جدًا', text: `سيصل خلال حوالي ${eta} د.` }),
+  topupPending: (name, amount) => ({
+    title: 'تحويل في انتظار التحقق',
+    text: `أرسل ${name} تحويلًا بقيمة ${amount} دينار.`,
+  }),
   cancelledByArtisan: (r) => ({ title: 'ألغى الحرفي التدخّل', text: r || 'ألغى الحرفي التدخّل.' }),
   cancelledByClient: (r) => ({ title: 'ألغى الزبون المهمة', text: r || 'ألغى الزبون التدخّل.' }),
   completedPro: { title: 'مهمة منتهية', text: 'تم خصم عمولة 30 د.ت.' },

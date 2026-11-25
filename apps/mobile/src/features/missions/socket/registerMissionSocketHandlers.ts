@@ -14,8 +14,29 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
   const mission = () => useMissionStore.getState();
   const notify = useNotificationStore.getState().addNotification;
 
-  const onOfferDispatched = () => {
-    if (!isProvider) mission().updateSearchStatus(translate('searchOfferSent'));
+  const onOfferDispatched = (data: ServerEvents['mission:offer_dispatched']) => {
+    if (isProvider) return;
+    mission().updateSearchStatus(translate('searchOfferSent'));
+    // Told as a notification too: someone was found and has the request.
+    if (data.count > 0) {
+      notify({
+        type: 'SYSTEM',
+        title: translate('offerSentTitle'),
+        message: translate('offerSentBody'),
+        metadata: { missionId: data.missionId },
+      });
+    }
+  };
+
+  // The artisan on the way is a few minutes from the client.
+  const onProviderNear = (data: ServerEvents['mission:provider_near']) => {
+    if (isProvider) return;
+    notify({
+      type: 'SYSTEM',
+      title: translate('providerNearTitle'),
+      message: translate('providerNearBody').replace('{min}', String(data.etaMinutes)),
+      metadata: { missionId: data.missionId },
+    });
   };
 
   const onOfferRejected = () => {
@@ -84,9 +105,17 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
     }
   };
 
+  // The commission is taken when a job completes (and the artisan goes offline if it is owed): the home screen
+  // reloads the profile. Saving the same status gives the session a new object, which makes it do so.
+  const refreshArtisanFigures = () => {
+    const user = useAuthStore.getState().user;
+    if (isProvider && user) void useAuthStore.getState().setAccountStatus(user.status);
+  };
+
   const onCompleted = (data: ServerEvents['mission:completed']) => {
     if (data.missionId) leaveMissionRoom(data.missionId);
     mission().updateMissionState({ missionStatus: 'COMPLETED', clientConfirmed: true, isSearching: false });
+    refreshArtisanFigures();
   };
 
   const onReviewed = (data: ServerEvents['mission:reviewed']) => {
@@ -102,6 +131,7 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
       metadata: { missionId: data.missionId, reviewData: data },
     });
     mission().clearActiveMission();
+    refreshArtisanFigures();
   };
 
   // Live position of the artisan on the way: real distance and arrival time.
@@ -136,8 +166,12 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
     if (user) void useAuthStore.getState().setAccountStatus(user.status);
     notify({
       type: 'SYSTEM',
+      metadata: { opensPayments: true },
       title: translate(approved ? 'topupApprovedTitle' : 'topupRefusedTitle'),
-      message: translate(approved ? 'topupApprovedBody' : 'topupRefusedBody'),
+      message:
+        approved && data.remaining > 0
+          ? translate('topupPartialBody').replace('{amount}', `${data.remaining} ${translate('currency')}`)
+          : translate(approved ? 'topupApprovedBody' : 'topupRefusedBody'),
     });
   };
 
@@ -146,6 +180,7 @@ export function registerMissionSocketHandlers({ user, isProvider, router }: Sock
     onServerEvent(socket, 'account:verification', onVerification),
     onServerEvent(socket, 'location:stream', onLocationStream),
     onServerEvent(socket, 'mission:offer_dispatched', onOfferDispatched),
+    onServerEvent(socket, 'mission:provider_near', onProviderNear),
     onServerEvent(socket, 'mission:offer_rejected', onOfferRejected),
     onServerEvent(socket, 'mission:accepted', onAccepted),
     onServerEvent(socket, 'mission:status_update', onStatusUpdate),

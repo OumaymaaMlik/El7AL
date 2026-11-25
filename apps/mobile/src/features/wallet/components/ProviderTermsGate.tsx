@@ -10,13 +10,14 @@ import { useTranslation } from '../../../shared/store/useLanguageStore';
 import { gutter } from '../../../shared/theme/tokens';
 import { formatAmount } from '../../../shared/utils/format';
 import { logger } from '../../../shared/utils/logger';
-import { getStorageItem, setStorageItem } from '../../../services/storage/secureStorage';
+import { acceptTerms, fetchWallet } from '../api/wallet.api';
 import { useAuthStore } from '../../auth';
 
-/** Whether this artisan has already seen the terms: read once per account, written when they accept. */
-function useTermsSeen(userId: string | null) {
+/** Whether this artisan still has to accept the fees. The server keeps the answer, with its date, as proof. */
+function useTermsGate(userId: string | null) {
   const [open, setOpen] = useState(false);
-  const key = `provider_terms_seen_${userId}`;
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     if (!userId) {
@@ -24,25 +25,30 @@ function useTermsSeen(userId: string | null) {
       return;
     }
     let cancelled = false;
-    getStorageItem(key)
-      .then((seen) => {
-        if (!cancelled && !seen) setOpen(true);
+    fetchWallet()
+      .then((wallet) => {
+        if (!cancelled) setOpen(wallet.termsAccepted === false);
       })
-      .catch((e) => logger.warn('Could not read the terms flag:', e));
+      .catch((e) => logger.warn('Could not read the terms state:', e));
     return () => {
       cancelled = true;
     };
-  }, [userId, key]);
+  }, [userId]);
 
   const accept = async () => {
-    setOpen(false);
+    setSaving(true);
+    setFailed(false);
     try {
-      if (userId) await setStorageItem(key, '1');
+      await acceptTerms();
+      setOpen(false);
     } catch (e) {
-      logger.warn('Could not save the terms flag:', e);
+      logger.warn('Could not save the agreement:', e);
+      setFailed(true);
+    } finally {
+      setSaving(false);
     }
   };
-  return { open, accept };
+  return { open, accept, saving, failed };
 }
 
 /** The three points an artisan must know: the activation fee, the commission, and the block when it is unpaid. */
@@ -61,7 +67,7 @@ function useTermsRows() {
       body: t('termsCommissionBody')
         .replaceAll('{commission}', money(COMMISSION_FEE_TND))
         .replaceAll('{activation}', money(ACTIVATION_FEE_TND))
-        .replace('{total}', money(COMMISSION_FEE_TND + ACTIVATION_FEE_TND)),
+        .replaceAll('{total}', money(COMMISSION_FEE_TND + ACTIVATION_FEE_TND)),
     },
     { Icon: Lock, title: t('termsBlockTitle'), body: t('termsBlockBody') },
   ];
@@ -69,14 +75,14 @@ function useTermsRows() {
 
 /**
  * Shown to an artisan the first time they sign in: the activation fee, the commission and what happens when it is
- * not paid. It is remembered per account, so it appears once.
+ * not paid. It stays until accepted; the server keeps the date.
  */
 export function ProviderTermsGate() {
   const colors = useThemeStore((s) => s.colors);
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const userId = useAuthStore((s) => (s.user?.role === 'PROVIDER' ? s.user.id : null));
-  const { open, accept } = useTermsSeen(userId);
+  const { open, accept, saving, failed } = useTermsGate(userId);
   const rows = useTermsRows();
 
   return (
@@ -106,7 +112,12 @@ export function ProviderTermsGate() {
           ))}
         </ScrollView>
         <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) + 10 }]}>
-          <Button title={t('termsAccept')} variant="accent" onPress={accept} />
+          {failed && (
+            <Txt variant="small" color={colors.onBrand} accessibilityRole="alert">
+              {t('termsFailed')}
+            </Txt>
+          )}
+          <Button title={t('termsAccept')} variant="accent" onPress={() => void accept()} loading={saving} />
         </View>
       </View>
     </Modal>

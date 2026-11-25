@@ -66,6 +66,32 @@ export function AdminDashboardScreen() {
     });
   }, [flashToast, reload, t]);
 
+  // A transfer receipt arrived: same, and the transfers list is reloaded.
+  useEffect(() => {
+    return onServerEvent(getSocket(), 'admin:topup_pending', (topup) => {
+      flashToast({
+        title: t('newTopupAlertTitle'),
+        message: t('newTopupAlertBody')
+          .replace('{name}', topup.providerName)
+          .replace('{amount}', `${topup.amount} ${t('currency')}`),
+        tone: 'info',
+      });
+      reload();
+    });
+  }, [flashToast, reload, t]);
+
+  // Someone reported a problem about an intervention.
+  useEffect(() => {
+    return onServerEvent(getSocket(), 'admin:dispute_opened', (report) => {
+      flashToast({
+        title: t('newDisputeAlertTitle'),
+        message: t('newDisputeAlertBody').replace('{name}', report.reporterName),
+        tone: 'info',
+      });
+      reload();
+    });
+  }, [flashToast, reload, t]);
+
   const counts = {
     VERIFICATIONS: toNumber(data.stats?.pendingVerifications) ?? 0,
     TOPUPS: toNumber(data.stats?.pendingWireTransfers) ?? 0,

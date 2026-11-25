@@ -18,7 +18,8 @@ export async function scheduleMissionTimeout(missionId: string, delayMs = 90000)
   await missionTimeoutQueue.add(
     'check-timeout',
     { missionId },
-    { delay: delayMs, jobId: `mission-timeout-${missionId}` },
+    // Removed once run, so that a relaunched search can be given a new expiry under the same id.
+    { delay: delayMs, jobId: `mission-timeout-${missionId}`, removeOnComplete: true, removeOnFail: true },
   );
   logger.info(`Scheduled 90s timeout check for mission: ${missionId}`);
 }

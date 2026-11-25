@@ -9,6 +9,8 @@ type ToastTone = 'info' | 'success' | 'error';
 /** What a notification carries so tapping it can open the right screen. */
 export interface NotificationMetadata {
   missionId?: string;
+  /** Tapping the pop-up opens the payments page. */
+  opensPayments?: boolean;
   senderName?: string;
   senderAvatar?: string | null;
   reviewData?: ReviewData;

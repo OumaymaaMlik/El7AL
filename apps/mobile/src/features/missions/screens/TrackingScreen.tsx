@@ -144,7 +144,7 @@ export function TrackingScreen() {
         onClose={() => flow.setDualOpen(false)}
         loading={flow.actionLoading}
         amount={declaredAmount}
-        providerName={pairedProvider?.fullName}
+        missionId={flow.missionId}
       />
       <AmountSheet
         visible={flow.amountOpen}
@@ -173,6 +173,7 @@ export function TrackingScreen() {
           partnerName={partnerName}
           partnerAvatar={partnerAvatar}
           partnerRating={partnerRating}
+          reportId={mission.provider ? mission.id : null}
           description={mission.description}
           address={mission.addressText}
           pickup={pickup}

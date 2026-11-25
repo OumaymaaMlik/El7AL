@@ -14,9 +14,10 @@ import type { Mission } from '../../missions/schemas/mission.schema';
 import { useMissionStore } from '../../missions/store/useMissionStore';
 import { trackingStatusLabel } from '../../missions/utils/trackingLabels';
 import { TradeTile } from './TradeTile';
-import { Button } from '../../../shared/ui/Button';
 import { ROUTES } from '../../../navigation/routes';
 import { styles } from './ArtisanHome.styles';
+import { WeekMoney } from './WeekMoney';
+import type { Wallet } from '../../wallet/api/wallet.api';
 import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND } from '@el7al/shared';
 
 /** The mission under way, as a card that opens the live tracking screen. */
@@ -66,6 +67,8 @@ interface BodyProps {
   due: number;
   /** Set when the artisan owes commission and so cannot receive requests. */
   block: 'COMMISSION' | null;
+  /** This week's money. */
+  wallet: Wallet | null;
   available: boolean;
   missionActive: boolean;
   completed: Mission[];
@@ -86,7 +89,7 @@ function blockNotice(block: BodyProps['block'], due: number, t: Translate) {
 }
 
 /** What sits under the header: a paused-account notice, the live mission or the waiting state, and recent missions. */
-export function ArtisanBody({ due, block, available, missionActive, completed }: BodyProps) {
+export function ArtisanBody({ due, wallet, block, available, missionActive, completed }: BodyProps) {
   const router = useRouter();
   const colors = useThemeStore((s) => s.colors);
   const { t, language } = useTranslation();
@@ -129,15 +132,7 @@ export function ArtisanBody({ due, block, available, missionActive, completed }:
         </View>
       )}
 
-      {due > 0 && (
-        <View style={[styles.dueCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={styles.flex}>
-            <Txt variant="bodyStrong">{t('commissionsCard')}</Txt>
-          </View>
-          <Txt style={styles.dueAmount}>{`${formatAmount(due)} ${t('currency')}`}</Txt>
-        </View>
-      )}
-      {due > 0 && <Button title={t('payElHal')} variant="secondary" onPress={() => router.push(ROUTES.pay)} />}
+      <WeekMoney due={due} blocked={block !== null} wallet={wallet} />
 
       {recent.length > 0 && (
         <>

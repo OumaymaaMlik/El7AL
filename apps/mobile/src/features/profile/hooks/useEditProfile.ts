@@ -9,7 +9,7 @@ import { getApiErrorMessage } from '../../../shared/utils/apiError';
 import { calculatePasswordStrength } from '../../../shared/utils/password';
 import { logger } from '../../../shared/utils/logger';
 import { reverseGeocode } from '../../map/services/geocoding';
-import { requestEmailChange, updateProfile, uploadAvatar } from '../api/profile.api';
+import { requestEmailChange, updateProfile, updateProviderSettings, uploadAvatar } from '../api/profile.api';
 import type { Profile, UpdateProfileInput } from '../schemas/profile.schema';
 
 interface Options {
@@ -41,12 +41,15 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
   const [lat, setLat] = useState<number>(DEFAULT_MAP_CENTER.lat);
   const [lng, setLng] = useState<number>(DEFAULT_MAP_CENTER.lng);
   const [bio, setBio] = useState('');
+  const [radiusKm, setRadiusKm] = useState(15);
+  const [locationChosen, setLocationChosen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState('');
   const [avatarFailed, setAvatarFailed] = useState(false);
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const isProvider = Boolean(profile?.providerProfile);
   const passwordScore = calculatePasswordStrength(newPassword);
   const passwordValid = newPassword.length >= 8 && newPassword === confirmPassword && passwordScore >= 2;
 
@@ -56,10 +59,13 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
     setPhoneNumber(profile.phoneNumber || '');
     setEmail(profile.email || '');
     setOriginalEmail(profile.email || '');
-    setAddress(profile.clientProfile?.defaultAddress || '');
-    setLat(profile.clientProfile?.defaultLat || DEFAULT_MAP_CENTER.lat);
-    setLng(profile.clientProfile?.defaultLng || DEFAULT_MAP_CENTER.lng);
-    setBio(profile.providerProfile?.bio || '');
+    const worker = profile.providerProfile;
+    setAddress(profile.clientProfile?.defaultAddress || worker?.address || '');
+    setLat(profile.clientProfile?.defaultLat || worker?.currentLat || DEFAULT_MAP_CENTER.lat);
+    setLng(profile.clientProfile?.defaultLng || worker?.currentLng || DEFAULT_MAP_CENTER.lng);
+    setBio(worker?.bio || '');
+    setRadiusKm(Number(worker?.radiusKm) || 15);
+    setLocationChosen(false);
     setAvatarUrl(profile.avatarUrl || '');
     setAvatarFailed(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,6 +89,7 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
   };
 
   const selectMapLocation = (nextLat: number, nextLng: number) => {
+    setLocationChosen(true);
     setLat(nextLat);
     setLng(nextLng);
     reverseGeocode(nextLat, nextLng).then((a) => {
@@ -99,13 +106,14 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
       const input: UpdateProfileInput = {
         fullName,
         defaultAddress: address,
-        defaultLat: lat,
-        defaultLng: lng,
+        // An artisan's position follows the address only when a point was chosen on the map.
+        ...(isProvider && !locationChosen ? {} : { defaultLat: lat, defaultLng: lng }),
         bio,
         avatarUrl,
         ...(newPassword && oldPassword ? { oldPassword, password: newPassword } : {}),
       };
       const updated = await updateProfile(input);
+      if (isProvider) await updateProviderSettings({ radiusKm, bio });
       if (updated) {
         onSaved(updated);
         const { user, token, setSession } = useAuthStore.getState();
@@ -164,6 +172,9 @@ export function useEditProfile({ profile, loadedVersion, onSaved }: Options) {
     lat,
     lng,
     bio,
+    setBio,
+    radiusKm,
+    setRadiusKm,
     avatarUrl,
     avatarFailed,
     setAvatarFailed,

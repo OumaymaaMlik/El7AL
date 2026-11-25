@@ -14,6 +14,8 @@ import { numeralFont } from '../../../shared/theme/typography';
 import { formatDate, missionBadge } from '../../../shared/utils/format';
 import { TradeTile } from '../../home/components/TradeTile';
 import type { Mission } from '../schemas/mission.schema';
+import { RelaunchButton } from './RelaunchButton';
+import { ReportProblem } from './ReportProblem';
 
 type Filter = 'all' | 'ongoing' | 'done';
 
@@ -132,6 +134,8 @@ export function ClientRequests({ missions }: { missions: Mission[] }) {
                       <Txt variant="caption" color={colors.textMuted} numberOfLines={1}>
                         {[m.category?.name, formatDate(m.createdAt, language)].filter(Boolean).join(' · ')}
                       </Txt>
+                      <RelaunchButton mission={m} />
+                      {m.status === 'COMPLETED' && m.provider && <ReportProblem missionId={m.id} />}
                     </View>
                     <StatusBadge label={badge.label} tone={badge.tone} />
                   </FadeUp>

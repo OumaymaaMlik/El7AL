@@ -38,8 +38,13 @@ function RootLayout() {
     loadSavedTheme();
     loadSavedLanguage();
     loadSavedSession();
-    registerForPushNotificationsAsync();
   }, [loadSavedTheme, loadSavedLanguage, loadSavedSession]);
+
+  // The phone's push address is saved on the account, so it can only be sent once someone is signed in.
+  const signedIn = useAuthStore((state) => Boolean(state.token));
+  useEffect(() => {
+    if (signedIn) void registerForPushNotificationsAsync();
+  }, [signedIn]);
 
   if (!fontsLoaded && !fontError) {
     return <View style={{ flex: 1, backgroundColor: colors.background }} />;

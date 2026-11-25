@@ -29,6 +29,14 @@ export interface DomainEvents {
     client: { userId: string; fullName: string; avatarUrl: string | null };
     candidateUserIds: string[];
   };
+  /** A search still running was offered to an artisan who became reachable after it started. */
+  'mission.offeredLate': {
+    mission: DomainEvents['mission.requested']['mission'];
+    client: DomainEvents['mission.requested']['client'];
+    providerUserId: string;
+    /** The first time this artisan hears of it: then the artisan gets a push and the client is told. */
+    firstTime: boolean;
+  };
   /** An artisan took the job. */
   'mission.accepted': {
     missionId: string;
@@ -70,8 +78,12 @@ export interface DomainEvents {
   /** An artisan finished registering: the admins are told there is someone to verify. */
   'provider.registered': { providerId: string; fullName: string; createdAt: Date };
   'provider.verified': { userId: string; status: 'ACTIVE' | 'REJECTED'; note: string | null };
+  /** An artisan sent a bank-transfer receipt for an admin to validate. */
+  'topup.requested': { providerName: string; amount: number };
+  /** A client or an artisan reported a problem about an intervention. */
+  'dispute.opened': { reporterName: string; missionId: string };
   /** An admin confirmed or refused an artisan's bank transfer. */
-  'topup.decided': { userId: string; status: 'APPROVED' | 'REJECTED' };
+  'topup.decided': { userId: string; status: 'APPROVED' | 'REJECTED'; remaining: number };
 }
 
 type Handler<K extends keyof DomainEvents> = (payload: DomainEvents[K]) => Promise<void> | void;

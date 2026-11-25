@@ -35,6 +35,11 @@ export const topupSchema = z
     id: z.string(),
     amount: z.any(),
     uniqueRef: z.any().optional(),
+    /** What the artisan owes right now. */
+    owed: z.number().optional(),
+    /** The part whose payment date has passed: unpaid, it blocks the artisan. */
+    overdue: z.number().optional(),
+    receiptPhotoUrl: z.string().optional(),
     provider: z
       .object({ user: z.object({ fullName: z.string().nullish() }).passthrough().nullish() })
       .passthrough()
@@ -43,8 +48,20 @@ export const topupSchema = z
   .passthrough();
 export type Topup = z.infer<typeof topupSchema>;
 
+const partySchema = z
+  .object({ user: z.object({ fullName: z.string().nullish(), phoneNumber: z.string().nullish() }).nullish() })
+  .passthrough()
+  .nullish();
+
 export const disputeSchema = z
-  .object({ id: z.string(), status: z.string(), reason: z.string().nullish(), createdAt: z.string().nullish() })
+  .object({
+    id: z.string(),
+    status: z.string(),
+    reason: z.string().nullish(),
+    createdAt: z.string().nullish(),
+    reporterRole: z.enum(['CLIENT', 'PROVIDER']).optional(),
+    mission: z.object({ client: partySchema, provider: partySchema }).passthrough().nullish(),
+  })
   .passthrough();
 export type Dispute = z.infer<typeof disputeSchema>;
 

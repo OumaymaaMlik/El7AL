@@ -85,7 +85,7 @@ export async function authRoutes(app: FastifyInstance) {
             password: { type: 'string', minLength: 8, maxLength: 128, examples: ['password123'] },
             bio: { type: 'string', examples: ["Plombier avec 10 ans d'expérience."] },
             radiusKm: { type: 'number', minimum: 1, maximum: 100, examples: [20] },
-            categoryIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 20 },
+            categoryIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 1 },
             documentsUrl: { type: 'array', items: { type: 'string', maxLength: 500 }, maxItems: 5 },
             cinNumber: { type: 'string', pattern: '^[0-9]{8}$' },
             cinFrontUrl: { type: 'string', maxLength: 500 },

@@ -21,6 +21,9 @@ export function useMission(
   const [mission, setMission] = useState<ApiMission | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // The mission shown last: when it completes it no longer counts as "current", but the page keeps showing it
+  // (the confirmation, payment and rating steps happen after completion).
+  const lastIdRef = useRef<string | null>(null);
   const onLoadedRef = useRef(onLoaded);
   onLoadedRef.current = onLoaded;
 
@@ -31,7 +34,7 @@ export function useMission(
       if (!id) {
         const history = await api.get('/missions/history');
         const list: ApiMission[] = history.data.success && Array.isArray(history.data.data) ? history.data.data : [];
-        id = list.find((m) => isCurrent(m.status))?.id ?? null;
+        id = list.find((m) => isCurrent(m.status))?.id ?? lastIdRef.current;
       }
       if (!id) {
         setMission(null);
@@ -39,6 +42,7 @@ export function useMission(
       }
       const res = await api.get(`/missions/${id}`);
       const loaded: ApiMission | null = res.data.success && res.data.data ? res.data.data : null;
+      lastIdRef.current = loaded?.id ?? null;
       setMission(loaded);
       if (loaded) onLoadedRef.current?.(loaded);
     } catch (err) {

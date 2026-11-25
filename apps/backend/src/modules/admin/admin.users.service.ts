@@ -41,6 +41,7 @@ export async function getAllUsers(query?: string, role?: string, status?: string
           totalRatings: true,
           isAvailable: true,
           documentsUrl: true,
+          termsAcceptedAt: true,
           categories: { include: { category: true } },
           _count: { select: { acceptedMissions: true } },
         },

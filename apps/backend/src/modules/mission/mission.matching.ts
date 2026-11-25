@@ -4,6 +4,7 @@ import { MissionStatus } from '@el7al/shared';
 import { calculateDistanceKm } from '../../utils/geo.js';
 import { publish } from '../../events/domain-events.js';
 import { logger } from '../../utils/logger.js';
+import { isBlocked } from '../wallet/wallet.standing.js';
 
 export interface CreateMissionInput {
   clientId: string;
@@ -50,12 +51,10 @@ export async function findCandidateProviders(
   }
   if (nearbyProviderIds.length === 0) return [];
 
-  return db.providerProfile.findMany({
+  const found = await db.providerProfile.findMany({
     where: {
       id: { in: nearbyProviderIds },
       isAvailable: true,
-      // Nobody who owes commission (see owesCommission).
-      walletBalance: { gte: 0 },
       user: { status: 'ACTIVE' },
       categories: { some: { categoryId } },
       // Must NOT be actively engaged on an ongoing mission
@@ -65,6 +64,9 @@ export async function findCandidateProviders(
     orderBy: [{ ratingAverage: 'desc' }, { totalRatings: 'desc' }],
     take: MAX_OFFER_RECIPIENTS,
   });
+  // Nobody with an overdue commission (a debt due at the end of the week does not stop anyone yet).
+  const blocked = await Promise.all(found.map((p) => isBlocked(p)));
+  return found.filter((_, index) => !blocked[index]);
 }
 
 /** Artisans a client could send a request to, with their distance, for the "choose who to ask" screen. */

@@ -7,9 +7,10 @@
  *  - the table of receivers is in docs/API_CONTRACT.md: change both together.
  */
 import type { ServerEventName, ServerEvents } from '@el7al/shared';
-import { subscribe } from '../../events/domain-events.js';
+import { subscribe, type DomainEvents } from '../../events/domain-events.js';
 import { evictFromMissionRoom, getIO, participantRooms } from '../../websockets/socket.gateway.js';
 import { pushToUser } from '../../services/pushNotification.service.js';
+import { rememberOffered } from '../mission/mission.lateOffers.js';
 import { COMMISSION_FEE_TND } from '../../config/business.js';
 import { db } from '../../config/db.js';
 
@@ -22,6 +23,45 @@ function send<K extends ServerEventName>(
   target.emit(event, payload);
 }
 
+type Requested = DomainEvents['mission.requested'];
+
+/** One artisan receives a request: on screen, and as a push the first time. */
+function sendOffer(userId: string, mission: Requested['mission'], client: Requested['client'], push: boolean) {
+  const offer: ServerEvents['mission:new_offer'] = {
+    missionId: mission.id,
+    categoryId: mission.categoryId,
+    categoryName: mission.categoryName,
+    addressText: mission.addressText,
+    description: mission.description,
+    clientName: client.fullName,
+    clientAvatarUrl: client.avatarUrl || null,
+    commissionFee: (mission.commissionFee as number) || COMMISSION_FEE_TND,
+    pickupLat: mission.pickupLat,
+    pickupLng: mission.pickupLng,
+    createdAt: mission.createdAt,
+  };
+  send(getIO().to(`provider_${userId}`).to(`user_${userId}`), 'mission:new_offer', offer);
+  if (!push) return;
+  void pushToUser(userId, `Nouvelle demande (${mission.categoryName})`, `${client.fullName} · ${mission.addressText}`, {
+    type: 'NEW_OFFER',
+    missionId: mission.id,
+  });
+}
+
+/** The client hears that artisans were found and have the request. */
+function tellClientOffersSent(missionId: string, clientUserId: string, count: number) {
+  send(getIO().to(`mission_${missionId}`).to(`user_${clientUserId}`), 'mission:offer_dispatched', { missionId, count });
+  if (count === 0) return;
+  void pushToUser(
+    clientUserId,
+    'Artisan trouvé',
+    count === 1
+      ? 'Nous avons trouvé un artisan près de vous et lui avons envoyé votre demande.'
+      : `Nous avons trouvé ${count} artisans près de vous et leur avons envoyé votre demande.`,
+    { type: 'OFFER_SENT', missionId },
+  );
+}
+
 let registered = false;
 
 export function registerNotificationListeners(): void {
@@ -30,36 +70,15 @@ export function registerNotificationListeners(): void {
 
   // ---- A client asked for help: the nearby artisans get the offer, the client learns how many were asked.
   subscribe('mission.requested', ({ mission, client, candidateUserIds }) => {
-    const io = getIO();
-    const offer: ServerEvents['mission:new_offer'] = {
-      missionId: mission.id,
-      categoryId: mission.categoryId,
-      categoryName: mission.categoryName,
-      addressText: mission.addressText,
-      description: mission.description,
-      clientName: client.fullName,
-      clientAvatarUrl: client.avatarUrl || null,
-      commissionFee: mission.commissionFee || COMMISSION_FEE_TND,
-      pickupLat: mission.pickupLat,
-      pickupLng: mission.pickupLng,
-      createdAt: mission.createdAt,
-    };
-    for (const userId of candidateUserIds) {
-      send(io.to(`provider_${userId}`).to(`user_${userId}`), 'mission:new_offer', offer);
-      void pushToUser(
-        userId,
-        `Nouvelle demande (${mission.categoryName})`,
-        `${client.fullName} · ${mission.addressText}`,
-        {
-          type: 'NEW_OFFER',
-          missionId: mission.id,
-        },
-      );
-    }
-    send(io.to(`mission_${mission.id}`).to(`user_${client.userId}`), 'mission:offer_dispatched', {
-      missionId: mission.id,
-      count: candidateUserIds.length,
-    });
+    for (const userId of candidateUserIds) sendOffer(userId, mission, client, true);
+    tellClientOffersSent(mission.id, client.userId, candidateUserIds.length);
+    void rememberOffered(mission.id, candidateUserIds);
+  });
+
+  // ---- An artisan became reachable while a search was still running.
+  subscribe('mission.offeredLate', ({ mission, client, providerUserId, firstTime }) => {
+    sendOffer(providerUserId, mission, client, firstTime);
+    if (firstTime) tellClientOffersSent(mission.id, client.userId, 1);
   });
 
   // ---- An artisan accepted: both are paired, the others learn the job is gone.
@@ -106,7 +125,7 @@ export function registerNotificationListeners(): void {
       void pushToUser(
         mission.providerUserId,
         'Mission terminée',
-        'Le client a confirmé la fin des travaux. Commission de 30 TND prélevée.',
+        `Le client a confirmé la fin des travaux. Commission de ${COMMISSION_FEE_TND} TND ajoutée à votre compte.`,
         { ...data, type: 'MISSION_COMPLETED' },
       );
     } else if (status === 'EN_ROUTE') {
@@ -204,15 +223,40 @@ export function registerNotificationListeners(): void {
     );
   });
 
+  // ---- An artisan sent a transfer receipt: every admin is told, on screen and on their phone.
+  subscribe('topup.requested', async ({ providerName, amount }) => {
+    send(getIO().to('admins'), 'admin:topup_pending', { providerName, amount });
+    const admins = await db.user.findMany({ where: { role: 'ADMIN', status: 'ACTIVE' }, select: { id: true } });
+    for (const admin of admins) {
+      void pushToUser(admin.id, 'Virement à valider', `${providerName} a envoyé un virement de ${amount} TND.`, {
+        type: 'TOPUP_PENDING',
+      });
+    }
+  });
+
+  // ---- Someone reported a problem: every admin is told, on screen and on their phone.
+  subscribe('dispute.opened', async ({ reporterName, missionId }) => {
+    send(getIO().to('admins'), 'admin:dispute_opened', { reporterName, missionId });
+    const admins = await db.user.findMany({ where: { role: 'ADMIN', status: 'ACTIVE' }, select: { id: true } });
+    for (const admin of admins) {
+      void pushToUser(admin.id, 'Nouveau signalement', `${reporterName} a signalé un problème.`, {
+        type: 'DISPUTE_OPENED',
+        missionId,
+      });
+    }
+  });
+
   // ---- An admin decided about a bank transfer.
-  subscribe('topup.decided', ({ userId, status }) => {
-    send(getIO().to(`user_${userId}`), 'wallet:topup_decided', { status });
+  subscribe('topup.decided', ({ userId, status, remaining }) => {
+    send(getIO().to(`user_${userId}`), 'wallet:topup_decided', { status, remaining });
     const approved = status === 'APPROVED';
     void pushToUser(
       userId,
       approved ? 'Commission réglée' : 'Virement refusé',
       approved
-        ? 'Vous pouvez passer en ligne et recevoir des demandes.'
+        ? remaining > 0
+          ? `Virement reçu. Il reste ${remaining} TND à régler pour recevoir des demandes.`
+          : 'Vous pouvez passer en ligne et recevoir des demandes.'
         : 'Votre preuve de virement a été refusée. Envoyez-en une nouvelle.',
       { type: 'TOPUP_DECIDED', status },
     );

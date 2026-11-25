@@ -1,7 +1,6 @@
 import type { Prisma } from '@prisma/client';
 import { db } from '../../config/db.js';
 import { AccountStatus, MissionStatus, TransactionStatus, UserRole } from '@el7al/shared';
-import { COMMISSION_FEE_TND } from '../../config/business.js';
 
 const PERSON = { select: { id: true, fullName: true, phoneNumber: true, email: true } };
 const WITH_PEOPLE = {
@@ -50,14 +49,27 @@ export async function getUserMissions(userId: string) {
   return withDuration(missions);
 }
 
-/** Revenue of the completed missions finished since `since` (all time when omitted): each one counts its fixed fee. */
-async function revenueSince(since?: Date): Promise<number> {
-  const where = { status: MissionStatus.COMPLETED, ...(since ? { completedAt: { gte: since } } : {}) };
-  const [count, sum] = await Promise.all([
-    db.mission.count({ where }),
-    db.mission.aggregate({ where, _sum: { commissionFee: true } }),
+/** Money really received: confirmed bank transfers since `since` (all time when omitted). */
+async function receivedSince(since?: Date): Promise<number> {
+  const rows = await db.topupTransaction.findMany({
+    where: { status: TransactionStatus.APPROVED, ...(since ? { updatedAt: { gte: since } } : {}) },
+    select: { amount: true, receivedAmount: true },
+  });
+  return rows.reduce((sum, r) => sum + Number(r.receivedAmount ?? r.amount), 0);
+}
+
+/** What artisans were charged for finished jobs, and what they still owe today. */
+async function billedAndUnpaid() {
+  const [billed, debts] = await Promise.all([
+    db.walletCharge.aggregate({ _sum: { commission: true, activation: true } }),
+    db.providerProfile.aggregate({ where: { walletBalance: { lt: 0 } }, _sum: { walletBalance: true } }),
   ]);
-  return Number(sum._sum.commissionFee ?? count * COMMISSION_FEE_TND);
+  const activation = Number(billed._sum.activation ?? 0);
+  return {
+    billedTotalTND: Number(billed._sum.commission ?? 0) + activation,
+    activationBilledTND: activation,
+    unpaidTotalTND: Math.abs(Number(debts._sum.walletBalance ?? 0)),
+  };
 }
 
 const startOfDay = (daysAgo = 0) => {
@@ -67,32 +79,32 @@ const startOfDay = (daysAgo = 0) => {
   return d;
 };
 
-/**
- * The figures of the admin home. An intervention that both the artisan and the client confirmed, with no
- * cancellation, is COMPLETED and counts as one fixed fee of revenue.
- */
+/** The figures of the admin home. Money is shown three ways: billed for finished jobs, received, and still unpaid. */
 export async function getPlatformStats() {
-  const [completed, revenue, revenueToday, revenueWeek, revenueMonth, users, pendingWireTransfers, openDisputes] =
-    await Promise.all([
-      db.mission.count({ where: { status: MissionStatus.COMPLETED } }),
-      revenueSince(),
-      revenueSince(startOfDay()),
-      revenueSince(startOfDay(6)),
-      revenueSince(startOfDay(29)),
-      db.user.groupBy({ by: ['role', 'status'], _count: { _all: true } }),
-      db.topupTransaction.count({ where: { status: TransactionStatus.PENDING } }),
-      db.dispute.count({ where: { status: 'OPEN' } }),
-    ]);
+  const [completed, users, pendingWireTransfers, openDisputes] = await Promise.all([
+    db.mission.count({ where: { status: MissionStatus.COMPLETED } }),
+    db.user.groupBy({ by: ['role', 'status'], _count: { _all: true } }),
+    db.topupTransaction.count({ where: { status: TransactionStatus.PENDING } }),
+    db.dispute.count({ where: { status: 'OPEN' } }),
+  ]);
+  const [money, received, receivedToday, receivedWeek, receivedMonth] = await Promise.all([
+    billedAndUnpaid(),
+    receivedSince(),
+    receivedSince(startOfDay()),
+    receivedSince(startOfDay(6)),
+    receivedSince(startOfDay(29)),
+  ]);
 
   const count = (role: UserRole, status?: AccountStatus) =>
     users.filter((u) => u.role === role && (!status || u.status === status)).reduce((sum, u) => sum + u._count._all, 0);
 
   return {
     totalCompletedMissions: completed,
-    totalCommissionsCollectedTND: revenue,
-    revenueTodayTND: revenueToday,
-    revenueWeekTND: revenueWeek,
-    revenueMonthTND: revenueMonth,
+    ...money,
+    receivedTotalTND: received,
+    receivedTodayTND: receivedToday,
+    receivedWeekTND: receivedWeek,
+    receivedMonthTND: receivedMonth,
     pendingVerifications: count(UserRole.PROVIDER, AccountStatus.PENDING_VERIFICATION),
     activeProviders: count(UserRole.PROVIDER, AccountStatus.ACTIVE),
     activeClients: count(UserRole.CLIENT, AccountStatus.ACTIVE),

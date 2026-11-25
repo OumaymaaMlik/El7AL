@@ -114,11 +114,11 @@ export const SkillsStep: React.FC<
   <div className="space-y-4 animate-fadeIn">
     <StepHeader
       title="Étape 3 sur 4 : domaines d'expertise"
-      hint="Sélectionnez les services que vous proposez aux clients"
+      hint="Choisissez votre métier. Il ne pourra pas être modifié ensuite."
     />
 
     <div className="space-y-2">
-      <label className={LABEL}>Sélectionnez vos spécialités *</label>
+      <label className={LABEL}>Votre métier (un seul) *</label>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pe-1">
         {categories.map((cat) => {
           const picked = form.selectedCategories.includes(cat.id);

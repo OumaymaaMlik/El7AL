@@ -8,6 +8,7 @@ import { DutyPanel } from '../components/provider/home/DutyPanel';
 import { EmptyTab, MissionHistoryList, ProviderMissionCard } from '../components/provider/home/MissionLists';
 import { useProviderMissions } from '../components/provider/home/useProviderMissions';
 import { VerificationBanner } from '../components/provider/home/VerificationBanner';
+import { WeekMoney } from '../components/provider/home/WeekMoney';
 import { useAuthStore } from '../store/useAuthStore';
 import { useNotificationStore } from '../store/useNotificationStore';
 import { useProviderStore } from '../store/useProviderStore';
@@ -26,6 +27,7 @@ export const ProviderHomePage: React.FC = () => {
   const accountStatus = useProviderStore((s) => s.accountStatus);
   const verificationNote = useProviderStore((s) => s.verificationNote);
   const ratingAverage = useProviderStore((s) => s.ratingAverage);
+  const owes = useProviderStore((s) => s.blocked);
   // Unknown while loading counts as fine: the server refuses an unverified artisan anyway.
   const verified = accountStatus === null || accountStatus === 'ACTIVE';
 
@@ -52,10 +54,12 @@ export const ProviderHomePage: React.FC = () => {
         <DutyPanel
           firstName={user?.fullName?.split(' ')[0] || ''}
           isOnline={isOnline}
-          canGoOnline={verified}
+          canGoOnline={verified && !owes}
           onToggle={toggleOnline}
           stats={{ done: missions.completedCount, rating: ratingAverage, ongoing: missions.ongoing.length }}
         />
+
+        <WeekMoney />
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-8 lg:gap-10 items-start">
           <div className="min-w-0">

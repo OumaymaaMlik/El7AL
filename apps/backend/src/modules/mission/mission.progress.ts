@@ -2,7 +2,8 @@ import type { Prisma } from '@prisma/client';
 import { db } from '../../config/db.js';
 import { MissionStatus } from '@el7al/shared';
 import { calculateDistanceKm, calculateEtaMinutes } from '../../utils/geo.js';
-import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND, owesCommission } from '../../config/business.js';
+import { ACTIVATION_FEE_TND, COMMISSION_FEE_TND, endOfBillingWeek } from '../../config/business.js';
+import { isBlocked } from '../wallet/wallet.standing.js';
 import { publish } from '../../events/domain-events.js';
 import { removeProviderGeoLocation } from '../../services/redis.service.js';
 
@@ -171,13 +172,15 @@ export function parseDeclaredAmount(raw: unknown): number | undefined {
 export async function dualConfirmMission(missionId: string, userId: string, role: string, amount?: unknown) {
   if (role === 'PROVIDER') {
     const declaredAmount = parseDeclaredAmount(amount);
+    // The client confirms a price, so the artisan always states one.
+    if (declaredAmount === undefined) throw new Error('Indiquez le montant payé en espèces par le client.');
     const { mission, changed } = await advance(
       missionId,
       userId,
       'PROVIDER',
       [MissionStatus.IN_PROGRESS],
       MissionStatus.DUAL_CONFIRM,
-      declaredAmount === undefined ? {} : { declaredAmount },
+      { declaredAmount },
     );
     if (changed) {
       await announce(
@@ -221,8 +224,20 @@ export async function dualConfirmMission(missionId: string, userId: string, role
           ...(activation > 0 ? { activationChargedAt: new Date() } : {}),
         },
       });
-      // Commission is owed from now on: the artisan goes offline until the transfer is confirmed.
-      if (owesCommission(profile)) {
+      // The line the artisan can read later: what this job cost, and why. The first job (with the activation fee) is
+      // paid at once; later jobs are added up and paid at the end of the week.
+      const now = new Date();
+      await tx.walletCharge.create({
+        data: {
+          providerId: current.providerId,
+          missionId: current.id,
+          commission,
+          activation,
+          dueAt: activation > 0 ? now : endOfBillingWeek(now),
+        },
+      });
+      // Only an overdue amount takes the artisan offline.
+      if (await isBlocked(profile, tx)) {
         await tx.providerProfile.update({ where: { id: profile.id }, data: { isAvailable: false } });
         await removeProviderGeoLocation(profile.id).catch(() => undefined);
       }

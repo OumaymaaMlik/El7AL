@@ -41,7 +41,7 @@ export function AmountSheet({ visible, onClose, onSend, loading = false }: Amoun
   };
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} title={t('amountTitle')} subtitle={t('amountSub')}>
+    <BottomSheet visible={visible} onClose={onClose} title={t('amountTitle')}>
       <View style={styles.body}>
         <View style={styles.amountRow} accessibilityLabel={`${value} TND`}>
           <Text style={[styles.amount, { color: value > 0 ? colors.text : colors.textMuted }]}>
@@ -52,7 +52,7 @@ export function AmountSheet({ visible, onClose, onSend, loading = false }: Amoun
         <View style={[styles.chip, { backgroundColor: colors.tint }]}>
           <Banknote size={16} color={colors.accentText} />
           <Txt variant="captionStrong" color={colors.accentText}>
-            {t('cashOnly')}
+            {t('cashWord')}
           </Txt>
         </View>
 

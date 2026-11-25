@@ -25,8 +25,8 @@ export const avatarUploadResponseSchema = z.object({ url: z.string().optional() 
 export interface UpdateProfileInput {
   fullName: string;
   defaultAddress: string;
-  defaultLat: number;
-  defaultLng: number;
+  defaultLat?: number;
+  defaultLng?: number;
   bio: string;
   avatarUrl: string;
   oldPassword?: string;

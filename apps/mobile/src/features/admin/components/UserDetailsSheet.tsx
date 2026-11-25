@@ -32,6 +32,10 @@ export function UserDetailsSheet({ user, onClose }: { user: AdminUser | null; on
           { label: t('radiusLabel'), value: radiusKm !== null ? `${radiusKm} km` : '' },
           { label: t('tradesLabel'), value: trades },
           { label: t('bio'), value: String(profile.bio ?? '') },
+          {
+            label: t('feesAcceptedOn'),
+            value: profile.termsAcceptedAt ? new Date(String(profile.termsAcceptedAt)).toLocaleString() : t('notYet'),
+          },
         ]
       : []),
   ].filter((row) => row.value);

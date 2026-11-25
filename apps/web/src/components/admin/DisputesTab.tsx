@@ -52,6 +52,14 @@ export const DisputesTab: React.FC<{ onChanged: () => void }> = ({ onChanged }) 
                     {new Date(d.createdAt).toLocaleDateString('fr-FR')}
                   </span>
                 </div>
+                <p className="text-xs text-slate-600 dark:text-slate-300">
+                  Signalé par {d.reporterRole === 'CLIENT' ? 'le client' : "l'artisan"} :{' '}
+                  <strong>
+                    {(d.reporterRole === 'CLIENT' ? d.mission?.client : d.mission?.provider)?.user?.fullName ?? '—'}
+                  </strong>{' '}
+                  ({(d.reporterRole === 'CLIENT' ? d.mission?.client : d.mission?.provider)?.user?.phoneNumber ?? '—'})
+                  {d.mission?.declaredAmount ? ` · montant déclaré : ${Number(d.mission.declaredAmount)} TND` : ''}
+                </p>
                 <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 bg-light-bg dark:bg-dark-bg p-3 rounded-2xl border border-slate-100 dark:border-slate-800 my-2">
                   &laquo; {d.reason} &raquo;
                 </p>

@@ -98,37 +98,35 @@ export const ProfileInfoCard: React.FC<InfoProps> = (p) => {
 interface TradesProps {
   trades: TradeOption[];
   selected: string[];
-  onToggle: (id: string) => void;
   radiusKm: number;
   onRadius: (km: number) => void;
   bio: string;
   onBio: (v: string) => void;
 }
 
-/** The trades the artisan works in, how far they travel, and the written presentation. */
+/** The artisan's trade (fixed since sign-up), how far they travel, and the written presentation. */
 export const ProfileTradesCard: React.FC<TradesProps> = (p) => (
   <div className={CARD}>
-    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Métiers, zone et présentation</h3>
+    <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Métier, zone et présentation</h3>
 
     <div className="space-y-3">
-      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Mes spécialités</span>
+      <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">Mon métier</span>
       <div className="flex flex-wrap gap-2">
-        {p.trades.map((trade) => {
-          const picked = p.selected.includes(trade.id);
-          return (
-            <button
+        {p.trades
+          .filter((trade) => p.selected.includes(trade.id))
+          .map((trade) => (
+            <span
               key={trade.id}
-              type="button"
-              aria-pressed={picked}
-              onClick={() => p.onToggle(trade.id)}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all border ${picked ? 'bg-brand-500 text-white border-brand-500' : CHOICE_IDLE}`}
+              className="px-4 py-2 rounded-full text-xs font-extrabold border bg-brand-500 text-white border-brand-500"
             >
-              {picked && <Check className="w-3.5 h-3.5 inline me-1 stroke-[3]" />}
+              <Check className="w-3.5 h-3.5 inline me-1 stroke-[3]" />
               {trade.name}
-            </button>
-          );
-        })}
+            </span>
+          ))}
       </div>
+      <p className="text-xs text-slate-500 dark:text-slate-400">
+        Le métier est choisi à l&apos;inscription et ne peut pas être modifié.
+      </p>
     </div>
 
     <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">

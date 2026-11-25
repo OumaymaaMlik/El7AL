@@ -8,6 +8,8 @@ import { getAllMissions, getUserMissions, getPlatformStats } from './admin.activ
 import { getCategories, createCategory, updateCategory, deleteCategory } from './admin.catalog.service.js';
 import { getPendingTopups, approveTopup, rejectTopup, getDisputes, resolveDispute } from './admin.finance.service.js';
 
+import { changeRib, currentRib } from '../wallet/wallet.rib.js';
+
 const idOf = (request: FastifyRequest) => (request.params as { id: string }).id;
 const ID_PARAMS = { type: 'object', properties: { id: { type: 'string' } } } as const;
 const CATEGORY_FIELDS = {
@@ -115,13 +117,39 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.post(
     '/topups/:id/approve',
-    admin('Validate a transfer and credit the wallet', { params: ID_PARAMS }),
-    async (request, reply) =>
-      respond(reply, () => approveTopup(idOf(request), currentUser(request).userId), { message: 'Top-up approved.' }),
+    admin('Validate a transfer and credit the wallet', {
+      params: ID_PARAMS,
+      body: {
+        type: ['object', 'null'],
+        properties: { receivedAmount: { type: 'number', minimum: 0.001, maximum: 100000 } },
+      },
+    }),
+    async (request, reply) => {
+      const received = (request.body as { receivedAmount?: number } | null)?.receivedAmount;
+      return respond(reply, () => approveTopup(idOf(request), currentUser(request).userId, received), {
+        message: 'Top-up approved.',
+      });
+    },
   );
 
   app.post('/topups/:id/reject', admin('Reject a transfer', { params: ID_PARAMS }), async (request, reply) =>
     respond(reply, () => rejectTopup(idOf(request), currentUser(request).userId), { message: 'Top-up rejected.' }),
+  );
+
+  // ---- El 7al's bank account
+  app.get('/rib', admin('The bank account artisans transfer to'), async (_request, reply) =>
+    respond(reply, currentRib),
+  );
+
+  app.put(
+    '/rib',
+    admin('Change the bank account artisans transfer to', {
+      body: { type: 'object', required: ['rib'], properties: { rib: { type: 'string', maxLength: 50 } } },
+    }),
+    async (request, reply) => {
+      const { rib } = request.body as { rib: string };
+      return respond(reply, () => changeRib(rib, currentUser(request).userId));
+    },
   );
 
   // ---- Disputes

@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import type { Profile } from '../../profile/schemas/profile.schema';
 import { useAuthStore } from '../../auth';
 import { fetchProfile, useAvailability } from '../../profile';
+import { fetchWallet, type Wallet } from '../../wallet/api/wallet.api';
 import { logger } from '../../../shared/utils/logger';
 import { toNumber } from '../../../shared/utils/format';
 import type { Mission } from '../../missions/schemas/mission.schema';
@@ -12,8 +13,13 @@ export function useProviderDashboard(history: Mission[] | null, completedCount: 
   const user = useAuthStore((state) => state.user);
   const setProviderAvailable = useAuthStore((state) => state.setProviderAvailable);
   const [providerProfileData, setProviderProfileData] = useState<Profile['providerProfile'] | null>(null);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
 
   const load = useCallback(async () => {
+    // Read apart: a wallet failure must not hide the rest of the home page.
+    fetchWallet()
+      .then(setWallet)
+      .catch((e) => logger.warn('Wallet load warning:', e));
     try {
       const profile = await fetchProfile();
       if (profile) {
@@ -36,5 +42,5 @@ export function useProviderDashboard(history: Mission[] | null, completedCount: 
     walletBalance: providerProfile ? toNumber(providerProfile.walletBalance) : null,
   };
 
-  return { load, isProviderAvailable, toggleAvailability, stats, completedMissions, providerProfile };
+  return { load, wallet, isProviderAvailable, toggleAvailability, stats, completedMissions, providerProfile };
 }

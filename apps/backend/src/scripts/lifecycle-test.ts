@@ -9,8 +9,10 @@
 import { publish } from '../events/domain-events.js';
 import { verifyAccessToken } from '../services/sessions.js';
 import './test-env.js';
+import { endOfBillingWeek } from '../config/business.js';
 import { io as connect, Socket } from 'socket.io-client';
 import { buildServer } from '../server.js';
+import { CATEGORIES } from './categories.js';
 import { initSocketGateway } from '../websockets/socket.gateway.js';
 import { db } from '../config/db.js';
 import { redis } from '../services/redis.service.js';
@@ -109,9 +111,13 @@ async function main() {
     return { email, verified, res, token: res.body?.token as string, id: res.body?.user?.id as string };
   }
 
+  let finished = false;
+  const savedRib = await db.setting.findUnique({ where: { key: 'el7al_rib' } });
   try {
+    // An empty database (as in CI) gets the service categories first.
+    if ((await db.category.count()) === 0) await db.category.createMany({ data: CATEGORIES });
     const category = await db.category.findFirst();
-    if (!category) throw new Error('No category in the database: seed categories first.');
+    if (!category) throw new Error('No category in the database.');
 
     // ---- Registration rules
     const unverified = await call('POST', '/auth/register/client', undefined, {
@@ -269,7 +275,21 @@ async function main() {
       created.status === 201 && Boolean(missionId),
       JSON.stringify(created.body).slice(0, 120),
     );
-    check('only the chosen artisan receives the offer', Boolean(await offerForA) && !(await offerForB));
+    const [gotA, gotB]: any[] = await Promise.all([offerForA, offerForB]);
+    check(
+      'only the chosen artisan receives the offer',
+      Boolean(gotA) && !gotB,
+      JSON.stringify({ mission: missionId, gotA, gotB }).slice(0, 600),
+    );
+
+    // Another artisan coming online during the search must not receive a request limited to artisan A.
+    const lateForB = waitFor(strangerSocket, 'mission:new_offer', 1500, (d) => d.missionId === missionId);
+    await call('PUT', '/geo/provider/availability', stranger.token, {
+      isAvailable: true,
+      currentLat: pickup.lat,
+      currentLng: pickup.lng,
+    });
+    check('an artisan who was not chosen does not get it by going online', !(await lateForB));
 
     // ---- Room membership (the participants are in the mission room too, as when they have the tracking page open)
     clientSocket.emit('join_room', `mission_${missionId}`);
@@ -376,6 +396,8 @@ async function main() {
       String(stillWorking.body?.data?.status),
     );
     const providerDone = waitFor(clientSocket, 'mission:status_update', 4000, (d) => d.status === 'DUAL_CONFIRM');
+    const noAmount = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token, {});
+    check('the artisan cannot finish without stating the price', noAmount.status === 400, String(noAmount.status));
     const finish = await call('POST', `/missions/${missionId}/dual-confirm`, provider.token, { amount: 85.5 });
     check(
       'artisan finishes with an amount: client is asked to confirm',
@@ -586,6 +608,32 @@ async function main() {
     check('an approved artisan can go online', approvedOnline.status === 200, String(approvedOnline.status));
     await call('PUT', '/geo/provider/availability', newcomer.token, { isAvailable: false });
 
+    const weekMoney = await call('GET', '/wallet/transactions', provider.token);
+    check(
+      'the wallet says what the artisan collected in cash this week',
+      weekMoney.body?.data?.earnedThisWeek === 85.5 && weekMoney.body?.data?.jobsThisWeek === 1,
+      JSON.stringify({ earned: weekMoney.body?.data?.earnedThisWeek, jobs: weekMoney.body?.data?.jobsThisWeek }),
+    );
+
+    // ---- The admin changes the bank account; artisans see the new one at once
+    const notAllowed = await call('PUT', '/admin/rib', provider.token, { rib: '1'.repeat(20) });
+    check('only the admin can change the bank account', notAllowed.status === 403, String(notAllowed.status));
+    const wrongRib = await call('PUT', '/admin/rib', adminToken, { rib: '12345' });
+    check('a wrong bank account number is refused', wrongRib.status === 400, String(wrongRib.status));
+    const newRib = await call('PUT', '/admin/rib', adminToken, { rib: '01234567890123456789' });
+    const seenRib = await call('GET', '/wallet/transactions', provider.token);
+    check(
+      'the new bank account is written the usual way and shown to artisans',
+      newRib.status === 200 && seenRib.body?.data?.rib === '01 234 5678901234567 89',
+      JSON.stringify({ saved: newRib.body, seen: seenRib.body?.data?.rib }),
+    );
+    const iban = await call('PUT', '/admin/rib', adminToken, { rib: 'tn00' + '1234'.repeat(5) });
+    check(
+      'a Tunisian IBAN is accepted too',
+      iban.body?.data?.rib === 'TN00 1234 1234 1234 1234 1234',
+      JSON.stringify(iban.body),
+    );
+
     // ---- Commission owed: the artisan is stopped until the transfer is confirmed
     const owingProfile = await db.providerProfile.findUnique({ where: { userId: provider.id } });
     check('an artisan who owes commission is taken offline', owingProfile?.isAvailable === false);
@@ -606,12 +654,12 @@ async function main() {
       String(owingOnline.status),
     );
     const commissionTopup = await call('POST', '/wallet/topup', provider.token, {
-      amount: 45,
+      amount: 1,
       receiptPhotoUrl: 'https://x.invalid/commission.jpg',
     });
     check(
-      'a transfer receipt is recorded for the admin to check',
-      commissionTopup.status === 201,
+      'a receipt is recorded for exactly what is owed, whatever amount the app sends',
+      commissionTopup.status === 201 && Number(commissionTopup.body?.data?.amount) === 45,
       JSON.stringify(commissionTopup.body).slice(0, 120),
     );
     const secondTopup = await call('POST', '/wallet/topup', provider.token, {
@@ -623,6 +671,9 @@ async function main() {
       secondTopup.status === 400,
       String(secondTopup.status),
     );
+    const pendingList = await call('GET', '/admin/topups/pending', adminToken);
+    const waitingRow = (pendingList.body?.data ?? []).find((x: any) => x.id === commissionTopup.body?.data?.id);
+    check('the admin sees what is owed next to the receipt', waitingRow?.owed === 45, JSON.stringify(waitingRow?.owed));
     const approvedCommission = await call(
       'POST',
       `/admin/topups/${commissionTopup.body?.data?.id}/approve`,
@@ -639,6 +690,126 @@ async function main() {
       currentLng: pickup.lng,
     });
     check('once the commission is paid the artisan works again', paidOnline.status === 200, String(paidOnline.status));
+
+    const ledger = await call('GET', '/wallet/transactions', provider.token);
+    const charge = ledger.body?.data?.charges?.[0];
+    check(
+      'the artisan sees what each job cost, and the payment that settled it',
+      charge?.commission === 30 &&
+        charge?.activation === 15 &&
+        Number(ledger.body?.data?.transactions?.[0]?.receivedAmount) === 45,
+      JSON.stringify(ledger.body?.data?.charges).slice(0, 140),
+    );
+    check('the fees are not accepted until the artisan says so', ledger.body?.data?.termsAccepted === false);
+    const signed = await call('POST', '/wallet/accept-terms', provider.token, {});
+    const signedAgain = await call('POST', '/wallet/accept-terms', provider.token, {});
+    check(
+      'accepting the fees keeps the date, and accepting again does not change it',
+      Boolean(signed.body?.data?.termsAcceptedAt) &&
+        signed.body?.data?.termsAcceptedAt === signedAgain.body?.data?.termsAcceptedAt,
+      JSON.stringify(signed.body).slice(0, 140),
+    );
+
+    // ---- Later jobs are added up and paid at the end of the week; only an overdue amount blocks
+    const sunday = endOfBillingWeek(new Date('2026-11-29T22:30:00Z')); // Sunday 23:30 in Tunisia
+    const nextWeek = endOfBillingWeek(new Date('2026-11-29T23:30:00Z')); // Monday 00:30 in Tunisia
+    check(
+      'a week ends on Monday 00:00 Tunisia time',
+      sunday.toISOString() === '2026-11-29T23:00:00.000Z' && nextWeek.toISOString() === '2026-12-06T23:00:00.000Z',
+      `${sunday.toISOString()} ${nextWeek.toISOString()}`,
+    );
+    const weekly = await db.walletCharge.create({
+      data: {
+        providerId: profile!.id,
+        missionId: `weekly-${stamp}`,
+        commission: 30,
+        dueAt: new Date(Date.now() + 86400000),
+      },
+    });
+    await db.providerProfile.update({ where: { id: profile!.id }, data: { walletBalance: { decrement: 30 } } });
+    const owingLater = await call('GET', '/wallet/transactions', provider.token);
+    check(
+      'a commission due later does not block',
+      owingLater.body?.data?.blocked === false &&
+        owingLater.body?.data?.overdue === 0 &&
+        owingLater.body?.data?.dueLater === 30 &&
+        owingLater.body?.data?.jobsDueLater === 1,
+      JSON.stringify(owingLater.body?.data).slice(0, 200),
+    );
+    const keptOnline = await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    check('an artisan with a commission due later stays online', keptOnline.status === 200, String(keptOnline.status));
+    // A second job this week while the first one is already paid: only the unpaid one is counted.
+    const paidEarly = await db.walletCharge.create({
+      data: {
+        providerId: profile!.id,
+        missionId: `weekly-paid-${stamp}`,
+        commission: 30,
+        createdAt: new Date(Date.now() - 60000),
+        dueAt: new Date(Date.now() + 86400000),
+      },
+    });
+    const onePaid = await call('GET', '/wallet/transactions', provider.token);
+    check(
+      'a job of the week that is already paid is not counted again',
+      onePaid.body?.data?.due === 30 && onePaid.body?.data?.jobsDueLater === 1,
+      JSON.stringify({ due: onePaid.body?.data?.due, jobs: onePaid.body?.data?.jobsDueLater }),
+    );
+    await db.walletCharge.delete({ where: { id: paidEarly.id } });
+    await db.walletCharge.update({ where: { id: weekly.id }, data: { dueAt: new Date(Date.now() - 1000) } });
+    const lateOnline = await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    check(
+      'once the week is over an unpaid commission blocks',
+      lateOnline.status === 403 && lateOnline.body?.code === 'COMMISSION_DUE',
+      String(lateOnline.status),
+    );
+    await db.walletCharge.delete({ where: { id: weekly.id } });
+    await db.providerProfile.update({ where: { id: profile!.id }, data: { walletBalance: { increment: 30 } } });
+
+    // ---- A search that started while the artisan was offline reaches them when they come back
+    await call('PUT', '/geo/provider/availability', provider.token, { isAvailable: false });
+    await call('PUT', '/geo/provider/availability', stranger.token, { isAvailable: false });
+    const unanswered = await call('POST', '/missions/request', client.token, request);
+    const lateId = unanswered.body?.data?.mission?.id;
+    if (lateId) missionIds.push(lateId);
+    const lateOffers = collect(providerSocket, 'mission:new_offer');
+    const clientTold = collect(clientSocket, 'mission:offer_dispatched');
+    await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    await sleep(700);
+    check(
+      'an artisan who comes online receives the search still running, and the client is told',
+      lateOffers.last()?.missionId === lateId && clientTold.last()?.count === 1,
+      `${lateOffers.count()} ${JSON.stringify(clientTold.last())}`,
+    );
+    providerSocket.emit('mission:reject_offer', { missionId: lateId });
+    await sleep(500);
+    await call('PUT', '/geo/provider/availability', provider.token, { isAvailable: false });
+    const before = lateOffers.count();
+    await call('PUT', '/geo/provider/availability', provider.token, {
+      isAvailable: true,
+      currentLat: pickup.lat + 0.01,
+      currentLng: pickup.lng,
+    });
+    await sleep(700);
+    check(
+      'a refused request is not offered again',
+      lateOffers.count() === before,
+      `${before} -> ${lateOffers.count()}`,
+    );
+    await call('POST', `/missions/${lateId}/cancel`, client.token, { reason: 'test' });
+    await call('PUT', '/geo/provider/availability', provider.token, { isAvailable: false });
+    await sleep(300);
 
     // ---- Nobody nearby: no one is notified
     await call('PUT', '/geo/provider/availability', provider.token, { isAvailable: false });
@@ -682,6 +853,14 @@ async function main() {
     check('a finished mission cannot be relaunched', resetOngoing.status === 400, String(resetOngoing.status));
     const foreignDispute = await call('POST', '/disputes', stranger.token, { missionId, reason: 'Not my mission' });
     check('only the people of a mission can report it', foreignDispute.status === 400, String(foreignDispute.status));
+    const report = { missionId, reason: 'The price was not the one announced.' };
+    const firstReport = await call('POST', '/disputes', client.token, report);
+    const secondReport = await call('POST', '/disputes', client.token, report);
+    check(
+      'a person of the mission can report it once',
+      firstReport.status === 201 && secondReport.status === 400,
+      `${firstReport.status} ${secondReport.status}`,
+    );
     const negativeTopup = await call('POST', '/wallet/topup', provider.token, {
       amount: -500,
       receiptPhotoUrl: 'https://x.invalid/r.jpg',
@@ -939,9 +1118,11 @@ async function main() {
     const figures = await call('GET', '/admin/stats', adminToken);
     const completedCount = await db.mission.count({ where: { status: 'COMPLETED' } });
     check(
-      'revenue is one fixed fee per completed intervention',
-      figures.body?.data?.totalCommissionsCollectedTND === completedCount * 30 &&
-        typeof figures.body?.data?.revenueMonthTND === 'number' &&
+      'money is shown as billed, received and unpaid, and they add up',
+      figures.body?.data?.billedTotalTND >= completedCount * 30 &&
+        figures.body?.data?.activationBilledTND >= 15 &&
+        typeof figures.body?.data?.receivedMonthTND === 'number' &&
+        typeof figures.body?.data?.unpaidTotalTND === 'number' &&
         typeof figures.body?.data?.pendingVerifications === 'number',
       JSON.stringify(figures.body?.data).slice(0, 160),
     );
@@ -998,7 +1179,12 @@ async function main() {
       if (r.status === 429) limited++;
     }
     check('login is rate limited', limited >= 1);
+    finished = true;
+  } catch (err) {
+    console.error(err);
   } finally {
+    if (savedRib) await db.setting.update({ where: { key: savedRib.key }, data: savedRib });
+    else await db.setting.deleteMany({ where: { key: 'el7al_rib' } });
     sockets.forEach((s) => s.close());
     await sleep(100);
     if (missionIds.length) {
@@ -1012,7 +1198,8 @@ async function main() {
     await app.close();
     await db.$disconnect();
     redis.disconnect();
-    process.exit(failed.length ? 1 : 0);
+    if (!finished) console.log('The test stopped before the end.');
+    process.exit(failed.length || !finished ? 1 : 0);
   }
 }
 

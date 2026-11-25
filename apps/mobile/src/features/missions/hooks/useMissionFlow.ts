@@ -88,6 +88,7 @@ export function useMissionFlow({ missionId: overrideId, onReviewDone }: Options 
   };
 
   return {
+    missionId,
     actionLoading,
     gpsOpen,
     setGpsOpen,

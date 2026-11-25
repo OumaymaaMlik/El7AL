@@ -25,6 +25,7 @@ const ProviderHomePage = lazy(() => import('./pages/ProviderHomePage').then((m) 
 const ProviderTrackingPage = lazy(() =>
   import('./pages/ProviderTrackingPage').then((m) => ({ default: m.ProviderTrackingPage })),
 );
+const ProviderPayPage = lazy(() => import('./pages/ProviderPayPage').then((m) => ({ default: m.ProviderPayPage })));
 const ProviderProfilePage = lazy(() =>
   import('./pages/ProviderProfilePage').then((m) => ({ default: m.ProviderProfilePage })),
 );
@@ -67,6 +68,7 @@ export const App: React.FC = () => {
           <Route path="/provider/home" element={<ProviderHomePage />} />
           <Route path="/provider/tracking" element={<ProviderTrackingPage />} />
           <Route path="/provider/profile" element={<ProviderProfilePage />} />
+          <Route path="/provider/pay" element={<ProviderPayPage />} />
           <Route path="/provider/*" element={<Navigate to="/provider/home" replace />} />
 
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { z } from 'zod';
 import { api } from '../../../services/http/client';
 import {
@@ -37,7 +38,13 @@ export async function verifyEmailCode(email: string, code: string) {
 /** Uploads a local image and returns its server URL, or null when the server returns none. */
 export async function uploadDocument(uri: string, name: string): Promise<string | null> {
   const formData = new FormData();
-  formData.append('file', { uri, name, type: 'image/jpeg' } as unknown as Blob);
+  if (Platform.OS === 'web') {
+    // In a browser the picked photo is a blob address: it is read back into a real file part.
+    const blob = await (await fetch(uri)).blob();
+    formData.append('file', blob, name);
+  } else {
+    formData.append('file', { uri, name, type: 'image/jpeg' } as unknown as Blob);
+  }
   const res = await api.post('/uploads/document', formData, { headers: { 'Content-Type': undefined } });
   return uploadResponseSchema.parse(res.data).url ?? null;
 }

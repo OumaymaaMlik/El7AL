@@ -15,7 +15,7 @@ export const registerProviderSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   bio: z.string().optional().nullable(),
   radiusKm: z.number().min(1).max(100).default(15.0),
-  categoryIds: z.array(z.string()).min(1, 'Select at least one service category'),
+  categoryIds: z.array(z.string()).length(1, 'Choose exactly one service category'),
   documentsUrl: z.array(z.string()).max(5).optional(),
   cinNumber: z
     .string()

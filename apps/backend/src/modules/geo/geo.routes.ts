@@ -2,7 +2,9 @@ import type { FastifyInstance } from 'fastify';
 import { db } from '../../config/db.js';
 import { updateProviderGeoLocation, removeProviderGeoLocation } from '../../services/redis.service.js';
 import { authenticate, currentUser } from '../../utils/authGuards.js';
-import { COMMISSION_DUE_MESSAGE, owesCommission } from '../../config/business.js';
+import { COMMISSION_DUE_MESSAGE } from '../../config/business.js';
+import { isBlocked } from '../wallet/wallet.standing.js';
+import { offerOpenMissionsTo } from '../mission/mission.lateOffers.js';
 
 const TAG = 'Geospatial & Availability';
 const SECURED = [{ bearerAuth: [] }];
@@ -51,7 +53,7 @@ export async function geoRoutes(app: FastifyInstance) {
         });
       }
 
-      if (isAvailable && owesCommission(profile)) {
+      if (isAvailable && (await isBlocked(profile))) {
         return reply.code(403).send({ success: false, code: 'COMMISSION_DUE', error: COMMISSION_DUE_MESSAGE });
       }
 
@@ -69,6 +71,8 @@ export async function geoRoutes(app: FastifyInstance) {
       } else if (!isAvailable) {
         await removeProviderGeoLocation(profile.id);
       }
+      // A search may have started while the artisan was offline and still be running.
+      if (isAvailable) await offerOpenMissionsTo(currentUser(request).userId);
       return reply.send({ success: true, data: updated });
     },
   );
@@ -151,40 +155,22 @@ export async function geoRoutes(app: FastifyInstance) {
     {
       schema: {
         tags: [TAG],
-        summary: 'Update trades, presentation and radius',
+        summary: 'Update presentation and radius (the trade is chosen at sign-up and cannot be changed)',
         security: SECURED,
         body: {
           type: 'object',
           properties: {
             bio: { type: 'string', maxLength: 600 },
             radiusKm: { type: 'number', minimum: 1, maximum: 100 },
-            categoryIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 20 },
           },
         },
       },
       onRequest: [authenticate],
     },
     async (request, reply) => {
-      const { bio, radiusKm, categoryIds } = request.body as {
-        bio?: string;
-        radiusKm?: number;
-        categoryIds?: string[];
-      };
+      const { bio, radiusKm } = request.body as { bio?: string; radiusKm?: number };
       const profile = await db.providerProfile.findUnique({ where: { userId: currentUser(request).userId } });
       if (!profile) return reply.code(404).send(NO_PROFILE);
-
-      if (categoryIds) {
-        const valid = await db.category.count({ where: { id: { in: categoryIds } } });
-        if (valid !== new Set(categoryIds).size) {
-          return reply.code(400).send({ success: false, error: 'Métier inconnu.' });
-        }
-        await db.$transaction([
-          db.providerCategory.deleteMany({ where: { providerId: profile.id } }),
-          db.providerCategory.createMany({
-            data: [...new Set(categoryIds)].map((categoryId) => ({ providerId: profile.id, categoryId })),
-          }),
-        ]);
-      }
 
       const updated = await db.providerProfile.update({
         where: { id: profile.id },

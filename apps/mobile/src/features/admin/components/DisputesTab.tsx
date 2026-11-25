@@ -16,6 +16,20 @@ import { disputeBadge } from '../utils/adminLabels';
 import { ListSkeleton } from './AdminTabs';
 
 /** Reports from clients and artisans; an open one can be resolved or dismissed. */
+/** "Reported by the client: name · phone". */
+function ReporterLine({ dispute }: { dispute: Dispute }) {
+  const colors = useThemeStore((s) => s.colors);
+  const { t } = useTranslation();
+  const client = dispute.reporterRole === 'CLIENT';
+  const person = (client ? dispute.mission?.client : dispute.mission?.provider)?.user;
+  const who = [person?.fullName, person?.phoneNumber].filter(Boolean).join(' · ');
+  return (
+    <Txt variant="caption" color={colors.textSecondary}>
+      {`${t(client ? 'reportedByClient' : 'reportedByArtisan')} ${who}`}
+    </Txt>
+  );
+}
+
 export function DisputesTab({
   disputes,
   loading,
@@ -39,19 +53,19 @@ export function DisputesTab({
     <Surface>
       {disputes.map((d, index) => {
         const badge = disputeBadge(d.status, t);
-        const reported = formatDate(d.createdAt, language);
         return (
           <React.Fragment key={d.id}>
             {index > 0 && <Hairline />}
             <View style={styles.row}>
               <View style={styles.between}>
                 <StatusBadge label={badge.label} tone={badge.tone} />
-                {Boolean(reported) && (
+                {Boolean(d.createdAt) && (
                   <Txt variant="caption" color={colors.textMuted}>
-                    {reported}
+                    {formatDate(d.createdAt, language)}
                   </Txt>
                 )}
               </View>
+              <ReporterLine dispute={d} />
               <Txt variant="body">{d.reason}</Txt>
               {d.status === 'OPEN' && (
                 <View style={styles.actions}>

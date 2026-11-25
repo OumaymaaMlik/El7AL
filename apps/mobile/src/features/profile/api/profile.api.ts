@@ -16,6 +16,11 @@ export async function updateProfile(input: UpdateProfileInput) {
   return parsed.success ? parsed.data : null;
 }
 
+/** An artisan's service radius (km) and presentation text. The trade is chosen at sign-up and cannot be changed. */
+export async function updateProviderSettings(settings: { radiusKm: number; bio: string }) {
+  await api.put('/geo/provider/settings', settings);
+}
+
 /** Erases the account (the server checks the password and refuses while a job is open). */
 export async function deleteAccount(password: string) {
   await api.delete('/users/me', { data: { password } });

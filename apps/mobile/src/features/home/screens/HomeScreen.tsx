@@ -66,9 +66,8 @@ export function HomeScreen() {
 
   const [refreshing, setRefreshing] = useState(false);
 
-  // An artisan who owes commission is stopped until the transfer is confirmed.
-  const owed = (dashboard.stats.walletBalance ?? 0) < 0;
-  const providerBlock = isProviderRole && owed ? 'COMMISSION' : null;
+  // Only an overdue amount stops an artisan; this week's commission is shown as "to pay".
+  const providerBlock = isProviderRole && dashboard.wallet?.blocked ? 'COMMISSION' : null;
 
   useEffect(() => {
     if (user?.role === 'ADMIN') router.replace(ROUTES.adminDashboard);
@@ -128,7 +127,8 @@ export function HomeScreen() {
           <>
             <VerificationBanner />
             <ArtisanBody
-              due={Math.max(0, -(dashboard.stats.walletBalance ?? 0))}
+              due={dashboard.wallet?.due ?? Math.max(0, -(dashboard.stats.walletBalance ?? 0))}
+              wallet={dashboard.wallet}
               block={providerBlock}
               available={dashboard.isProviderAvailable}
               missionActive={missionActive}

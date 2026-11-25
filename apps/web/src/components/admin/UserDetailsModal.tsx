@@ -63,6 +63,10 @@ export const UserDetailsModal: React.FC<UserDetailsModalProps> = ({
               <InfoTile label="Rayon d'intervention">{profile.radiusKm ?? 10} km</InfoTile>
             </div>
 
+            <InfoTile label="Frais acceptés le">
+              {profile.termsAcceptedAt ? new Date(profile.termsAcceptedAt).toLocaleString('fr-FR') : 'Pas encore'}
+            </InfoTile>
+
             {profile.bio && (
               <InfoTile label="Présentation">
                 <span className="font-normal italic text-slate-700 dark:text-slate-300">

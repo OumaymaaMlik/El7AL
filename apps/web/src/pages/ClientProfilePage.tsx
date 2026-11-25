@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { User, Phone, Mail, Upload, Save, LogOut } from 'lucide-react';
+import { User, Phone, Mail, Upload } from 'lucide-react';
 import { ClientLayout } from '../layouts/ClientLayout';
 import { StatusMessage } from '../components/ui/StatusMessage';
 import { DeleteAccountButton } from '../components/ui/DeleteAccountModal';
 import { ChangeEmailModal } from '../components/ui/ChangeEmailModal';
+import { ProfileFormActions } from '../components/client/ProfileFormActions';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { GlassCard } from '../components/ui/GlassCard';
@@ -231,23 +232,13 @@ export const ClientProfilePage: React.FC = () => {
               onError={setErrorMsg}
             />
 
-            <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  logout();
-                  navigate('/login');
-                }}
-                leftIcon={<LogOut className="w-4 h-4" />}
-              >
-                Déconnexion
-              </Button>
-
-              <Button type="submit" variant="primary" isLoading={isLoading} leftIcon={<Save className="w-4 h-4" />}>
-                Enregistrer les modifications
-              </Button>
-            </div>
+            <ProfileFormActions
+              saving={isLoading}
+              onLogout={() => {
+                logout();
+                navigate('/login');
+              }}
+            />
           </form>
         </GlassCard>
         <DeleteAccountButton

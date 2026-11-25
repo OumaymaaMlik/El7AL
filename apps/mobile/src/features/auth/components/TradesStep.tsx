@@ -35,7 +35,7 @@ export function TradesStep({ form }: { form: RegisterWizard }) {
               return (
                 <Pressable
                   key={cat.id}
-                  accessibilityRole="checkbox"
+                  accessibilityRole="radio"
                   accessibilityState={{ checked: isSelected }}
                   onPress={() => form.toggleCategory(cat.id)}
                   style={[

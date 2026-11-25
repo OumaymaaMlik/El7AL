@@ -92,12 +92,15 @@ model ProviderProfile {
   verificationNote String?         // why the identity check was refused (shown to the artisan)
   verifiedAt    DateTime?          // when an admin approved the account
   activationChargedAt DateTime?    // when the one-time activation fee was added to what the artisan owes (with the first commission)
+  termsAcceptedAt DateTime?        // proof that the artisan accepted the fees, and which ones (termsVersion)
+  termsVersion  String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
 
   categories    ProviderCategory[]
   acceptedMissions Mission[]
   topupTransactions TopupTransaction[]
+  charges       WalletCharge[]
   reviews        Review[]
 }
 
@@ -191,6 +194,7 @@ model TopupTransaction {
   uniqueRef       String            @unique // e.g. EL7AL-REF-XXXXX
   amount          Decimal
   receiptPhotoUrl String
+  receivedAmount  Decimal?          // what the admin found on the bank account (empty = the declared amount)
   status          TransactionStatus @default(PENDING)
   validatedBy     String?           // Admin User ID
   createdAt       DateTime          @default(now())
@@ -198,6 +202,21 @@ model TopupTransaction {
 
   @@index([status, createdAt])
   @@index([providerId])
+}
+
+// One line of what an artisan owes: written when a job completes, never edited.
+model WalletCharge {
+  id         String          @id @default(uuid())
+  providerId String
+  provider   ProviderProfile @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  missionId  String          @unique
+  commission Decimal
+  activation Decimal         @default(0) // the one-time fee, on the first job only
+  dueAt      DateTime        @default(now()) // first job: at once; later jobs: the end of that week
+  createdAt  DateTime        @default(now())
+
+  @@index([providerId, createdAt])
+  @@index([createdAt])
 }
 
 model Dispute {
@@ -213,4 +232,12 @@ model Dispute {
 
   @@index([missionId])
   @@index([status])
+}
+
+// A value the admin can change without a new deployment (for now: El 7al's bank account).
+model Setting {
+  key       String   @id
+  value     String
+  updatedBy String? // Admin User ID
+  updatedAt DateTime @updatedAt
 }

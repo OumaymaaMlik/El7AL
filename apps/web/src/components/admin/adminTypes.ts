@@ -1,11 +1,16 @@
 /** What the admin endpoints return, as far as the dashboard reads it. */
 
 export interface AdminStats {
-  /** Revenue: one fixed fee per intervention both sides confirmed. */
-  totalCommissionsCollectedTND?: number;
-  revenueTodayTND?: number;
-  revenueWeekTND?: number;
-  revenueMonthTND?: number;
+  /** Charged to artisans for finished jobs (activation fees included), whether paid or not. */
+  billedTotalTND?: number;
+  activationBilledTND?: number;
+  /** Confirmed bank transfers. */
+  receivedTotalTND?: number;
+  receivedTodayTND?: number;
+  receivedWeekTND?: number;
+  receivedMonthTND?: number;
+  /** Still owed by artisans today. */
+  unpaidTotalTND?: number;
   /** Artisans waiting for the identity check. */
   pendingVerifications?: number;
   totalCompletedMissions?: number;
@@ -26,6 +31,8 @@ export interface AdminCategory {
 }
 
 export interface AdminProviderProfile {
+  /** When the artisan accepted the fees. */
+  termsAcceptedAt?: string | null;
   id: string;
   walletBalance: number | string;
   radiusKm?: number;
@@ -66,6 +73,11 @@ export interface AdminTopup {
   id: string;
   uniqueRef: string;
   amount: number | string;
+  /** What the artisan owes right now. */
+  owed?: number;
+  /** The part whose payment date has passed: unpaid, it blocks the artisan. */
+  overdue?: number;
+  receiptPhotoUrl?: string;
   provider?: { user?: { fullName: string; phoneNumber: string } } | null;
 }
 
@@ -74,6 +86,12 @@ export interface AdminDispute {
   status: string;
   reason: string;
   createdAt: string;
+  reporterRole?: 'CLIENT' | 'PROVIDER';
+  mission?: {
+    declaredAmount?: number | string | null;
+    client?: { user?: { fullName: string; phoneNumber: string } } | null;
+    provider?: { user?: { fullName: string; phoneNumber: string } } | null;
+  } | null;
 }
 
 /** Minutes between the start and the end of a job, at least 1; null while it is not finished. */

@@ -122,6 +122,8 @@ export interface AccountVerificationPayload {
 /** An admin decided about a bank transfer the artisan sent (commission). */
 export interface TopupDecidedPayload {
   status: 'APPROVED' | 'REJECTED';
+  /** What is still owed after an approved transfer that was too small (0 when fully paid). */
+  remaining: number;
 }
 
 /** Every event the server sends, with its payload. */
@@ -144,6 +146,12 @@ export interface ServerEvents {
   'chat:error': { message: string };
   'account:verification': AccountVerificationPayload;
   'wallet:topup_decided': TopupDecidedPayload;
+  /** To admins only: an artisan sent a bank-transfer receipt that waits for validation. */
+  'admin:topup_pending': { providerName: string; amount: number };
+  /** To admins only: a client or an artisan reported a problem. */
+  'admin:dispute_opened': { reporterName: string; missionId: string };
+  /** The artisan is close to the client (a few minutes away). */
+  'mission:provider_near': { missionId: string; etaMinutes: number };
   /** To admins only: an artisan finished registering and waits for the identity check. */
   'admin:artisan_pending': { providerId: string; fullName: string; createdAt: string };
 }

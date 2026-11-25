@@ -15,6 +15,7 @@ import { useMissionStore } from '../store/useMissionStore';
 import type { PrimaryAction } from './TrackingActions';
 import { tabBarHeight } from '../../../shared/theme/tokens';
 import { styles } from './MissionLive.styles';
+import { ReportProblem } from './ReportProblem';
 import { useTopPad } from '../../../shared/theme/useTopPad';
 
 interface Props {
@@ -33,6 +34,8 @@ interface Props {
   onCall: () => void;
   onCancel: () => void;
   onOpenNavigation: () => void;
+  /** The job shown, for "report a problem" (once an artisan is assigned). */
+  reportId?: string | null;
 }
 
 /**
@@ -56,6 +59,7 @@ export function MissionLive({
   onCall,
   onCancel,
   onOpenNavigation,
+  reportId,
 }: Props) {
   const colors = useThemeStore((s) => s.colors);
   const { t } = useTranslation();
@@ -211,6 +215,7 @@ export function MissionLive({
             {t('cancelMission')}
           </Txt>
         </Pressable>
+        {Boolean(reportId) && <ReportProblem missionId={reportId!} />}
       </View>
     </View>
   );

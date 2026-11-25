@@ -49,6 +49,30 @@ export const AdminDashboardPage: React.FC = () => {
     });
   }, [addNotification, reloadStats]);
 
+  // A transfer receipt arrived: same, and the figures are reloaded.
+  useEffect(() => {
+    return onServerEvent(getSocket(), 'admin:topup_pending', (topup) => {
+      addNotification({
+        title: 'Virement à valider',
+        message: `${topup.providerName} a envoyé un virement de ${topup.amount} TND.`,
+        type: 'warning',
+      });
+      void reloadStats();
+    });
+  }, [addNotification, reloadStats]);
+
+  // Someone reported a problem about an intervention.
+  useEffect(() => {
+    return onServerEvent(getSocket(), 'admin:dispute_opened', (report) => {
+      addNotification({
+        title: 'Nouveau signalement',
+        message: `${report.reporterName} a signalé un problème.`,
+        type: 'warning',
+      });
+      void reloadStats();
+    });
+  }, [addNotification, reloadStats]);
+
   return (
     <AdminLayout>
       <div className="flex flex-col gap-6 max-w-7xl mx-auto">

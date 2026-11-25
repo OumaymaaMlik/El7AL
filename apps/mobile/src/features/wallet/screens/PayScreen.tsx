@@ -5,6 +5,8 @@ import { useThemeStore } from '../../../shared/store/useThemeStore';
 import { useAuthStore } from '../../auth';
 import { PauseView } from '../components/PauseView';
 import { PayForm } from '../components/PayForm';
+import { PayHistory } from '../components/PayHistory';
+import { PaymentsView } from '../components/PaymentsView';
 import { useWallet } from '../hooks/useWallet';
 
 /**
@@ -39,15 +41,19 @@ export function PayScreen() {
     );
   }
 
+  if (wallet.due <= 0) return <PaymentsView charges={wallet.charges} transfers={wallet.transfers} onBack={back} />;
+
   return (
     <PayForm
       due={wallet.due}
+      rib={wallet.rib}
       paused={Boolean(paused)}
       sending={wallet.sending}
       onBack={back}
-      onSend={async (amount, uri) => {
-        if (await wallet.send(amount, uri)) setView('status');
+      onSend={async (uri) => {
+        if (await wallet.send(uri)) setView('status');
       }}
+      history={<PayHistory charges={wallet.charges} transfers={wallet.transfers} />}
     />
   );
 }
